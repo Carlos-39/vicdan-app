@@ -49,7 +49,7 @@ export default function LoginForm() {
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 text-gray-500 hover:text-purple-600"
           >
-           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
       </div>
@@ -63,7 +63,14 @@ export default function LoginForm() {
           !isFormValid || loading ? styles.disabled : ""
         }`}
       >
-        {loading ? "Ingresando..." : "Iniciar sesión"}
+        {loading ? (
+          <div className={styles.spinnerContainer}>
+            <span className={styles.spinner}></span>
+            Ingresando...
+          </div>
+        ) : (
+          "Iniciar sesión"
+        )}
       </button>
 
       <button
