@@ -14,7 +14,7 @@ const schema = yup.object({
   name: yup.string().required("El nombre es obligatorio"),
   email: yup
     .string()
-    .email("Formato de correo inválido")
+    .email("Formato de correo inválido ej: example@example.com")
     .required("El correo es obligatorio"),
   password: yup
     .string()
