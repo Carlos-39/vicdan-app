@@ -1,0 +1,54 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to bottom, #f3e8ff, #ffffff);
+  padding: 1.5rem;
+}
+
+.card {
+  background-color: #ffffff;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  padding: 2rem;
+  width: 100%;
+  max-width: 28rem;
+}
+
+.title {
+  text-align: center;
+  color: #7e22ce;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.button {
+  width: 100%;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.buttonEnabled {
+  background-color: #7e22ce;
+  color: white;
+}
+
+.buttonEnabled:hover {
+  background-color: #6b21a8;
+}
+
+.buttonDisabled {
+  background-color: #d1d5db;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.success {
+  color: #16a34a;
+  text-align: center;
+  margin-top: 1rem;
+}
