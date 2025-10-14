@@ -12,9 +12,7 @@ export const useLogin = () => {
     setError("");
 
     try {
-
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
+      
       if (email === "admin@vicdan.com" && password === "123456") {
         const fakeToken = "fake-jwt-token";
         const userData = { name: "Administrador", email };
@@ -24,7 +22,7 @@ export const useLogin = () => {
 
         router.push("/dashboard");
       } else {
-        setError("Correo o contraseña incorrectos.");
+        setError("Credenciales inválidas. Verifica tu correo o contraseña.");
       }
     } catch (err) {
       setError("Ocurrió un error inesperado.");
