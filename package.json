@@ -6,7 +6,12 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "jest --config=jest.config.js",
+    "test:watch": "jest --watch",
+    "e2e": "playwright test",
+    "test:e2e": "npx playwright install --with-deps && npx playwright test"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
