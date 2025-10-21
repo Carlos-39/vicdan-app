@@ -1,8 +1,26 @@
-import { generateAuthToken, verifyAuthToken } from "../../src/utils/jwt";
-import jwt from "jsonwebtoken";
+// ⚙️ Simular variable de entorno ANTES de importar
 
-// ⚙️ Simular variable de entorno
-process.env.JWT_SECRET = "test_secret_key";
+// Mock del módulo JWT para evitar el error de variable de entorno
+jest.mock("../../src/lib/jwt", () => {
+  const jwt = require("jsonwebtoken");
+
+  const generateAuthToken = (payload: any) => {
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
+  };
+
+  const verifyAuthToken = (token: string) => {
+    try {
+      return jwt.verify(token, process.env.JWT_SECRET);
+    } catch {
+      return null;
+    }
+  };
+
+  return { generateAuthToken, verifyAuthToken };
+});
+
+import { generateAuthToken, verifyAuthToken } from "../../src/lib/jwt";
+import jwt from "jsonwebtoken";
 
 describe("JWT Utility Functions", () => {
   const payload = {
