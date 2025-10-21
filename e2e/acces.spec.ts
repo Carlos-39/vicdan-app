@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test';
 import jwt from 'jsonwebtoken';
 
 test.describe('Tests de acceso y autenticación', () => {
-  
   test('Test de acceso con token válido debe permitir la entrada', async ({ page }) => {
     // Arrange - Crear un token válido
     const validToken = jwt.sign(

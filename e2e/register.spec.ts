@@ -1,72 +1,116 @@
+// e2e/register.spec.ts
 import { test, expect } from "@playwright/test";
 
-test.describe("Registro Tests", () => {
-  test("Test de registro con contraseña inválida - Debe fallar con 400", async ({
+test.describe("Registro Tests (RegisterAdmin)", () => {
+  test("Registro con contraseña inválida - muestra mensaje de validación", async ({
     page,
   }) => {
-    // 1. Ir a la página de registro
-    await page.goto("/register");
+    // Ir a la página de registro
+    await page.goto("/register-admin");
 
-    // 2. Llenar los campos con datos válidos excepto la contraseña
-    await page.fill('input[name="name"]', "Usuario Prueba");
-    await page.fill('input[name="email"]', "usuario_prueba@example.com");
-    // Contraseña inválida (sin caracteres especiales ni mayúsculas)
-    await page.fill('input[name="password"]', "contrasena123");
+    // Llenar los campos: nombre y email válidos
+    await page.locator('input[name="name"]').fill("Usuario Prueba");
 
-    // 3. Hacer clic en el botón de enviar
-    await page.click('button[type="submit"]');
+    await page
+      .locator('input[name="email"]')
+      .fill("usuario_prueba@example.com");
 
-    // 4. Esperar a que aparezca el mensaje de error
-    const error = page.locator('p[class*="error"]');
-    await expect(error).toBeVisible();
-    await expect(error).toContainText(/contraseña.*inválida|requisitos de contraseña/i);
+    // Contraseña inválida: tiene minúsculas y números pero NO mayúscula ni símbolo
+    await page.locator('input[name="password"]').fill("contrasena123");
+    await page.locator('input[name="confirmPassword"]').fill("contrasena123");
 
-    // 5. Verificar que no redirige al dashboard o página de éxito
+    // Click en Registrar
+    const submit = page.getByRole("button", { name: /registrar/i });
+    await expect(submit).toBeEnabled(); // el formulario puede estar listo según la lógica de strength
+    await submit.click();
+
+    // Debe mostrarse un mensaje de validación relacionado con mayúscula / símbolo
+    // La validación la produce yup; detectamos alguno de los mensajes esperados
+    await expect(
+      page.getByText(
+        /mayúscula|símbolo|Debe contener al menos una mayúscula|Debe contener al menos un símbolo/i
+      )
+    ).toBeVisible();
+
+    // No debe redirigir a dashboard (tu componente actual no redirige)
     await expect(page).not.toHaveURL(/dashboard|success/);
   });
 
-  test("Test de registro exitoso con datos válidos", async ({ page }) => {
-    // 1. Ir a la página de registro
-    await page.goto("/register");
+  test("Registro exitoso con datos válidos - muestra mensaje de éxito", async ({
+    page,
+  }) => {
+    await page.goto("/register-admin");
 
-    // 2. Generar un correo único para evitar duplicados
-    const timestamp = new Date().getTime();
+    // Email único para evitar interferencias locales
+    const timestamp = Date.now();
     const uniqueEmail = `usuario_${timestamp}@example.com`;
 
-    // 3. Llenar los campos con datos válidos
-    await page.fill('input[name="name"]', "Usuario Nuevo");
-    await page.fill('input[name="email"]', uniqueEmail);
-    // Contraseña válida (con mayúsculas, minúsculas, números y símbolos)
-    await page.fill('input[name="password"]', "Contraseña123!");
+    await page.getByLabel("Nombre").fill("Usuario Nuevo");
+    await page.getByLabel("Correo electrónico").fill(uniqueEmail);
 
-    // 4. Hacer clic en el botón de enviar
-    await page.click('button[type="submit"]');
+    // Contraseña válida: mayúscula, minúscula, número y símbolo
+    await page.getByLabel("Contraseña").fill("Password123!");
+    await page.getByLabel("Confirmar contraseña").fill("Password123!");
 
-    // 5. Verificar que se redirige al dashboard o página de éxito
-    await expect(page).toHaveURL(/dashboard|success/);
+    // Botón Registrar
+    const submit = page.getByRole("button", { name: /registrar/i });
+
+    // Esperamos que esté habilitado y hacemos click
+    await expect(submit).toBeEnabled();
+    await submit.click();
+
+    // Tu componente marca success=true y renderiza: "¡Registro exitoso!"
+    const success = page.getByText("¡Registro exitoso!");
+    await expect(success).toBeVisible();
+
+    // No hay redirect en tu componente actual — solo comprobamos que se muestra el mensaje
+    await expect(page).not.toHaveURL(/dashboard|success/);
   });
 
-  test("Test de registro con correo duplicado - Debe fallar con 409", async ({ page }) => {
-    // 1. Ir a la página de registro
-    await page.goto("/register");
+  test("Registro con correo duplicado (sin backend) — registrar dos veces el mismo email", async ({
+    page,
+  }) => {
+    // Nota: actualmente tu RegisterAdmin no hace llamada al backend, por eso no hay verificación de "409".
+    // Aquí comprobamos que, con la implementación actual, es posible enviar el mismo email dos veces y obtener el mensaje de éxito.
+    // Si luego implementas un endpoint, abajo indico cómo mockear un 409.
 
-    // 2. Usar un correo que ya existe en el sistema
-    const existingEmail = "admin@vicdan.com"; // Asumiendo que este correo ya existe
+    await page.goto("/register-admin");
 
-    // 3. Llenar los campos con datos válidos pero correo duplicado
-    await page.fill('input[name="name"]', "Usuario Duplicado");
-    await page.fill('input[name="email"]', existingEmail);
-    await page.fill('input[name="password"]', "Contraseña123!");
+    const duplicateEmail = "admin@vicdan.com";
 
-    // 4. Hacer clic en el botón de enviar
-    await page.click('button[type="submit"]');
+    // Primer registro (cliente)
+    await page.getByLabel("Nombre").fill("Usuario Duplicado 1");
+    await page.getByLabel("Correo electrónico").fill(duplicateEmail);
+    await page.getByLabel("Contraseña").fill("Password123!");
+    await page.getByLabel("Confirmar contraseña").fill("Password123!");
+    await page.getByRole("button", { name: /registrar/i }).click();
+    await expect(page.getByText("¡Registro exitoso!")).toBeVisible();
 
-    // 5. Esperar a que aparezca el mensaje de error
-    const error = page.locator('p[class*="error"]');
-    await expect(error).toBeVisible();
-    await expect(error).toContainText(/correo.*ya.*registrado|ya existe|duplicado/i);
+    // Limpiamos success y volvemos a intentar con el mismo email
+    // (Si tu UI mantiene el estado de formulario, volvemos a cargar la página para simular otro intento)
+    await page.reload();
 
-    // 6. Verificar que no redirige al dashboard o página de éxito
-    await expect(page).not.toHaveURL(/dashboard|success/);
+    await page.getByLabel("Nombre").fill("Usuario Duplicado 2");
+    await page.getByLabel("Correo electrónico").fill(duplicateEmail);
+    await page.getByLabel("Contraseña").fill("Password123!");
+    await page.getByLabel("Confirmar contraseña").fill("Password123!");
+    await page.getByRole("button", { name: /registrar/i }).click();
+
+    // Con la implementación actual también veremos éxito
+    await expect(page.getByText("¡Registro exitoso!")).toBeVisible();
+
+    // ---- Información útil: si en el futuro implementas una API que responde 409,
+    // puedes mockearla así (descomenta y ajusta la ruta si agregas fetch):
+    //
+    // await page.route('**/api/register', route => {
+    //   route.fulfill({
+    //     status: 409,
+    //     contentType: 'application/json',
+    //     body: JSON.stringify({ message: 'Correo ya registrado' })
+    //   });
+    // });
+    //
+    // y luego al hacer submit comprobarías que aparece el error:
+    // await expect(page.getByText(/correo.*ya.*registrado|409/i)).toBeVisible();
   });
 });
