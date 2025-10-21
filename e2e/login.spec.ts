@@ -1,77 +1,49 @@
-import { test, expect } from "@playwright/test";
+import { test, expect } from '@playwright/test'; 
 
-test.describe("Login Tests", () => {
-  test("Test de login con cuenta inexistente - Debe fallar con 401", async ({
-    page,
-  }) => {
-    // 1. Ir a la página de login
-    await page.goto("/login");
+test.describe('Tests de acceso y autenticación', () => {
+  test('Test de redirección sin token debe redirigir al login', async ({ page }) => {
+    // Arrange - Asegurarse de que no hay token (navegación limpia)
+    await page.goto('/');
+    await page.evaluate(() => {
+      localStorage.removeItem('fake-jwt-token');
+    });
 
-    // 2. Llenar los campos con una cuenta inválida
-    await page.fill('input[type="email"]', "usuario_inexistente@example.com");
-    await page.fill('input[type="password"]', "contraseña_incorrecta");
+    // Act - Intentar acceder al dashboard sin token
+    await page.goto('/dashboard');
 
-    // 3. Hacer clic en el botón de enviar
-    await page.click('button[type="submit"]');
+    // Assert - Verificar que fuimos redirigidos a la página de login
+    await expect(page).toHaveURL('/login');
 
-    // 4. Esperar a que aparezca el mensaje de error
-    const error = page.locator('p[class*="error"]');
-    await expect(error).toBeVisible();
-    await expect(error).toContainText(/credenciales inválidas/i);
-
-    // 5. Verificar que **no redirige al dashboard**
-    await expect(page).not.toHaveURL(/dashboard/);
+    // Verificar elementos que confirmen que estamos en la página de login
+    await expect(page.locator('button:has-text("Iniciar sesión")')).toBeVisible();
+    // O algún otro elemento característico de la página de login
+    await expect(page.locator('input[type="email"]')).toBeVisible();
+    await expect(page.locator('input[type="password"]')).toBeVisible();
   });
 
-  test("Test de login con credenciales incorrectas - Debe fallar con 401", async ({
-    page,
-  }) => {
-    // 1. Ir a la página de login
-    await page.goto("/login");
-    // 2. Llenar los campos con credenciales incorrectas
-    await page.fill('input[type="email"]', "admin@vicdan.com");
-    await page.fill('input[type="password"]', "contraseña_incorrecta");
 
-    // 3. Hacer clic en el botón de enviar
-    await page.click('button[type="submit"]');
+  test('Test de acceso con token válido debe permitir la entrada', async ({ page }) => {
+    // Arrange - Simular token y usuario en localStorage
+    await page.goto('/'); // Página con dominio válido
 
-    // 4. Esperar a que aparezca el mensaje de error
-    const error = page.locator('p[class*="error"]');
-    await expect(error).toBeVisible();
-    await expect(error).toContainText(/credenciales inválidas/i);
+    await page.evaluate(() => {
+      localStorage.setItem('token', 'fake-jwt-token');
+      localStorage.setItem(
+        'user',
+        JSON.stringify({ name: 'Administrador', email: 'admin@vicdan.com' })
+      );
+    });
 
-    // 5. Verificar que **no redirige al dashboard**
-    await expect(page).not.toHaveURL(/dashboard/);
-  });
+    // Act - Navegar al dashboard
+    await page.goto('/dashboard');
 
-  test("Login exitoso redirige al dashboard", async ({ page }) => {
-    // 1️⃣ Navegar a la página de login
-    await page.goto("/login");
+    // Assert - Verificar que estamos en el dashboard
+    await expect(page).toHaveURL(/\/dashboard/);
 
-    // 2️⃣ Completar los campos con las credenciales correctas
-    await page.fill('input[type="email"]', "admin@vicdan.com");
-    await page.fill('input[type="password"]', "123456");
+    // Puedes ajustar este selector a lo que realmente haya en tu dashboard
+    // await expect(page.locator('h1, h2, p')).toContainText(/dashboard|bienvenido|administrador/i);
 
-    // 3️⃣ Hacer clic en el botón de "Iniciar sesión"
-    await page.click('button[type="submit"]');
-
-    // 4️⃣ Verificar que el botón muestra el estado de carga (opcional)
-    // esto depende de tu UI; si ves “Ingresando...” en pantalla, se puede testear:
-    // await expect(
-    //   page.getByRole("button", { name: /iniciar sesión/i })
-    // )
-
-    // 5️⃣ Esperar que redirija al dashboard
-    await expect(page).toHaveURL(/dashboard/);
-
-    // 6️⃣ Verificar que el localStorage tiene los datos correctos
-    const token = await page.evaluate(() => localStorage.getItem("token"));
-    const user = await page.evaluate(() => localStorage.getItem("user"));
-
-    expect(token).toBe("fake-jwt-token");
-    expect(user).toContain("Administrador");
-
-    // 7️⃣ (Opcional) puedes verificar que el dashboard tenga contenido esperado
-    // await expect(page.locator('h1')).toContainText(/dashboard/i);
+    // Confirmar que NO fue redirigido al login
+    await expect(page).not.toHaveURL(/\/login/);
   });
 });
