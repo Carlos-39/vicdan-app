@@ -41,3 +41,9 @@ export function verifyAuthToken(token: string): JwtPayload | null {
     return null;
   }
 }
+
+/** Intenta extraer el token del header Authorization: Bearer <token> */
+export function getTokenFromAuthHeader(authHeader?: string | null): string | null {
+  if (!authHeader) return null;
+  return authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+}
