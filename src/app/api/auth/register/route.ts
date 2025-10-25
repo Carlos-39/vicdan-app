@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       .insert({
         nombre: name,
         correo: email,
-        ['contraseña_hash']: password_hash,
+        password_hash: password_hash,
       })
       .select('id, nombre, correo') // Simplificado para el token
       .single();
@@ -67,11 +67,11 @@ export async function POST(req: Request) {
       { message: 'Administrador creado', admin: inserted, token: token }, // <-- Se añade el token a la respuesta
       { status: 201 }
     );
-  } catch (err: any) {
+  } catch (err: any) {//eslint-disable-line @typescript-eslint/no-explicit-any
     if (err?.issues) {
       // --- TAREA 2: LOGGING (Error de validación - Escenario 3) ---
       // Zod maneja el error de contraseña inválida
-      const validationErrors = err.issues.map((issue: any) => issue.message).join(', ');
+      const validationErrors = err.issues.map((issue: any) => issue.message).join(', ');//eslint-disable-line @typescript-eslint/no-explicit-any
       logger.info(`Intento de registro fallido por datos inválidos: ${validationErrors}`);
       return NextResponse.json({ error: 'Payload inválido', details: err.issues }, { status: 400 });
     }

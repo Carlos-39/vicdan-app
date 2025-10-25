@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import styles from "./LoginForm.module.css";
+import Link from "next/link";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -88,6 +89,10 @@ export default function LoginForm() {
           "Iniciar sesión"
         )}
       </button>
+
+      <Link href="/register-admin" className={`${styles.button} ${styles.registerAdmin}`}>
+        Registrar Administrador
+      </Link>
 
       <button
         type="button"
