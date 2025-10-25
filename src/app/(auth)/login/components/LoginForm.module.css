@@ -48,6 +48,19 @@
   position: relative;
 }
 
+.registerAdmin {
+  margin-top: 0.5rem;
+  background-color: #9333ea !important;
+  color: white !important;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+}
+
+.registerAdmin:hover {
+  background-color: #7e22ce !important;
+}
+
 .showButton {
   position: absolute;
   right: 0.75rem;

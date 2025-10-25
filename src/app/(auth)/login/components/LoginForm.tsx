@@ -1,20 +1,37 @@
 "use client";
-import { useState } from "react";
-import styles from "./LoginForm.module.css";
-import { useLogin } from "../hooks/useLogin";
 import { Eye, EyeOff } from "lucide-react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import styles from "./LoginForm.module.css";
+import Link from "next/link";
 
 export default function LoginForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const { handleLogin, loading, error } = useLogin();
+  const [loading, startTransition] = useTransition();
+  const [error, setError] = useState<string>();
 
   const isFormValid = email.trim() !== "" && password.trim() !== "";
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isFormValid) handleLogin(email, password);
+    if (!isFormValid) return;
+    setError(undefined);
+    startTransition(async () => {
+      const result = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
+      if (result?.error) {
+        setError(result.error);
+        return;
+      }
+      router.push("/dashboard");
+    });
   };
 
   return (
@@ -72,6 +89,10 @@ export default function LoginForm() {
           "Iniciar sesión"
         )}
       </button>
+
+      <Link href="/register-admin" className={`${styles.button} ${styles.registerAdmin}`}>
+        Registrar Administrador
+      </Link>
 
       <button
         type="button"
