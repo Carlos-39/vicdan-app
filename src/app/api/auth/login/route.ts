@@ -87,10 +87,10 @@ export async function POST(req: Request) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    if (error?.issues) {
+  } catch (error: unknown) {
+    if (error && typeof error === 'object' && 'issues' in error) {
       await recordLoginAttempt({ correo: undefined, ip, userAgent, success: false, reason: 'invalid_payload' });
-      return NextResponse.json({ error: 'Datos inválidos', details: error.issues }, { status: 400 });
+      return NextResponse.json({ error: 'Datos inválidos', details: (error as { issues: unknown }).issues }, { status: 400 });
     }
     logger.error(error, 'Error inesperado en el endpoint de login');
     await recordLoginAttempt({ correo: undefined, ip, userAgent, success: false, reason: 'server_error' });
