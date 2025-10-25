@@ -70,15 +70,57 @@ export default function RegisterAdminPage() {
     setIsFormValid(isReady);
   }, [name, email, password, confirmPassword, strength]);
 
-  const onSubmit = (data: FormData) => {
-    console.log("Datos enviados:", data);
-    setSuccess(true);
+  const [error, setError] = useState<string>("");
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      setError(""); // Limpiar errores previos
+      
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Error al registrar");
+      }
+
+      setSuccess(true);
+      // Redirigir al login después de un registro exitoso
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 2000);
+    } catch (error: any) { //eslint-disable-line @typescript-eslint/no-explicit-any
+      console.error("Error:", error);
+      alert(error.message || "Error al registrar el administrador");
+    }
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.card}>
         <h1 className={styles.title}>Registro de Administrador</h1>
+
+        {success && (
+          <div className={styles.successMessage}>
+            ¡Registro exitoso! Redirigiendo al login...
+          </div>
+        )}
+
+        {error && (
+          <div className={styles.errorMessage}>
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <TextInput
