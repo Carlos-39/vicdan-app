@@ -36,7 +36,34 @@ export default function LoginForm() {
 
   return (
     <form className={styles.form} onSubmit={onSubmit}>
+      {/* Logo decorativo */}
+      <div className="bg-primary" style={{ 
+        width: '56px', 
+        height: '56px', 
+        margin: '0 auto 1rem',
+        borderRadius: '1rem',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '0 8px 16px color-mix(in srgb, var(--primary) 25%, transparent)',
+        animation: 'bounce 2s ease-in-out infinite'
+      }}>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
       <h2 className={styles.title}>Inicio de Sesión</h2>
+      <p style={{ 
+        textAlign: 'center', 
+        color: '#6b7280', 
+        fontSize: '0.9375rem', 
+        marginTop: '-0.5rem',
+        marginBottom: '0.5rem'
+      }}>
+        Ingresa tus credenciales para continuar
+      </p>
 
       <div className={styles.field}>
         <label className={styles.label}>Correo electrónico</label>
@@ -73,34 +100,36 @@ export default function LoginForm() {
 
       {error && <p className={styles.error}>{error}</p>}
 
-      <button
-        type="submit"
-        disabled={!isFormValid || loading}
-        className={`${styles.button} ${
-          !isFormValid || loading ? styles.disabled : ""
-        }`}
-      >
-        {loading ? (
-          <div className={styles.spinnerContainer}>
-            <span className={styles.spinner}></span>
-            Ingresando...
-          </div>
-        ) : (
-          "Iniciar sesión"
-        )}
-      </button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center', width: '100%' }}>
+        <button
+          type="submit"
+          disabled={!isFormValid || loading}
+          className={`${styles.button} ${
+            !isFormValid || loading ? styles.disabled : ""
+          }`}
+        >
+          {loading ? (
+            <div className={styles.spinnerContainer}>
+              <span className={styles.spinner}></span>
+              Ingresando...
+            </div>
+          ) : (
+            "Iniciar sesión"
+          )}
+        </button>
 
-      <Link href="/register-admin" className={`${styles.button} ${styles.registerAdmin}`}>
-        Registrar Administrador
-      </Link>
+        <Link href="/register-admin" className={`${styles.button} ${styles.registerAdmin}`}>
+          Registrar Administrador
+        </Link>
 
-      <button
-        type="button"
-        className={styles.forgot}
-        onClick={() => alert("Funcionalidad no implementada aún.")}
-      >
-        ¿Olvidaste tu contraseña?
-      </button>
+        <button
+          type="button"
+          className={styles.forgot}
+          onClick={() => alert("Funcionalidad no implementada aún.")}
+        >
+          ¿Olvidaste tu contraseña?
+        </button>
+      </div>
     </form>
   );
 }

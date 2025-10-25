@@ -15,8 +15,14 @@ export default function HeaderOption() {
   const router = useRouter();
 
   const handleLogout = useCallback(async () => {
-    await signOut({ redirect: false });
-    router.push("/login");
+    try {
+      await signOut({ redirect: false, callbackUrl: "/login" });
+      router.push("/login");
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+      // Si hay error, redirige igualmente al login
+      router.push("/login");
+    }
   }, [router]);
 
   useEffect(() => {
