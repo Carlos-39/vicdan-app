@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuthToken } from '@/lib/jwt';
+import { perfilSchema } from './perfil.schema';
 
 export const runtime = 'nodejs';
 
@@ -14,7 +15,7 @@ export async function POST(req: Request) {
     if (!claims) return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
 
     const body = await req.json();
-    // TODO: validar y procesar campos
+    const data = perfilSchema.parse(body);
 
     return NextResponse.json({ message: 'Endpoint /api/perfiles creado correctamente' });
   } catch (error: any) {
