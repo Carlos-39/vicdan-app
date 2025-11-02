@@ -67,6 +67,7 @@ export async function POST(req: Request) {
         .single();
 
     if (insertErr) {
+      console.error('insert perfil error:', insertErr);
       return NextResponse.json({ error: 'No se pudo crear el perfil' }, { status: 500 });
     }
 
