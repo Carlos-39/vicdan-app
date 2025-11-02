@@ -14,3 +14,5 @@ async function uploadLogo(file: File, adminId: string) {
   const { data: urlData } = supabase.storage.from('perfiles-logos').getPublicUrl(fileName);
   return urlData.publicUrl;
 }
+
+export { uploadLogo };
