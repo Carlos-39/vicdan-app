@@ -54,7 +54,7 @@ export async function POST(req: Request) {
 
     const estado = 'borrador';
 
-    const { error: insertErr } = await supabaseAdmin
+    const { data: perfil, error: insertErr } = await supabaseAdmin
       .from('perfiles')
       .insert({
         administrador_id: adminId,
@@ -63,26 +63,24 @@ export async function POST(req: Request) {
         correo: data.correo,
         estado, 
         // fechas: default now() en DB
-      });
+      }).select('id')
+        .single();
 
     if (insertErr) {
       return NextResponse.json({ error: 'No se pudo crear el perfil' }, { status: 500 });
     }
 
-    return NextResponse.json(
-      { message: 'Perfil creado', estado },
-      { status: 201 }
-    );
-  } catch (error: any) {
-    if (error?.issues) {
-      return NextResponse.json(
-        { error: 'Datos inválidos', details: error.issues },
-        { status: 400 }
-      );
-    }
-    return NextResponse.json(
-      { error: 'Error interno', details: String(error?.message ?? error) },
-      { status: 500 }
-    );
-  }
+    return NextResponse.json({ id: perfil.id, message: 'Perfil creado exitosamente' }, { status: 201 });
+        } catch (error: any) {
+            if (error?.issues) {
+                return NextResponse.json(
+                    { error: 'Datos inválidos', details: error.issues },
+                    { status: 400 }
+                );
+            }
+            return NextResponse.json(
+                { error: 'Error interno', details: String(error?.message ?? error) },
+                { status: 500 }
+            );
+        }
 }
