@@ -11,7 +11,7 @@ type Admin = {
   id: string;
   nombre: string;
   correo: string;
-  contraseña_hash: string;
+  password_hash: string;
 };
 
 function getIpFromRequest(req: Request) {
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
     // 1) Busca admin
     const { data: admin, error: findErr } = await supabaseAdmin
       .from('administradores')
-      .select('id, nombre, correo, contraseña_hash')
+      .select('id, nombre, correo, password_hash')
       .eq('correo', email)
       .single<Admin>();
 
@@ -52,7 +52,7 @@ export async function POST(req: Request) {
     }
 
     // 2) Verifica contraseña
-    const isPasswordValid = await comparePassword(password, admin.contraseña_hash);
+    const isPasswordValid = await comparePassword(password, admin.password_hash);
     if (!isPasswordValid) {
       await recordLoginAttempt({ correo: email, ip, userAgent, success: false, reason: 'wrong_password' });
       logger.warn(`Login fallido: ${email} (contraseña incorrecta)`);
