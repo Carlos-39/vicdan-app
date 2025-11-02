@@ -13,6 +13,7 @@ export async function POST(req: Request) {
 
     const claims = verifyAuthToken(token);
     if (!claims) return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
+    const adminId = claims.id;
 
     const ctype = req.headers.get('content-type') || '';
     const isMultipart = ctype.includes('multipart/form-data');
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
         );
       }
 
-      logoUrl = await uploadLogo(logoFile, /* adminId */ 'unassigned'); // se reemplaza en tarea 6
+      logoUrl = await uploadLogo(logoFile, adminId);
     }
 
     const estado = 'borrador';
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
     const { error: insertErr } = await supabaseAdmin
       .from('perfiles')
       .insert({
+        administrador_id: adminId,
         nombre: data.nombre,
         logo_url: logoUrl,
         correo: data.correo,
