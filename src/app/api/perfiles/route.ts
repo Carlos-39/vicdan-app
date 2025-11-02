@@ -16,6 +16,13 @@ export async function POST(req: Request) {
 
     const body = await req.json();
     const data = perfilSchema.parse(body);
+    const file = body.logoFile; 
+    if (file) {
+    const validTypes = ['image/jpeg', 'image/png', 'image/svg+xml'];
+        if (!validTypes.includes(file.type)) {
+            return NextResponse.json({ error: 'Tipo de archivo no permitido' }, { status: 400 });
+        }
+    }
 
     return NextResponse.json({ message: 'Endpoint /api/perfiles creado correctamente' });
   } catch (error: any) {
