@@ -17,15 +17,16 @@ export async function GET(req: Request) {
     const adminId = claims.id;
 
     const url = new URL(req.url);
-    const estado = url.searchParams.get('estado');          // ej: 'borrador' | 'publicado' | etc
-    const busqueda = url.searchParams.get('busqueda');      // busca en nombre/correo
+    const estado = url.searchParams.get('estado');
+    const busqueda = url.searchParams.get('busqueda');
+    const orden = url.searchParams.get('orden'); // 'recientes' | 'antiguos'
+    const ascending = orden === 'antiguos';
 
     let query = supabaseAdmin
       .from('perfiles')
       .select('id, administrador_id, nombre, logo_url, correo, estado, fechas')
       .eq('administrador_id', adminId);
 
-    // Filtro por estado y/o búsqueda (nombre/correo)
     if (estado && estado.trim()) {
       query = query.eq('estado', estado.trim());
     }
@@ -34,7 +35,7 @@ export async function GET(req: Request) {
       query = query.or(`nombre.ilike.${term},correo.ilike.${term}`);
     }
 
-    const { data, error } = await query;
+    const { data, error } = await query.order('fechas', { ascending });
 
     if (error) {
       return NextResponse.json({ error: 'No se pudo obtener el listado' }, { status: 500 });
@@ -44,6 +45,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Error interno', details: String(e?.message ?? e) }, { status: 500 });
   }
 }
+
 
 export async function POST(req: Request) {
   try {
