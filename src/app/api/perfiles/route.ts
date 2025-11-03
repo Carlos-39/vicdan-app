@@ -1,9 +1,25 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuthToken } from '@/lib/jwt';
-import { z } from 'zod';
 import { uploadLogo } from '@/lib/storage';
 import { perfilSchema } from './perfil.schema';
+
+export const runtime = 'nodejs';
+
+export async function GET() {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('perfiles')
+      .select('id, administrador_id, nombre, logo_url, correo, estado, fechas');
+
+    if (error) {
+      return NextResponse.json({ error: 'No se pudo obtener el listado' }, { status: 500 });
+    }
+    return NextResponse.json({ perfiles: data }, { status: 200 });
+  } catch (e: any) {
+    return NextResponse.json({ error: 'Error interno', details: String(e?.message ?? e) }, { status: 500 });
+  }
+}
 
 export async function POST(req: Request) {
   try {
