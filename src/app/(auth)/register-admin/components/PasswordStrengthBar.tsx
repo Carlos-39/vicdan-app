@@ -2,7 +2,7 @@
 import React from "react";
 
 type PasswordStrengthBarProps = {
-  strength: number; // 0-5
+  strength: number; // 0-4
   label: string;
   color: string;
 };
@@ -20,7 +20,7 @@ const PasswordStrengthBar: React.FC<PasswordStrengthBarProps> = ({ strength, lab
       }}>
         <div
           style={{
-            width: `${(strength / 5) * 100}%`,
+            width: `${(strength / 4) * 100}%`,
             height: "100%",
             background: color,
             transition: "width 0.3s"

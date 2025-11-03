@@ -1,11 +1,8 @@
-import { Bell } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import HeaderOption from "./header-option";
-import { useSession } from "next-auth/react";
+import { Bell, MoreVertical } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 
 export function DashboardHeader() {
-  const { data } = useSession();
   return (
     <header className="bg-primary px-4 py-4 rounded-b-3xl">
       <div className="flex items-center justify-between">
@@ -16,16 +13,8 @@ export function DashboardHeader() {
             </AvatarFallback>
           </Avatar>
           <div>
-            {data?.user?.name ? (
-              <h1 className="text-primary-foreground font-semibold text-base leading-tight animate-fade-up overflow-hidden">
-                {data.user.name}
-              </h1>
-            ) : (
-              <span className="h-5 w-[200px] bg-neutral-50/25 rounded block animate-pulse animate-fade-in" />
-            )}
-            <p className="text-primary-foreground/80 text-sm">
-              Panel de Control
-            </p>
+            <h1 className="text-primary-foreground font-semibold text-base leading-tight">Administrador</h1>
+            <p className="text-primary-foreground/80 text-sm">Panel de Control</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -36,10 +25,15 @@ export function DashboardHeader() {
           >
             <Bell className="h-5 w-5" />
           </Button>
-
-          <HeaderOption />
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 text-primary-foreground hover:bg-primary-foreground/10"
+          >
+            <MoreVertical className="h-5 w-5" />
+          </Button>
         </div>
       </div>
     </header>
-  );
+  )
 }

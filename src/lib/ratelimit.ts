@@ -33,7 +33,7 @@ export async function isRateLimited(opts: {
 
   const since = new Date(Date.now() - windowMinutes * 60_000).toISOString();
 
-  const [byEmail] = await Promise.all([
+  const [byEmail, byIp] = await Promise.all([
     opts.correo
       ? supabaseAdmin
           .from('login_attempts')
@@ -41,19 +41,19 @@ export async function isRateLimited(opts: {
           .eq('success', false)
           .eq('correo', opts.correo)
           .gte('created_at', since)
-      : Promise.resolve({ count: 0 } as { count: number | null }),
-    // Consulta de IP comentada hasta que se necesite
-    // opts.ip
-    //   ? supabaseAdmin
-    //       .from('login_attempts')
-    //       .select('id', { count: 'exact', head: true })
-    //       .eq('success', false)
-    //       .eq('ip', opts.ip)
-    //       .gte('created_at', since)
-    //   : Promise.resolve({ count: 0 } as { count: number | null }),
+      : Promise.resolve({ count: 0 } as any),
+    opts.ip
+      ? supabaseAdmin
+          .from('login_attempts')
+          .select('id', { count: 'exact', head: true })
+          .eq('success', false)
+          .eq('ip', opts.ip)
+          .gte('created_at', since)
+      : Promise.resolve({ count: 0 } as any),
   ]);
 
   const emailFails = byEmail.count ?? 0;
+  const ipFails = byIp.count ?? 0;
 
   // Descomentar cuando se quiera limitar también por IP, en producción
   return emailFails >= maxFailures; //|| ipFails >= maxFailures;  

@@ -1,6 +1,6 @@
 // src/app/api/auth/verify/route.ts
 import { NextResponse } from 'next/server';
-import { verifyAuthToken } from '@/lib/jwt';
+import { getTokenFromAuthHeader, verifyAuthToken } from '@/lib/jwt';
 
 export const runtime = 'nodejs';
 
