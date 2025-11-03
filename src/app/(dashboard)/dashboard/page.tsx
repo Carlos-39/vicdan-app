@@ -1,6 +1,9 @@
+
+// src/app/dashboard/page.tsx
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import {
   UserPlus,
   ClipboardList,
@@ -61,6 +64,7 @@ const mockActivities = [
 ]
 
 export default function DashboardPage() {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<"dashboard" | "profiles" | "config">("dashboard")
 
   return (
@@ -77,13 +81,13 @@ export default function DashboardPage() {
               description="Crear nuevo perfil"
               icon={UserPlus}
               variant="primary"
-              onClick={() => console.log("Navigate to client registration")}
+              onClick={() => router.push("/dashboard/perfiles/nuevo")}
             />
             <ProcessCard
               title="Gestión Perfiles"
               description="Crear, editar, eliminar"
               icon={ClipboardList}
-              onClick={() => console.log("Navigate to profile management")}
+              onClick={() => router.push("/dashboard/perfiles")}
             />
           </div>
         </section>
@@ -107,9 +111,26 @@ export default function DashboardPage() {
         <section>
           <h2 className="text-foreground font-semibold text-lg mb-4">Acciones Rápidas</h2>
           <Card className="p-2 space-y-1 border-0 shadow-sm">
-            <QuickActionButton icon={Plus} label="Nuevo perfil" onClick={() => console.log("Create new profile")} />
-            <QuickActionButton icon={Clock} label="Ver pendientes" onClick={() => console.log("View pending items")} />
-            <QuickActionButton icon={Download} label="Exportar datos" onClick={() => console.log("Export data")} />
+            <QuickActionButton
+              icon={Plus}
+              label="Nuevo perfil"
+              onClick={() => router.push("/dashboard/perfiles/nuevo")}
+            />
+            <QuickActionButton
+              icon={ClipboardList}
+              label="Ver todos los perfiles"
+              onClick={() => router.push("/dashboard/perfiles")}
+            />
+            <QuickActionButton
+              icon={Clock}
+              label="Ver pendientes"
+              onClick={() => console.log("View pending items")}
+            />
+            <QuickActionButton
+              icon={Download}
+              label="Exportar datos"
+              onClick={() => console.log("Export data")}
+            />
             <QuickActionButton
               icon={MoreHorizontal}
               label="Operaciones masivas"
