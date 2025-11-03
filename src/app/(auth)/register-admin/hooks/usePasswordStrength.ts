@@ -7,16 +7,16 @@ export function usePasswordStrength(password: string) {
   if (/[0-9]/.test(password)) strength++;
   if (/[^A-Za-z0-9]/.test(password)) strength++;
 
+  
   let label = "Débil";
-  let color = "bg-red-500";
+  let color = "#ef4444"; // red-500
 
-  if (strength >= 3) {
-    label = "Media";
-    color = "bg-yellow-400";
-  }
   if (strength >= 4) {
     label = "Fuerte";
-    color = "bg-green-500";
+    color = "#10b981"; // green-500
+  } else if (strength >= 3) {
+    label = "Media";
+    color = "#f59e0b"; // yellow-400
   }
 
   return { strength: Math.min(strength, 5), label, color };
