@@ -15,10 +15,26 @@ export async function GET(req: Request) {
     if (!claims) return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
 
     const adminId = claims.id;
-    const { data, error } = await supabaseAdmin
+
+    const url = new URL(req.url);
+    const estado = url.searchParams.get('estado');          // ej: 'borrador' | 'publicado' | etc
+    const busqueda = url.searchParams.get('busqueda');      // busca en nombre/correo
+
+    let query = supabaseAdmin
       .from('perfiles')
       .select('id, administrador_id, nombre, logo_url, correo, estado, fechas')
       .eq('administrador_id', adminId);
+
+    // Filtro por estado y/o búsqueda (nombre/correo)
+    if (estado && estado.trim()) {
+      query = query.eq('estado', estado.trim());
+    }
+    if (busqueda && busqueda.trim()) {
+      const term = `%${busqueda.trim()}%`;
+      query = query.or(`nombre.ilike.${term},correo.ilike.${term}`);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       return NextResponse.json({ error: 'No se pudo obtener el listado' }, { status: 500 });
