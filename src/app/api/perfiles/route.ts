@@ -4,6 +4,7 @@ import { verifyAuthToken } from '@/lib/jwt';
 import { z } from 'zod';
 import { uploadLogo } from '@/lib/storage';
 import { perfilSchema } from './perfil.schema';
+import { logger } from '@/lib/logger';
 
 export async function POST(req: Request) {
   try {
@@ -84,4 +85,42 @@ export async function POST(req: Request) {
                 { status: 500 }
             );
         }
+}
+
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const perfilId = params.id; // Obtenemos el ID desde la URL
+
+    // 1. Buscamos el perfil en la base de datos filtrando por el ID
+    const { data: perfil, error: fetchError } = await supabaseAdmin
+      .from('perfiles')
+      .select('*') // Traemos todas las columnas del perfil
+      .eq('id', perfilId) // Filtramos por el ID
+      .single(); // .single() espera 1 solo resultado. Si no encuentra 0 o más de 1, devuelve un error.
+
+    // 2. Manejar error 404 si no existe
+    // Si .single() falla porque no encontró el registro (error.code P0002),
+    // devolvemos 404.
+    if (fetchError) {
+      logger.warn(fetchError, `Perfil no encontrado con id: ${perfilId}`);
+      return NextResponse.json(
+        { error: 'Perfil no encontrado' },
+        { status: 404 }
+      );
+    }
+
+    // 3. Si todo sale bien, devolvemos el perfil
+    return NextResponse.json(perfil, { status: 200 });
+
+  } catch (error: any) {
+    // Captura cualquier otro error inesperado (ej. fallo de conexión con la DB)
+    logger.error(error, 'Error inesperado al obtener el perfil');
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    );
+  }
 }
