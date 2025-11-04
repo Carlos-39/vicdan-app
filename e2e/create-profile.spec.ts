@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import path from "path";
 
 async function login(page: any) {
   await page.goto("/login");
@@ -47,6 +48,10 @@ test.describe("E2E - Test de creación exitosa con datos válidos", () => {
     // Llenar el campo de email
     await page.fill('input[name="email"]', "juan.perez@ejemplo.com");
 
+    // Subir imagen de perfil
+    const filePath = path.resolve(__dirname, "./images/test-profile.jpg");
+    await page.setInputFiles('input[type="file"]', filePath);
+
     // Llenar el campo de descripción (opcional)
     await page.fill(
       'textarea[name="descripcion"]',
@@ -65,5 +70,73 @@ test.describe("E2E - Test de creación exitosa con datos válidos", () => {
     ).toBeVisible({
       timeout: 5000,
     });
+  });
+});
+
+
+test.describe("E2E - Validaciones cliente en CreateProfile (Zod)", () => {
+  test("mostrar error cuando falta el nombre (El nombre debe tener al menos 2 caracteres)", async ({ page }) => {
+    await login(page);
+
+    await page.goto("/create-profile");
+    await expect(page.getByRole("heading", { name: /Crear Nuevo Perfil/i })).toBeVisible();
+
+    // Dejar nombre vacío
+    // Rellenar los demás campos válidos
+    await page.fill('input[name="apellido"]', "Pérez");
+    await page.fill('input[name="email"]', "juan@example.com");
+
+    // Intentar enviar
+    await page.click('button[type="submit"]');
+
+    // Validación esperada
+    await expect(page.getByText("El nombre debe tener al menos 2 caracteres")).toBeVisible();
+
+    // Aseguramos que no se muestra mensaje de éxito
+    await expect(page.getByText(/Perfil creado exitosamente/i)).toHaveCount(0);
+  });
+
+  test("mostrar error cuando falta el apellido (El apellido debe tener al menos 2 caracteres)", async ({ page }) => {
+    await login(page);
+
+    await page.goto("/create-profile");
+    await expect(page.getByRole("heading", { name: /Crear Nuevo Perfil/i })).toBeVisible();
+
+    // Dejar apellido vacío
+    // Rellenar los demás campos válidos
+    await page.fill('input[name="nombre"]', "Juan");
+    await page.fill('input[name="email"]', "juan@example.com");
+
+    // Intentar enviar
+    await page.click('button[type="submit"]');
+
+    // Validación esperada
+    await expect(page.getByText("El apellido debe tener al menos 2 caracteres")).toBeVisible();
+
+    // Aseguramos que no se muestra mensaje de éxito
+    await expect(page.getByText(/Perfil creado exitosamente/i)).toHaveCount(0);
+  });
+
+  test("mostrar error cuando el correo es inválido (Por favor ingresa un correo electrónico válido)", async ({ page }) => {
+    await login(page);
+
+    await page.goto("/create-profile");
+    await expect(page.getByRole("heading", { name: /Crear Nuevo Perfil/i })).toBeVisible();
+
+    // Rellenar nombre y apellido válidos
+    await page.fill('input[name="nombre"]', "Juan");
+    await page.fill('input[name="apellido"]', "Pérez");
+
+    // Correo inválido
+    await page.fill('input[name="email"]', "juan-no-valido");
+
+    // Intentar enviar
+    await page.click('button[type="submit"]');
+
+    // Validación esperada
+    await expect(page.getByText("Por favor ingresa un correo electrónico válido")).toBeVisible();
+
+    // Aseguramos que no se muestra mensaje de éxito
+    await expect(page.getByText(/Perfil creado exitosamente/i)).toHaveCount(0);
   });
 });
