@@ -52,6 +52,7 @@
     "next": "16.0.0",
     "next-auth": "^5.0.0-beta.30",
     "next-themes": "^0.4.6",
+    "pino": "^10.1.0",
     "react": "19.2.0",
     "react-day-picker": "9.8.0",
     "react-dom": "19.2.0",
@@ -61,16 +62,30 @@
     "sonner": "^1.7.4",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
+    "yup": "^1.7.1",
     "zod": "3.25.76"
   },
   "devDependencies": {
+    "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4.1.9",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/jest": "^30.0.0",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "babel-jest": "^30.2.0",
+    "cross-env": "^10.1.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "msw": "^2.11.6",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
+    "ts-jest": "^29.4.5",
     "tw-animate-css": "1.3.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wait-port": "^1.1.0"
   }
 }
