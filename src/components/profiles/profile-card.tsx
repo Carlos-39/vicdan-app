@@ -12,8 +12,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Edit, Eye, MoreVertical, Trash2 } from "lucide-react"
+import { Edit, Eye, MoreVertical, Trash2, ExternalLink } from "lucide-react"
 import { formatDistanceToNow } from "@/lib/date-utils"
+import { useRouter } from "next/navigation"
 
 interface ProfileCardProps {
   profile: ProfileWithAdmin
@@ -23,6 +24,8 @@ interface ProfileCardProps {
 }
 
 export function ProfileCard({ profile, onView, onEdit, onDelete }: ProfileCardProps) {
+  const router = useRouter()
+
   const getInitials = (name: string) => {
     return name
       .split(' ')
@@ -45,8 +48,12 @@ export function ProfileCard({ profile, onView, onEdit, onDelete }: ProfileCardPr
     }
   }
 
+  const handlePreview = () => {
+    router.push(`/dashboard/perfiles/${profile.id}`)
+  }
+
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow">
+    <Card className="p-4 hover:shadow-md transition-shadow group">
       <div className="flex items-start gap-3">
         {/* Avatar */}
         <Avatar className="size-12 shrink-0">
@@ -75,9 +82,13 @@ export function ProfileCard({ profile, onView, onEdit, onDelete }: ProfileCardPr
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handlePreview}>
+                  <ExternalLink className="size-4" />
+                  Vista completa
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onView(profile)}>
                   <Eye className="size-4" />
-                  Ver detalles
+                  Vista rápida
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onEdit(profile)}>
                   <Edit className="size-4" />
@@ -105,6 +116,19 @@ export function ProfileCard({ profile, onView, onEdit, onDelete }: ProfileCardPr
             <span className="text-xs text-muted-foreground">
               {formatDistanceToNow(profile.fechas)}
             </span>
+          </div>
+
+          {/* Quick Preview Button - Visible al hacer hover */}
+          <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full text-xs h-7"
+              onClick={handlePreview}
+            >
+              <ExternalLink className="size-3" />
+              Ver detalles completos
+            </Button>
           </div>
         </div>
       </div>
