@@ -11,8 +11,8 @@ export const runtime = 'nodejs';
 
 export async function GET(req: Request) {
   try {
-    const auth = req.headers.get('authorization') ?? '';
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    const authHeader = req.headers.get('authorization') ?? '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
     if (!token) return NextResponse.json({ error: 'Token requerido' }, { status: 401 });
     const claims = verifyAuthToken(token);
     if (!claims) return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });

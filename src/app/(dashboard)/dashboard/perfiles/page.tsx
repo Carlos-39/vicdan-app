@@ -11,7 +11,6 @@ import { ViewProfileDialog } from "@/components/profiles/view-profile-dialog"
 import { Button } from "@/components/ui/button"
 import { Plus, Loader2, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { verifyAuthToken } from '@/lib/jwt';
 
 export default function ProfilesPage() {
   const router = useRouter()
@@ -35,16 +34,10 @@ export default function ProfilesPage() {
 
   // Obtener token JWT de la sesión
   const getAuthToken = useCallback(async () => {
-    // El token JWT está en la sesión de NextAuth
-    // Necesitarás ajustar esto según cómo guardas el token
-    // Opción 1: Si lo guardas en la sesión
     return (session as any)?.accessToken
-    
-    // Opción 2: Si usas cookies
-    // return document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1]
   }, [session])
 
-  // Fetch profiles
+  // Fetch profiles usando GET con el endpoint /api/perfiles
   const fetchProfiles = useCallback(async () => {
     try {
       setLoading(true)
@@ -56,33 +49,48 @@ export default function ProfilesPage() {
         return
       }
 
-      const params = new URLSearchParams({
-        page: page.toString(),
-        pageSize: '12',
-      })
+      // Construir parámetros según lo que espera el backend
+      const params = new URLSearchParams()
 
+      // Filtro por estado (solo si no es 'todos')
       if (filters.estado && filters.estado !== 'todos') {
         params.append('estado', filters.estado)
       }
 
+      // Término de búsqueda
       if (filters.searchTerm) {
-        params.append('search', filters.searchTerm)
+        params.append('busqueda', filters.searchTerm)
       }
 
-      const response = await fetch(`/api/profiles?${params.toString()}`, {
+      // Orden por defecto: recientes
+      params.append('orden', 'recientes')
+
+      const response = await fetch(`/api/perfiles?${params.toString()}`, {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       })
 
       if (!response.ok) {
-        throw new Error('Error al cargar los perfiles')
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Error al cargar los perfiles')
       }
 
       const data = await response.json()
-      setProfiles(data.profiles)
-      setTotalPages(data.totalPages)
-      setTotal(data.total)
+      
+      // El backend devuelve { perfiles: [...] }
+      const perfilesList = data.perfiles || []
+      
+      // Paginación local (el backend no pagina)
+      const pageSize = 12
+      const startIndex = (page - 1) * pageSize
+      const endIndex = startIndex + pageSize
+      const paginatedProfiles = perfilesList.slice(startIndex, endIndex)
+
+      setProfiles(paginatedProfiles)
+      setTotal(perfilesList.length)
+      setTotalPages(Math.ceil(perfilesList.length / pageSize))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error desconocido')
     } finally {
@@ -108,7 +116,6 @@ export default function ProfilesPage() {
   }
 
   const handleEdit = (profile: ProfileWithAdmin) => {
-    // TODO: Navigate to edit page or open edit modal
     router.push(`/dashboard/perfiles/${profile.id}/editar`)
   }
 
@@ -129,7 +136,7 @@ export default function ProfilesPage() {
         return
       }
 
-      const response = await fetch(`/api/profiles/${selectedProfile.id}`, {
+      const response = await fetch(`/api/perfiles/${selectedProfile.id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -165,7 +172,7 @@ export default function ProfilesPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Button onClick={() => router.push('/dashboard/perfiles/nuevo')}>
+              <Button onClick={() => router.push('/create-profile')}>
                 <Plus className="size-4" />
                 Nuevo perfil
               </Button>

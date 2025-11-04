@@ -3,12 +3,19 @@ import type { Session } from "next-auth";
 declare module "next-auth" {
   interface Session {
     accessToken?: string;
+    user?: {
+      id?: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+    };
   }
 }
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { supabaseAdmin } from "./lib/supabase";
 import { comparePassword } from "./lib/crypto";
+import { generateAuthToken } from "./lib/jwt";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.JWT_SECRET,
@@ -35,12 +42,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
       async authorize(credentials) {
         try {
-          const { email, password } = credentials;
-          if (!email || !password) {
+          if (!credentials || !credentials.email || !credentials.password) {
             throw new Error("Email y contraseña son obligatorios", {
               cause: { type: "CUSTOM" },
             });
           }
+          const { email, password } = credentials;
 
           const query = supabaseAdmin
             .from("administradores")
@@ -68,24 +75,31 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
 
           return { id: data.id, name: data.nombre, email: data.correo };
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          // eslint-disable-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-          throw error.cause.type === "CUSTOM"
-            ? error.cause
+          throw error?.cause?.type === "CUSTOM"
+            ? error
             : new Error("Error durante la autenticación");
         }
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
-        // Genera un JWT personalizado si lo necesitas y asígnalo aquí
-        // Por defecto, usaremos el JWT de NextAuth
-        token.accessToken = token.accessToken || token.sub || token.id;
+        
+        // Generar un JWT real usando la función generateAuthToken
+        const jwtToken = generateAuthToken({
+          id: user.id as string,
+          nombre: user.name as string,
+          email: user.email as string,
+          rol: 'admin'
+        });
+        
+        token.accessToken = jwtToken;
       }
       return token;
     },
