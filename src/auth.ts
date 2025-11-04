@@ -1,3 +1,10 @@
+// Extiende el tipo de sesión para incluir accessToken
+import type { Session } from "next-auth";
+declare module "next-auth" {
+  interface Session {
+    accessToken?: string;
+  }
+}
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { supabaseAdmin } from "./lib/supabase";
@@ -7,6 +14,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.JWT_SECRET,
   pages: {
     signIn: "/login",
+    signOut: "/login",
   },
   session: {
     strategy: "jwt",
@@ -70,11 +78,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
+        // Genera un JWT personalizado si lo necesitas y asígnalo aquí
+        // Por defecto, usaremos el JWT de NextAuth
+        token.accessToken = token.accessToken || token.sub || token.id;
       }
       return token;
     },
@@ -83,6 +94,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.id as string;
         session.user.name = token.name as string;
         session.user.email = token.email as string;
+        // Exponer el accessToken en la sesión para el frontend
+        session.accessToken = token.accessToken as string;
       }
       return session;
     },
