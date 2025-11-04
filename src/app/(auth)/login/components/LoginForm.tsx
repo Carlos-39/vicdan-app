@@ -26,6 +26,8 @@ export default function LoginForm() {
         email,
         password,
       });
+      console.log("Resultado login:", result);
+
       if (result?.error) {
         setError(result.error);
         return;
