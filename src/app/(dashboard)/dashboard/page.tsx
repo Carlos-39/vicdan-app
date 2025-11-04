@@ -67,6 +67,7 @@ export default function DashboardPage() {
     "dashboard" | "profiles" | "config"
   >("dashboard");
 
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <DashboardHeader />
@@ -89,7 +90,7 @@ export default function DashboardPage() {
               title="Gestión Perfiles"
               description="Crear, editar, eliminar"
               icon={ClipboardList}
-              onClick={() => console.log("Navigate to profile management")}
+              onClick={() => router.push("/dashboard/perfiles")}
             />
           </div>
         </section>
@@ -124,6 +125,7 @@ export default function DashboardPage() {
               icon={Plus}
               label="Nuevo perfil"
               onClick={() => router.push("/create-profile")}
+
             />
             <QuickActionButton
               icon={Clock}
