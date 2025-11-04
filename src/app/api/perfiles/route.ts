@@ -7,6 +7,49 @@ import { verifyAuthToken } from '@/lib/jwt';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
 
+export const runtime = 'nodejs';
+
+export async function GET(req: Request) {
+  try {
+    const auth = req.headers.get('authorization') ?? '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (!token) return NextResponse.json({ error: 'Token requerido' }, { status: 401 });
+    const claims = verifyAuthToken(token);
+    if (!claims) return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
+
+    const adminId = claims.id;
+
+    const url = new URL(req.url);
+    const estado = url.searchParams.get('estado');
+    const busqueda = url.searchParams.get('busqueda');
+    const orden = url.searchParams.get('orden'); // 'recientes' | 'antiguos'
+    const ascending = orden === 'antiguos';
+
+    let query = supabaseAdmin
+      .from('perfiles')
+      .select('id, administrador_id, nombre, logo_url, correo, estado, fechas')
+      .eq('administrador_id', adminId);
+
+    if (estado && estado.trim()) {
+      query = query.eq('estado', estado.trim());
+    }
+    if (busqueda && busqueda.trim()) {
+      const term = `%${busqueda.trim()}%`;
+      query = query.or(`nombre.ilike.${term},correo.ilike.${term}`);
+    }
+
+    const { data, error } = await query.order('fechas', { ascending });
+
+    if (error) {
+      return NextResponse.json({ error: 'No se pudo obtener el listado' }, { status: 500 });
+    }
+    return NextResponse.json({ perfiles: data }, { status: 200 });
+  } catch (e: any) {
+    return NextResponse.json({ error: 'Error interno', details: String(e?.message ?? e) }, { status: 500 });
+  }
+}
+
+
 export async function POST(req: Request) {
   try {
     console.log("[api/perfiles] POST called");

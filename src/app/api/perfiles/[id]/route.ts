@@ -1,35 +1,47 @@
+// src/app/api/perfiles/[id]/route.ts
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { logger } from '@/lib/logger';
+import { verifyAuthToken } from '@/lib/jwt';
 
+export const runtime = 'nodejs';
 
+// Nota: params es Promise<{ id: string }>
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  ctx: { params: Promise<{ id: string }> }
 ) {
   try {
-    const perfilId = params.id; 
+    // 0) Auth
+    const auth = req.headers.get('authorization') ?? '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    if (!token) return NextResponse.json({ error: 'Token requerido' }, { status: 401 });
 
-    const { data: perfil, error: fetchError } = await supabaseAdmin
+    const claims = verifyAuthToken(token);
+    if (!claims) return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
+
+    // 1) Espera params antes de usarlo
+    const { id: perfilId } = await ctx.params;
+    const adminId = claims.id;
+
+    // 2) Consulta con ownership
+    const { data, error } = await supabaseAdmin
       .from('perfiles')
-      .select('*') 
-      .eq('id', perfilId) 
-      .single();
+      .select('id, administrador_id, nombre, logo_url, correo, estado, fechas')
+      .eq('id', perfilId)
+      .eq('administrador_id', adminId)
+      .maybeSingle();
 
-    if (fetchError) {
-      logger.warn(fetchError, `Perfil no encontrado con id: ${perfilId}`);
-      return NextResponse.json(
-        { error: 'Perfil no encontrado' },
-        { status: 404 }
-      );
+    if (error) {
+      return NextResponse.json({ error: 'No se pudo obtener el perfil' }, { status: 500 });
+    }
+    if (!data) {
+      return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 404 });
     }
 
-    return NextResponse.json(perfil, { status: 200 });
-
-  } catch (error: any) {
-    logger.error(error, 'Error inesperado al obtener el perfil');
+    return NextResponse.json({ perfil: data }, { status: 200 });
+  } catch (e: any) {
     return NextResponse.json(
-      { error: 'Error interno del servidor' },
+      { error: 'Error interno', details: String(e?.message ?? e) },
       { status: 500 }
     );
   }
