@@ -46,6 +46,27 @@ test.describe('Tests de acceso y autenticación con NextAuth.js', () => {
     await expect(page.locator('nav')).toBeVisible();
   });
 
+  test('Test de acceso con credenciales inválidas debe mostrar error', async ({ page }) => {
+    await attachDebugLogs(page);
+
+    await page.goto('/login');
+
+    // Intentar iniciar sesión con credenciales inválidas
+    await page.fill('input[type="email"]', 'invalid@example.com');
+    await page.fill('input[type="password"]', 'wrongpassword');
+    await page.click('button[type="submit"]:has-text("Iniciar sesión")');
+
+    // Esperar a que aparezca el mensaje de error
+    await page.waitForTimeout(2000);
+
+    // Verificar que se muestre el mensaje de error específico
+    const errorMessage = await page.textContent('p[class*="error"], div[class*="error"], .error');
+    expect(errorMessage).toContain('El correo ingresado no está registrado');
+    
+    // Verificar que permanezca en la página de login
+    await expect(page).toHaveURL(/login/);
+  });
+
   test('Test de redirección sin autenticación debe redirigir al login', async ({ page }) => {
     await attachDebugLogs(page);
 

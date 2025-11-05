@@ -21,18 +21,40 @@ export default function LoginForm() {
     if (!isFormValid) return;
     setError(undefined);
     startTransition(async () => {
-      const result = await signIn("credentials", {
-        redirect: false,
-        email,
-        password,
-      });
-      console.log("Resultado login:", result);
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
 
-      if (result?.error) {
-        setError(result.error);
-        return;
+        const data = await response.json();
+        console.log("Resultado login:", data);
+
+        if (!response.ok) {
+          setError(data.error || 'Error al iniciar sesión');
+          return;
+        }
+
+        // Si el login es exitoso, usar NextAuth para crear la sesión
+        const result = await signIn("credentials", {
+          redirect: false,
+          email,
+          password,
+        });
+
+        if (result?.error) {
+          setError(result.error);
+          return;
+        }
+        
+        router.push("/dashboard");
+      } catch (error) {
+        console.error('Error en login:', error);
+        setError('Error de conexión. Por favor, intenta nuevamente.');
       }
-      router.push("/dashboard");
     });
   };
 
