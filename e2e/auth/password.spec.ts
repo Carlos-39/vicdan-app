@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { hashPassword, comparePassword } from '../src/lib/crypto';
+import { hashPassword, comparePassword } from '../../src/lib/crypto';
 
 test.describe('Funciones de criptografía', () => {
   test('Validar función de hash de contraseña', async () => {
