@@ -126,6 +126,7 @@ export function ThemeEditor({
           className="hidden sm:flex"
         >
           <ArrowLeft className="size-4" />
+          Volver
         </Button>
 
         <div className="text-center sm:text-left">
