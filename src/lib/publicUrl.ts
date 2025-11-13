@@ -1,6 +1,6 @@
 import { generateSlug } from './slug';
 
-const BASE_PUBLIC_URL = 'https://vicdan.link';
+const BASE_PUBLIC_URL = 'https://vicdan-app.vercel.app';
 
 export function generatePublicProfileLink() {
   const slug = generateSlug('p');
