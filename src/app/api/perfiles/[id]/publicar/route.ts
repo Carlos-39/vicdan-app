@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuthToken } from '@/lib/jwt';
-import { generateSlug } from '@/lib/slug';
+import { generatePublicProfileLink } from '@/lib/publicUrl';
 
 export const runtime = 'nodejs';
 
@@ -53,10 +53,16 @@ export async function POST(req: Request, ctx: ParamsCtx) {
       console.error('update perfil error:', updateErr);
       return NextResponse.json({ error: 'No se pudo publicar el perfil' }, { status: 500 });
     }
-    const slug = generateSlug('p'); 
+    const { slug, url } = generatePublicProfileLink();
+
     return NextResponse.json(
-      { message: 'Perfil publicado', perfil: updated, slug },
-      { status: 200 }
+        {
+            message: 'Perfil publicado',
+            perfil: updated,
+            slug,
+            publicUrl: url,
+        },
+        { status: 200 }
     );
   } catch (err: any) {
     console.error('publicar perfil error:', err);
