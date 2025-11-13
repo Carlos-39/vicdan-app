@@ -16,11 +16,9 @@ export default function HeaderOption() {
 
   const handleLogout = useCallback(async () => {
     try {
-      await signOut({ redirect: false, callbackUrl: "/login" });
-      router.push("/login");
+      await signOut({ redirect: true, callbackUrl: "/login" });
     } catch (error) {
       console.error("Error al cerrar sesión:", error);
-      // Si hay error, redirige igualmente al login
       router.push("/login");
     }
   }, [router]);

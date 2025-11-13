@@ -11,7 +11,7 @@ type Admin = {
   id: string;
   nombre: string;
   correo: string;
-  contraseña_hash: string;
+  password_hash: string;
 };
 
 function getIpFromRequest(req: Request) {
@@ -41,18 +41,18 @@ export async function POST(req: Request) {
     // 1) Busca admin
     const { data: admin, error: findErr } = await supabaseAdmin
       .from('administradores')
-      .select('id, nombre, correo, contraseña_hash')
+      .select('id, nombre, correo, password_hash')
       .eq('correo', email)
       .single<Admin>();
 
     if (findErr || !admin) {
       await recordLoginAttempt({ correo: email, ip, userAgent, success: false, reason: 'user_not_found' });
       logger.warn(`Login fallido: ${email} (usuario no encontrado)`);
-      return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });
+      return NextResponse.json({ error: 'El correo ingresado no está registrado' }, { status: 401 });
     }
 
     // 2) Verifica contraseña
-    const isPasswordValid = await comparePassword(password, admin.contraseña_hash);
+    const isPasswordValid = await comparePassword(password, admin.password_hash);
     if (!isPasswordValid) {
       await recordLoginAttempt({ correo: email, ip, userAgent, success: false, reason: 'wrong_password' });
       logger.warn(`Login fallido: ${email} (contraseña incorrecta)`);
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
           { status: 429, headers: { 'Retry-After': '300' } }
         );
       }
-      return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });
+      return NextResponse.json({ error: 'La contraseña es incorrecta' }, { status: 401 });
     }
 
     // 3) Éxito

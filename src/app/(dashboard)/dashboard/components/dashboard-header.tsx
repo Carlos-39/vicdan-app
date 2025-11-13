@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 
 export function DashboardHeader() {
   const { data } = useSession();
-
   return (
     <header className="bg-primary px-4 py-4 rounded-b-3xl">
       <div className="flex items-center justify-between">
