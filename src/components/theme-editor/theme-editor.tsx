@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Save, Eye, Palette, Layout, Type, Settings } from "lucide-react";
+import { Save, Eye, Palette, Layout, Type, Settings, ArrowLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { LayoutSelector } from "./layout-selector";
 import { ColorPicker } from "./color-picker";
@@ -117,8 +117,17 @@ export function ThemeEditor({
 
   return (
     <div className="container mx-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
-      {/* Header - Mejorado para mobile */}
+      {/* Header*/}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => window.history.back()}
+          className="hidden sm:flex"
+        >
+          <ArrowLeft className="size-4" />
+        </Button>
+
         <div className="text-center sm:text-left">
           <h1 className="text-2xl sm:text-3xl font-bold">
             Personalizar Diseño
@@ -163,70 +172,70 @@ export function ThemeEditor({
                 className="space-y-3"
               >
                 {/* Tabs responsive - Grid de 2 columnas en mobile, 4 en desktop */}
-                 <TabsList className="flex flex-nowrap gap-1 w-full overflow-x-auto py-1">
-        <TabsTrigger
-          value="colors"
-          className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-2 min-w-0 flex-1 whitespace-nowrap"
-        >
-          <Palette className="size-3 sm:size-4 shrink-0" />
-          <span>Colores</span>
-        </TabsTrigger>
-        <TabsTrigger
-          value="layout"
-          className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-2 min-w-0 flex-1 whitespace-nowrap"
-        >
-          <Layout className="size-3 sm:size-4 shrink-0" />
-          <span>Layout</span>
-        </TabsTrigger>
-        <TabsTrigger
-          value="typography"
-          className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-2 min-w-0 flex-1 whitespace-nowrap"
-        >
-          <Type className="size-3 sm:size-4 shrink-0" />
-          <span className="hidden xs:inline">Tipografía</span>
-          <span className="xs:hidden">Texto</span>
-        </TabsTrigger>
-        <TabsTrigger
-          value="spacing"
-          className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-2 min-w-0 flex-1 whitespace-nowrap"
-        >
-          <Settings className="size-3 sm:size-4 shrink-0" />
-          <span className="hidden xs:inline">Espaciado</span>
-          <span className="xs:hidden">Espacio</span>
-        </TabsTrigger>
-      </TabsList>
+                <TabsList className="flex flex-nowrap gap-1 w-full overflow-x-auto py-1">
+                  <TabsTrigger
+                    value="colors"
+                    className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-2 min-w-0 flex-1 whitespace-nowrap"
+                  >
+                    <Palette className="size-3 sm:size-4 shrink-0" />
+                    <span>Colores</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="layout"
+                    className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-2 min-w-0 flex-1 whitespace-nowrap"
+                  >
+                    <Layout className="size-3 sm:size-4 shrink-0" />
+                    <span>Layout</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="typography"
+                    className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-2 min-w-0 flex-1 whitespace-nowrap"
+                  >
+                    <Type className="size-3 sm:size-4 shrink-0" />
+                    <span className="hidden xs:inline">Tipografía</span>
+                    <span className="xs:hidden">Texto</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="spacing"
+                    className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm py-2 px-2 min-w-0 flex-1 whitespace-nowrap"
+                  >
+                    <Settings className="size-3 sm:size-4 shrink-0" />
+                    <span className="hidden xs:inline">Espaciado</span>
+                    <span className="xs:hidden">Espacio</span>
+                  </TabsTrigger>
+                </TabsList>
 
-      {/* Contenido de los tabs */}
-      <TabsContent value="colors" className="space-y-3 mt-3">
-        <ColorPicker
-          colors={theme.colors}
-          onChange={(colors) => updateTheme({ colors })}
-        />
-      </TabsContent>
+                {/* Contenido de los tabs */}
+                <TabsContent value="colors" className="space-y-3 mt-3">
+                  <ColorPicker
+                    colors={theme.colors}
+                    onChange={(colors) => updateTheme({ colors })}
+                  />
+                </TabsContent>
 
-      <TabsContent value="layout" className="space-y-3 mt-3">
-        <LayoutSelector
-          layout={theme.layout}
-          onChange={(layout) => updateTheme({ layout })}
-        />
-      </TabsContent>
+                <TabsContent value="layout" className="space-y-3 mt-3">
+                  <LayoutSelector
+                    layout={theme.layout}
+                    onChange={(layout) => updateTheme({ layout })}
+                  />
+                </TabsContent>
 
-      <TabsContent value="typography" className="space-y-3 mt-3">
-        <FontSelector
-          typography={theme.typography}
-          onChange={(typography) => updateTheme({ typography })}
-        />
-      </TabsContent>
+                <TabsContent value="typography" className="space-y-3 mt-3">
+                  <FontSelector
+                    typography={theme.typography}
+                    onChange={(typography) => updateTheme({ typography })}
+                  />
+                </TabsContent>
 
-      <TabsContent value="spacing" className="space-y-3 mt-3">
-        <SpacingControls
-          spacing={theme.spacing}
-          onChange={(spacing) => updateTheme({ spacing })}
-        />
-      </TabsContent>
-    </Tabs>
-  </CardContent>
-</Card>
+                <TabsContent value="spacing" className="space-y-3 mt-3">
+                  <SpacingControls
+                    spacing={theme.spacing}
+                    onChange={(spacing) => updateTheme({ spacing })}
+                  />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Vista previa - Ocupa todo en mobile, 1/3 en desktop */}
