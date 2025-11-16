@@ -22,7 +22,8 @@ import { SpacingControls } from "./spacing-controls";
 import { ThemePreview } from "./theme-preview";
 import { LinksManager, LinkItem } from "../ui/links-manager";
 import { Toast, ToastType } from "@/components/ui/toast";
-import Swal from "sweetalert2"; // ✅ NUEVO: Importar SweetAlert2
+import Swal from "sweetalert2";
+import { useSession } from "next-auth/react";
 
 export interface ThemeConfig {
   colors: {
@@ -47,7 +48,13 @@ export interface ThemeConfig {
     gap: string;
   };
   layout: {
-    type: "centered" | "left-aligned" | "right-aligned" | "justified" | "card" | "minimal";
+    type:
+      | "centered"
+      | "left-aligned"
+      | "right-aligned"
+      | "justified"
+      | "card"
+      | "minimal";
     showAvatar: boolean;
     showSocialLinks: boolean;
     textAlignment?: "left" | "center" | "right" | "justify";
@@ -123,6 +130,7 @@ export function ThemeEditor({
   onProfileUpdate,
 }: ThemeEditorProps) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [theme, setTheme] = useState<ThemeConfig>({
     ...defaultTheme,
     ...initialTheme,
@@ -234,6 +242,136 @@ export function ThemeEditor({
     return result.isConfirmed;
   };
 
+  // ✅ FUNCIÓN para guardar el tema en el backend
+  const saveThemeToBackend = async (
+    themeData: ThemeConfig
+  ): Promise<boolean> => {
+    try {
+      if (!session?.accessToken) {
+        throw new Error("No hay sesión activa");
+      }
+
+      const response = await fetch(`/api/perfiles/${profileId}/diseno`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+        body: JSON.stringify(themeData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al guardar el tema");
+      }
+
+      const result = await response.json();
+      console.log("✅ Tema guardado en backend:", result);
+      return true;
+    } catch (error) {
+      console.error("❌ Error guardando tema en backend:", error);
+      throw error;
+    }
+  };
+
+  // ✅ FUNCIÓN para guardar los enlaces en el backend
+  const saveLinksToBackend = async (links: LinkItem[]): Promise<boolean> => {
+    try {
+      if (!session?.accessToken) {
+        throw new Error("No hay sesión activa");
+      }
+
+      // Primero obtener enlaces existentes para saber cuáles eliminar/actualizar
+      const existingLinksResponse = await fetch(
+        `/api/perfiles/${profileId}/tarjetas`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        }
+      );
+
+      if (existingLinksResponse.ok) {
+        const existingLinks = await existingLinksResponse.json();
+
+        // Eliminar enlaces existentes (estrategia simple: eliminar todos y recrear)
+        const deletePromises = existingLinks.map((link: any) =>
+          fetch(`/api/perfiles/${profileId}/tarjetas/${link.id}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          })
+        );
+
+        await Promise.all(deletePromises);
+      }
+
+      // Crear los nuevos enlaces
+      const createPromises = links.map((link) =>
+        fetch(`/api/perfiles/${profileId}/tarjetas`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+          body: JSON.stringify({
+            nombre_tarjeta: link.name,
+            link: link.url,
+          }),
+        })
+      );
+
+      const results = await Promise.all(createPromises);
+      const allSuccessful = results.every((response) => response.ok);
+
+      if (!allSuccessful) {
+        throw new Error("Error al guardar algunos enlaces");
+      }
+
+      console.log("✅ Enlaces guardados en backend");
+      return true;
+    } catch (error) {
+      console.error("❌ Error guardando enlaces en backend:", error);
+      throw error;
+    }
+  };
+
+  // ✅ FUNCIÓN para guardar el perfil en el backend
+  const saveProfileToBackend = async (profileData: any): Promise<boolean> => {
+    try {
+      if (!session?.accessToken) {
+        throw new Error("No hay sesión activa");
+      }
+
+      const response = await fetch(`/api/perfiles/${profileId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+        body: JSON.stringify({
+          nombre: profileData.nombre,
+          correo: profileData.correo,
+          logo_url: profileData.logo_url,
+          descripcion: profileData.descripcion || "",
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error al guardar el perfil");
+      }
+
+      console.log("✅ Perfil guardado en backend");
+      return true;
+    } catch (error) {
+      console.error("❌ Error guardando perfil en backend:", error);
+      throw error;
+    }
+  };
+
   // ✅ FUNCIÓN de auto-guardado
   const performAutoSave = useCallback(() => {
     if (!hasUnsavedChanges) return;
@@ -337,17 +475,11 @@ export function ThemeEditor({
     debouncedAutoSave();
   };
 
-  // ✅ GUARDADO DEFINITIVO (solo cuando el usuario confirma)
+  // ✅ GUARDADO DEFINITIVO (ACTUALIZADO para usar el backend)
   const handleSave = async () => {
     setIsSaving(true);
 
     try {
-      console.log("🎯 DATOS QUE SE GUARDARÁN:");
-      console.log("📦 Tema completo:", JSON.stringify(theme, null, 2));
-      console.log(
-        "👤 Perfil completo:",
-        JSON.stringify(localProfileData, null, 2)
-      );
       // Mostrar loading con SweetAlert
       Swal.fire({
         title: "Guardando cambios...",
@@ -358,12 +490,29 @@ export function ThemeEditor({
         },
       });
 
-      // Simular guardado en base de datos
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      console.log("🎯 GUARDANDO EN BACKEND:");
+      console.log("📦 Tema completo:", JSON.stringify(theme, null, 2));
+      console.log(
+        "👤 Perfil completo:",
+        JSON.stringify(localProfileData, null, 2)
+      );
 
-      // ✅ Guardar definitivamente en la base de datos
-      onSave?.(theme);
-      onProfileUpdate?.(localProfileData);
+      // ✅ GUARDAR EN BACKEND - Ejecutar todas las operaciones
+      const saveOperations = [];
+
+      // 1. Guardar tema de diseño
+      saveOperations.push(saveThemeToBackend(theme));
+
+      // 2. Guardar enlaces si existen
+      if (localProfileData.links && localProfileData.links.length > 0) {
+        saveOperations.push(saveLinksToBackend(localProfileData.links));
+      }
+
+      // 3. Guardar datos del perfil
+      saveOperations.push(saveProfileToBackend(localProfileData));
+
+      // Esperar a que todas las operaciones se completen
+      await Promise.all(saveOperations);
 
       // ✅ Limpiar cambios temporales
       setHasUnsavedChanges(false);
@@ -371,22 +520,27 @@ export function ThemeEditor({
 
       // Cerrar loading y mostrar éxito
       Swal.close();
-      showToast("✅ Cambios guardados exitosamente", "success");
+      showToast("✅ Cambios guardados exitosamente en el servidor", "success");
+
+      // ✅ Llamar callbacks para actualizar estado local
+      onSave?.(theme);
+      onProfileUpdate?.(localProfileData);
     } catch (error) {
-      console.error("Error al guardar los cambios:", error);
+      console.error("Error al guardar los cambios en el backend:", error);
 
       // Cerrar loading y mostrar error
       Swal.close();
-      showToast("❌ Error al guardar los cambios", "error");
 
       // Mostrar diálogo de error con SweetAlert
       await Swal.fire({
         title: "Error al guardar",
-        text: "Ha ocurrido un error al intentar guardar los cambios. Por favor, intenta nuevamente.",
+        text: "Ha ocurrido un error al intentar guardar los cambios en el servidor. Por favor, intenta nuevamente.",
         icon: "error",
         confirmButtonText: "Entendido",
         confirmButtonColor: "#877af7",
       });
+
+      showToast("❌ Error al guardar los cambios en el servidor", "error");
     } finally {
       setIsSaving(false);
     }
