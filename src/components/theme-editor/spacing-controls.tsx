@@ -111,44 +111,6 @@ export function SpacingControls({ spacing, onChange }: SpacingControlsProps) {
           Controla el espacio entre elementos dentro de contenedores
         </p>
       </div>
-
-      {/* Vista previa de espaciado */}
-      <div className="p-4 border rounded-lg space-y-4">
-        <Label className="text-sm font-medium">
-          Previsualización de espaciado
-        </Label>
-
-        <div
-          className="border-2 border-dashed rounded-lg transition-all"
-          style={{
-            padding: spacing.padding,
-            margin: spacing.margin,
-            gap: spacing.gap,
-          }}
-        >
-          <div className="flex gap-4" style={{ gap: spacing.gap }}>
-            <div
-              className="flex-1 h-16 bg-primary/20 rounded-lg border border-primary/30"
-              style={{ padding: spacing.padding }}
-            >
-              <div className="text-xs text-center text-primary">Elemento 1</div>
-            </div>
-            <div
-              className="flex-1 h-16 bg-secondary/20 rounded-lg border border-secondary/30"
-              style={{ padding: spacing.padding }}
-            >
-              <div className="text-xs text-center text-secondary-foreground">
-                Elemento 2
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="text-xs text-muted-foreground text-center">
-          Margin: {spacing.margin} • Padding: {spacing.padding} • Gap:{" "}
-          {spacing.gap}
-        </div>
-      </div>
     </div>
   );
 }
