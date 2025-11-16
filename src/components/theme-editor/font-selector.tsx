@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { Check } from "lucide-react";
 
 interface FontSelectorProps {
   typography: {
@@ -16,7 +17,7 @@ interface FontSelectorProps {
     fontSize: {
       base: string;
       heading: string;
-      cardText: string; // ✅ Cambiado de "subheading" a "cardText"
+      cardText: string;
     };
   };
   onChange: (typography: any) => void;
@@ -29,6 +30,7 @@ const fontFamilies = [
     category: "Sans-serif",
     className: "font-sans",
     preview: "Aa",
+    description: "Fuente moderna y limpia"
   },
   {
     id: "georgia",
@@ -36,6 +38,7 @@ const fontFamilies = [
     category: "Serif",
     className: "font-serif",
     preview: "Aa",
+    description: "Fuente elegante y formal"
   },
   {
     id: "mono",
@@ -43,6 +46,7 @@ const fontFamilies = [
     category: "Monospace",
     className: "font-mono",
     preview: "Aa",
+    description: "Fuente técnica y código"
   },
   {
     id: "system",
@@ -50,6 +54,7 @@ const fontFamilies = [
     category: "System UI",
     className: "font-system",
     preview: "Aa",
+    description: "Fuente del sistema"
   },
 ];
 
@@ -60,7 +65,6 @@ const fontSizeOptions = [
   { value: "20px", label: "Extra Grande" },
 ];
 
-// ✅ Opciones específicas para texto de tarjetas (pueden ser diferentes)
 const cardTextSizeOptions = [
   { value: "12px", label: "Muy Pequeño" },
   { value: "14px", label: "Pequeño" },
@@ -89,6 +93,11 @@ export function FontSelector({ typography, onChange }: FontSelectorProps) {
     });
   };
 
+  // ✅ Función para verificar si una fuente está seleccionada
+  const isFontSelected = (fontName: string) => {
+    return typography.fontFamily.toLowerCase().includes(fontName.toLowerCase());
+  };
+
   return (
     <div className="space-y-6">
       {/* Selector de familia de fuentes */}
@@ -97,43 +106,51 @@ export function FontSelector({ typography, onChange }: FontSelectorProps) {
           Familia tipográfica
         </Label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-3">
-          {fontFamilies.map((font) => (
-            <Card
-              key={font.id}
-              className={`cursor-pointer transition-all hover:border-primary ${
-                typography.fontFamily.includes(font.name.toLowerCase())
-                  ? "border-primary ring-2 ring-primary/20"
-                  : "border-muted"
-              }`}
-              onClick={() =>
-                updateTypography("fontFamily", `${font.name}, sans-serif`)
-              }
-            >
-              <CardContent className="p-3 lg:p-4">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`size-12 rounded-lg border flex items-center justify-center text-lg font-medium ${
-                      font.id === "mono"
-                        ? "font-mono"
-                        : font.id === "georgia"
-                        ? "font-serif"
-                        : "font-sans"
-                    }`}
-                  >
-                    {font.preview}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm truncate">
-                      {font.name}
+          {fontFamilies.map((font) => {
+            const selected = isFontSelected(font.name);
+            return (
+              <Card
+                key={font.id}
+                className={`cursor-pointer transition-all hover:border-primary ${
+                  selected
+                    ? "border-primary ring-2 ring-primary/20"
+                    : "border-muted"
+                }`}
+                onClick={() =>
+                  updateTypography("fontFamily", `${font.name}, sans-serif`)
+                }
+              >
+                <CardContent className="p-3 lg:p-4">
+                  {/* ✅ Misma estructura que el layout selector */}
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`size-12 rounded-lg border flex items-center justify-center text-lg font-medium ${
+                          font.id === "mono"
+                            ? "font-mono"
+                            : font.id === "georgia"
+                            ? "font-serif"
+                            : "font-sans"
+                        }`}
+                      >
+                        {font.preview}
+                      </div>
+                      <div className="space-y-1">
+                        <div className="font-medium text-sm">{font.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {font.description}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-xs text-muted-foreground truncate">
-                      {font.category}
-                    </div>
+                    {/* ✅ Check alineado a la derecha */}
+                    {selected && (
+                      <Check className="size-4 text-primary shrink-0 mt-1" />
+                    )}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
 
@@ -241,7 +258,7 @@ export function FontSelector({ typography, onChange }: FontSelectorProps) {
               con la tipografía seleccionada.
             </p>
 
-            {/* ✅ NUEVO: Preview de texto de tarjetas */}
+            {/* Preview de texto de tarjetas */}
             <div
               className="mt-4 p-3 rounded-lg"
               style={{
