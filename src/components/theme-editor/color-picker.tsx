@@ -9,46 +9,52 @@ interface ColorPickerProps {
     secondary: string;
     background: string;
     text: string;
-    accent: string;
+    card: string;
+    cardText: string;
   };
   onChange: (colors: any) => void;
 }
 
 const colorPresets = {
   violet: {
-    primary: "#877af7",
-    secondary: "#f4f4f5",
-    background: "#ffffff",
-    text: "#1f2937",
-    accent: "#877af7",
+    primary: "#877af7", // Color principal (botones, elementos destacados)
+    secondary: "#1f2937", // Color de texto principal
+    background: "#ffffff", // Fondo principal
+    text: "#6b7280", // Color de descripción
+    card: "#877af7", // Fondo de tarjetas
+    cardText: "#ffffff", // Texto de tarjetas
   },
   blue: {
     primary: "#3b82f6",
-    secondary: "#f1f5f9",
+    secondary: "#1e293b",
     background: "#ffffff",
-    text: "#1e293b",
-    accent: "#3b82f6",
+    text: "#64748b",
+    card: "#3b82f6",
+    cardText: "#ffffff",
   },
   emerald: {
     primary: "#10b981",
-    secondary: "#ecfdf5",
+    secondary: "#064e3b",
     background: "#ffffff",
-    text: "#064e3b",
-    accent: "#10b981",
+    text: "#6b7280",
+    card: "#10b981",
+    cardText: "#ffffff",
   },
-  rose: {
+  red: {
     primary: "#f43f5e",
-    secondary: "#fff1f2",
+    secondary: "#881337",
     background: "#ffffff",
-    text: "#881337",
-    accent: "#f43f5e",
+    text: "#6b7280",
+    card: "#f43f5e",
+    cardText: "#ffffff",
   },
   slate: {
     primary: "#64748b",
-    secondary: "#f8fafc",
+    secondary: "#334155",
     background: "#ffffff",
-    text: "#334155",
-    accent: "#64748b",
+    text: "#6b7280",
+    card: "#64748b",
+    cardText: "#ffffff",
   },
 };
 
@@ -81,7 +87,7 @@ export function ColorPicker({ colors, onChange }: ColorPickerProps) {
               <div
                 className="size-8 rounded-md border shadow-sm group-hover:scale-110 transition-transform"
                 style={{
-                  background: `linear-gradient(135deg, ${presetColors.primary} 50%, ${presetColors.secondary} 50%)`,
+                  background: `linear-gradient(135deg, ${presetColors.primary} 50%, ${presetColors.background} 50%)`,
                 }}
               />
               <span className="text-xs capitalize text-muted-foreground">
@@ -95,16 +101,16 @@ export function ColorPicker({ colors, onChange }: ColorPickerProps) {
       {/* Selectores individuales */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
         <ColorField
-          label="Color primario"
+          label="Color principal"
           value={colors.primary}
           onChange={(value) => updateColor("primary", value)}
-          description="Botones, enlaces y elementos principales"
+          description="Botones, elementos destacados y fondo de tarjetas"
         />
         <ColorField
-          label="Color secundario"
+          label="Color de texto"
           value={colors.secondary}
           onChange={(value) => updateColor("secondary", value)}
-          description="Fondos secundarios y hover states"
+          description="Texto principal, títulos y encabezados"
         />
         <ColorField
           label="Color de fondo"
@@ -113,16 +119,24 @@ export function ColorPicker({ colors, onChange }: ColorPickerProps) {
           description="Fondo principal del perfil"
         />
         <ColorField
-          label="Color de texto"
+          label="Color de descripción"
           value={colors.text}
           onChange={(value) => updateColor("text", value)}
-          description="Color del texto principal"
+          description="Texto secundario, descripciones y detalles"
+        />
+
+        {/* Campo unificado para tarjetas (ya que es igual al primario) */}
+        <ColorField
+          label="Fondo de tarjetas"
+          value={colors.card}
+          onChange={(value) => updateColor("card", value)}
+          description="Color de fondo de los botones de redes sociales"
         />
         <ColorField
-          label="Color de acento"
-          value={colors.accent}
-          onChange={(value) => updateColor("accent", value)}
-          description="Elementos destacados y bordes"
+          label="Texto de tarjetas"
+          value={colors.cardText}
+          onChange={(value) => updateColor("cardText", value)}
+          description="Color del texto dentro de las tarjetas"
         />
       </div>
 
@@ -136,26 +150,94 @@ export function ColorPicker({ colors, onChange }: ColorPickerProps) {
             <div
               className="size-8 rounded border"
               style={{ backgroundColor: colors.primary }}
+              title="Color principal"
             />
             <div
-              className="size-8 rounded border"
-              style={{ backgroundColor: colors.secondary }}
-            />
+              className="size-8 rounded border flex items-center justify-center text-xs font-bold"
+              style={{
+                backgroundColor: colors.secondary,
+                color: colors.background,
+              }}
+              title="Color de texto"
+            >
+              T
+            </div>
             <div
               className="size-8 rounded border"
               style={{ backgroundColor: colors.background }}
+              title="Color de fondo"
             />
             <div
-              className="size-8 rounded border"
-              style={{ backgroundColor: colors.text }}
-            />
+              className="size-8 rounded border flex items-center justify-center text-xs"
+              style={{
+                backgroundColor: colors.text,
+                color: colors.background,
+              }}
+              title="Color de descripción"
+            >
+              D
+            </div>
+            {/* Preview de colores de tarjetas */}
             <div
               className="size-8 rounded border"
-              style={{ backgroundColor: colors.accent }}
+              style={{ backgroundColor: colors.card }}
+              title="Fondo de tarjetas"
             />
+            <div
+              className="size-8 rounded border flex items-center justify-center text-xs font-bold"
+              style={{
+                backgroundColor: colors.cardText,
+                color: colors.card,
+              }}
+              title="Texto de tarjetas"
+            >
+              Aa
+            </div>
           </div>
           <div className="text-xs text-muted-foreground">
-            Primario • Secundario • Fondo • Texto • Acento
+            Principal • Texto • Fondo • Descripción • Tarjeta • Texto Tarjeta
+          </div>
+
+          {/* Preview específico de tarjeta */}
+          <div className="pt-3 border-t">
+            <Label className="text-sm font-medium mb-2 block">
+              Vista previa de tarjeta
+            </Label>
+            <div
+              className="p-4 rounded-lg text-center transition-all"
+              style={{
+                backgroundColor: colors.card,
+                color: colors.cardText,
+              }}
+            >
+              <span className="font-medium">Instagram</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Así se verán tus enlaces de redes sociales
+            </p>
+          </div>
+
+          {/* Preview de texto y descripción */}
+          <div className="pt-3 border-t">
+            <Label className="text-sm font-medium mb-2 block">
+              Vista previa de texto
+            </Label>
+            <div
+              className="p-4 rounded-lg border"
+              style={{
+                backgroundColor: colors.background,
+                color: colors.secondary,
+              }}
+            >
+              <h3 className="font-bold text-lg mb-2">Título Principal</h3>
+              <p style={{ color: colors.text }}>
+                Esta es una descripción de ejemplo que muestra cómo se verá el
+                texto secundario.
+              </p>
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">
+              Título (color de texto) • Descripción (color de descripción)
+            </p>
           </div>
         </CardContent>
       </Card>

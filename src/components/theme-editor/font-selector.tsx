@@ -16,7 +16,7 @@ interface FontSelectorProps {
     fontSize: {
       base: string;
       heading: string;
-      subheading: string;
+      cardText: string; // ✅ Cambiado de "subheading" a "cardText"
     };
   };
   onChange: (typography: any) => void;
@@ -58,6 +58,14 @@ const fontSizeOptions = [
   { value: "16px", label: "Mediano" },
   { value: "18px", label: "Grande" },
   { value: "20px", label: "Extra Grande" },
+];
+
+// ✅ Opciones específicas para texto de tarjetas (pueden ser diferentes)
+const cardTextSizeOptions = [
+  { value: "12px", label: "Muy Pequeño" },
+  { value: "14px", label: "Pequeño" },
+  { value: "16px", label: "Mediano" },
+  { value: "18px", label: "Grande" },
 ];
 
 export function FontSelector({ typography, onChange }: FontSelectorProps) {
@@ -133,69 +141,67 @@ export function FontSelector({ typography, onChange }: FontSelectorProps) {
       <div className="space-y-4">
         <Label className="text-sm font-medium">Tamaños de texto</Label>
 
-        <div className="grid grid-cols-1 gap-3">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="base-font-size" className="text-sm">
-              Texto base
-            </Label>
-            <Select
-              value={typography.fontSize.base}
-              onValueChange={(value) => updateFontSize("base", value)}
-            >
-              <SelectTrigger className="w-24 lg:w-32 text-xs lg:text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {fontSizeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label} ({option.value})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="heading-font-size" className="text-sm">
+            Títulos
+          </Label>
+          <Select
+            value={typography.fontSize.heading}
+            onValueChange={(value) => updateFontSize("heading", value)}
+          >
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {fontSizeOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label} ({option.value})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="heading-font-size" className="text-sm">
-              Títulos
-            </Label>
-            <Select
-              value={typography.fontSize.heading}
-              onValueChange={(value) => updateFontSize("heading", value)}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {fontSizeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label} ({option.value})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="base-font-size" className="text-sm">
+            Texto base
+          </Label>
+          <Select
+            value={typography.fontSize.base}
+            onValueChange={(value) => updateFontSize("base", value)}
+          >
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {fontSizeOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label} ({option.value})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-          <div className="flex items-center justify-between">
-            <Label htmlFor="subheading-font-size" className="text-sm">
-              Subtítulos
-            </Label>
-            <Select
-              value={typography.fontSize.subheading}
-              onValueChange={(value) => updateFontSize("subheading", value)}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {fontSizeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label} ({option.value})
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="card-text-font-size" className="text-sm">
+            Texto de tarjetas
+          </Label>
+          <Select
+            value={typography.fontSize.cardText}
+            onValueChange={(value) => updateFontSize("cardText", value)}
+          >
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {cardTextSizeOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label} ({option.value})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -224,15 +230,6 @@ export function FontSelector({ typography, onChange }: FontSelectorProps) {
             >
               Título principal
             </h1>
-            <h2
-              style={{
-                fontSize: typography.fontSize.subheading,
-                fontWeight: "600",
-                margin: 0,
-              }}
-            >
-              Subtítulo descriptivo
-            </h2>
             <p
               style={{
                 fontSize: typography.fontSize.base,
@@ -243,6 +240,25 @@ export function FontSelector({ typography, onChange }: FontSelectorProps) {
               Este es un texto de ejemplo que muestra cómo se verá el contenido
               con la tipografía seleccionada.
             </p>
+
+            {/* ✅ NUEVO: Preview de texto de tarjetas */}
+            <div
+              className="mt-4 p-3 rounded-lg"
+              style={{
+                backgroundColor: "#877af7",
+                color: "#ffffff",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: typography.fontSize.cardText,
+                  fontWeight: "600",
+                  textAlign: "center",
+                }}
+              >
+                Así se verá el texto en tus tarjetas
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
