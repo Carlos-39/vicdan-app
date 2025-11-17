@@ -58,7 +58,7 @@ export interface ThemeConfig {
 const defaultTheme: ThemeConfig = {
   colors: {
     primary: "#877af7",
-    secondary: "#f4f4f5",
+    secondary: "#000000ff",
     background: "#ffffff",
     text: "#1f2937",
     card: "#877af7",
@@ -161,6 +161,56 @@ export function ThemeEditor({
     ...defaultProfileData,
     ...profileData,
   }));
+
+  // ✅ NUEVO: Cargar enlaces existentes al inicializar
+  useEffect(() => {
+    const loadExistingLinks = async () => {
+      try {
+        if (status === "loading") return;
+        
+        if (status === "unauthenticated" || !session?.accessToken) {
+          console.log("❌ No hay sesión para cargar enlaces");
+          return;
+        }
+
+        console.log("🔗 Cargando enlaces existentes para perfil:", profileId);
+
+        const response = await fetch(`/api/perfiles/${profileId}/tarjetas`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        });
+
+        if (response.ok) {
+          const existingLinks = await response.json();
+          console.log("📦 Enlaces existentes cargados:", existingLinks);
+
+          // Convertir la estructura de la BD a la estructura que usa LinksManager
+          const formattedLinks: LinkItem[] = existingLinks.map((link: any) => ({
+            id: link.id,
+            name: link.nombre_tarjeta,
+            url: link.link,
+            isActive: true, // Todos los enlaces existentes están activos por defecto
+          }));
+
+          // Actualizar el estado local con los enlaces cargados
+          setLocalProfileData(prev => ({
+            ...prev,
+            links: formattedLinks,
+          }));
+
+          console.log("✅ Enlaces convertidos y cargados:", formattedLinks);
+        } else {
+          console.warn("⚠️ No se pudieron cargar enlaces existentes");
+        }
+      } catch (error) {
+        console.error("❌ Error cargando enlaces existentes:", error);
+      }
+    };
+
+    loadExistingLinks();
+  }, [profileId, session?.accessToken, status]);
 
   // ✅ DEBUG: Monitorear estado de la sesión
   useEffect(() => {
@@ -306,7 +356,7 @@ export function ThemeEditor({
     }
   };
 
-  // ✅ FUNCIÓN SIMPLIFICADA para guardar los enlaces en el backend
+  // ✅ FUNCIÓN MEJORADA para guardar los enlaces en el backend
   const saveLinksToBackend = async (links: LinkItem[]): Promise<boolean> => {
     try {
       if (status === "loading") {
@@ -321,44 +371,86 @@ export function ThemeEditor({
         throw new Error("Token de acceso no disponible");
       }
 
-      // Estrategia simple: Solo crear nuevos enlaces por ahora
-      const createPromises = links.map(link =>
-        fetch(`/api/perfiles/${profileId}/tarjetas`, {
-          method: 'POST',
+      console.log("💾 Guardando enlaces en backend:", links);
+
+      // 1. Obtener enlaces existentes para comparar
+      const existingLinksResponse = await fetch(`/api/perfiles/${profileId}/tarjetas`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      });
+
+      let existingLinks: any[] = [];
+      if (existingLinksResponse.ok) {
+        existingLinks = await existingLinksResponse.json();
+        console.log("📋 Enlaces existentes encontrados:", existingLinks);
+      }
+
+      // 2. Eliminar enlaces que ya no están en la lista actual
+      const linksToDelete = existingLinks.filter(existingLink => 
+        !links.some(newLink => newLink.id === existingLink.id)
+      );
+
+      console.log("🗑️ Enlaces a eliminar:", linksToDelete);
+
+      const deletePromises = linksToDelete.map(linkToDelete =>
+        fetch(`/api/perfiles/${profileId}/tarjetas/${linkToDelete.id}`, {
+          method: "DELETE",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.accessToken}`
+            Authorization: `Bearer ${session.accessToken}`,
           },
-          body: JSON.stringify({
-            nombre_tarjeta: link.name,
-            link: link.url
-          })
         })
       );
 
-      const results = await Promise.all(createPromises);
-      
-      // Verificar resultados
-      results.forEach((response, index) => {
-        console.log(`🔗 DEBUG Enlace ${index} - Status:`, response.status);
-        if (!response.ok) {
-          console.warn(`⚠️ Enlace ${links[index].name} falló:`, response.status);
+      // 3. Crear/actualizar enlaces
+      const upsertPromises = links.map(link => {
+        // Si el enlace tiene ID y NO es temporal, es una actualización
+        if (link.id && !link.id.startsWith('temp-')) {
+          // Es un enlace existente, actualizar
+          return fetch(`/api/perfiles/${profileId}/tarjetas/${link.id}`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+            body: JSON.stringify({
+              nombre_tarjeta: link.name,
+              link: link.url,
+            }),
+          });
+        } else {
+          // Es un enlace nuevo (con ID temporal o sin ID)
+          return fetch(`/api/perfiles/${profileId}/tarjetas`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+            body: JSON.stringify({
+              nombre_tarjeta: link.name,
+              link: link.url,
+            }),
+          });
         }
       });
 
-      const allSuccessful = results.every(response => response.ok);
+      // 4. Ejecutar todas las operaciones
+      const allResults = await Promise.all([...deletePromises, ...upsertPromises]);
+      
+      // 5. Verificar resultados
+      const allSuccessful = allResults.every(response => response.ok);
 
       if (!allSuccessful) {
-        console.warn('⚠️ Algunos enlaces no se pudieron guardar');
-        // No lanzar error, continuar con los que sí se guardaron
+        console.warn('⚠️ Algunas operaciones de enlaces fallaron');
+        // No lanzar error crítico, continuar con los que sí funcionaron
       }
 
-      console.log("✅ Enlaces guardados en backend");
+      console.log("✅ Enlaces guardados exitosamente en backend");
       return true;
     } catch (error) {
       console.error('❌ Error guardando enlaces en backend:', error);
-      // No lanzar error crítico, solo loggear y continuar
-      return true;
+      throw new Error("Error al guardar los enlaces");
     }
   };
 
@@ -429,11 +521,15 @@ export function ThemeEditor({
       try {
         const parsed = JSON.parse(savedData);
 
-        // ✅ NUEVO: Usar SweetAlert en lugar de confirm nativo
         showRestoreDialog().then((shouldRestore) => {
           if (shouldRestore) {
             setTheme(parsed.theme);
-            setLocalProfileData(parsed.profileData);
+            setLocalProfileData(prev => ({
+              ...prev,
+              ...parsed.profileData,
+              // Mantener los enlaces cargados de la BD si no hay enlaces en los datos temporales
+              links: parsed.profileData?.links || prev.links,
+            }));
             setHasUnsavedChanges(true);
             showToast("Cambios anteriores restaurados", "success");
           } else {

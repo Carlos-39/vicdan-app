@@ -62,13 +62,32 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
         return "max-w-md mx-auto text-center";
       case "left-aligned":
         return "max-w-2xl mx-auto text-left";
+      case "right-aligned":
+        return "max-w-2xl mx-auto text-right";
+      case "justified":
+        return "max-w-2xl mx-auto text-justify";
       case "card":
-        return "max-w-md mx-auto bg-card rounded-xl shadow-lg border";
+        return "max-w-md mx-auto bg-card rounded-xl shadow-lg border text-center";
       case "minimal":
-        return "max-w-sm mx-auto";
+        return "max-w-sm mx-auto text-left";
       default:
         return "max-w-md mx-auto text-center";
     }
+  };
+
+  // ✅ Función para obtener la alineación de texto específica
+  const getTextAlignment = () => {
+    return theme.layout.textAlignment || "center"; // Valor por defecto
+  };
+
+  // ✅ Función para obtener la justificación del flex según la alineación
+  const getFlexJustification = () => {
+    const alignment = getTextAlignment();
+    return alignment === "center"
+      ? "center"
+      : alignment === "right"
+      ? "flex-end"
+      : "flex-start";
   };
 
   return (
@@ -80,14 +99,22 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
           backgroundColor: theme.colors.background,
           color: theme.colors.text,
           fontFamily: theme.typography.fontFamily,
-          padding: `calc(${theme.spacing.padding} * 0.8)`,
-          gap: theme.spacing.gap,
+          padding: `calc(${theme.spacing.padding} * 0.8)`, // ✅ Padding aplicado
+          gap: theme.spacing.gap, // ✅ Gap aplicado al contenedor principal
           margin: "0 auto",
+          display: "flex",
+          flexDirection: "column",
         }}
       >
-        {/* Avatar */}
+        {/* Avatar - Aplicar alineación del layout */}
         {theme.layout.showAvatar && (
-          <div className="flex justify-center mb-4">
+          <div
+            className="mb-4"
+            style={{
+              display: "flex",
+              justifyContent: getFlexJustification(),
+            }}
+          >
             <Avatar
               className="size-20 border-2"
               style={{
@@ -118,13 +145,21 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
           </div>
         )}
 
-        {/* Información principal */}
-        <div className="space-y-3">
+        {/* Información principal - Aplicar alineación del layout */}
+        <div
+          className="space-y-3"
+          style={{
+            textAlign: getTextAlignment() as any,
+            // ✅ Aplicar margin como line-height a los elementos de texto
+            lineHeight: theme.spacing.margin,
+          }}
+        >
           <h1
             className="font-bold"
             style={{
               fontSize: theme.typography.fontSize.heading,
-              color: theme.colors.text,
+              color: theme.colors.secondary,
+              marginBottom: `calc(${theme.spacing.margin} / 2)`, // ✅ Espacio después del título
             }}
           >
             {displayData.nombre}
@@ -132,39 +167,67 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
 
           {displayData.descripcion && (
             <p
-              className="leading-relaxed opacity-80"
-              style={{ fontSize: theme.typography.fontSize.base }}
+              className="opacity-80"
+              style={{
+                fontSize: theme.typography.fontSize.base,
+                color: theme.colors.text,
+                lineHeight: theme.spacing.margin, // ✅ Margin como line-height
+                margin: 0, // Resetear margen por defecto
+              }}
             >
               {displayData.descripcion}
             </p>
           )}
         </div>
 
-        {/* Enlaces */}
-        <div className="space-y-3 mt-4">
+        {/* Enlaces - ✅ Aplicar gap entre tarjetas */}
+        <div
+          className="mt-4"
+          style={{
+            textAlign: getTextAlignment() as any,
+            display: "flex",
+            flexDirection: "column",
+            gap: theme.spacing.gap, // ✅ Gap entre tarjetas de enlaces
+          }}
+        >
           {displayData.links
             ?.filter((link) => link.isActive)
             .map((link) => (
               <Button
                 key={link.id}
-                className="w-full justify-start gap-3 py-4 px-4 transition-all hover:scale-105"
+                className="gap-3 py-4 px-4 transition-all hover:scale-105"
                 style={{
                   backgroundColor: theme.colors.card,
                   color: theme.colors.cardText,
                   border: "none",
+                  fontSize: theme.typography.fontSize.cardText,
+                  // ✅ Aplicar alineación al contenido interno del botón
+                  justifyContent: getFlexJustification(),
+                  textAlign: getTextAlignment() as any,
                 }}
                 asChild
               >
                 <a href={link.url} target="_blank" rel="noopener noreferrer">
-                  <span className="flex-1 text-left font-medium">
+                  <span
+                    className="flex-1 font-medium"
+                    style={{
+                      textAlign: getTextAlignment() as any,
+                    }}
+                  >
                     {link.name}
                   </span>
-                  <ExternalLink className="size-4" />
+                  <ExternalLink
+                    className="shrink-0"
+                    style={{
+                      width: theme.typography.fontSize.cardText,
+                      height: theme.typography.fontSize.cardText,
+                    }}
+                  />
                 </a>
               </Button>
             ))}
         </div>
-      </div>      
+      </div>
     </div>
   );
 }

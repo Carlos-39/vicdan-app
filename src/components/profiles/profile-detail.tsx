@@ -18,6 +18,7 @@ import {
   XCircle,
   FileEdit,
   Palette,
+  Eye,
 } from "lucide-react";
 import { formatDate, formatDistanceToNow } from "@/lib/date-utils";
 import { useRouter } from "next/navigation";
@@ -83,6 +84,10 @@ export function ProfileDetail({
     }
   };
 
+  const handlePreviewDesign = () => {
+    window.open(`/perfil/${profile.id}`, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <div className="space-y-6">
       {/* Header con botones de acción */}
@@ -94,6 +99,10 @@ export function ProfileDetail({
           </Button>
         )}
         <div className="flex items-center gap-2 ml-auto">
+          <Button variant="outline" size="sm" onClick={handlePreviewDesign}>
+            <Eye className="size-4" />
+            Vista previa de diseño
+          </Button>
           <Button
             variant="outline"
             size="sm"

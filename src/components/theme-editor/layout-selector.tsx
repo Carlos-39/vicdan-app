@@ -61,7 +61,7 @@ const layoutTypes = [
     name: "Minimalista",
     description: "Diseño limpio sin elementos decorativos",
     preview: "minimal",
-    textAlignment: "left" as const,
+    textAlignment: "center" as const,
   },
 ];
 
