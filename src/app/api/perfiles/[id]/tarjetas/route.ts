@@ -1,117 +1,160 @@
-import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
-import { verifyAuthToken } from '@/lib/jwt';
-import { logger } from '@/lib/logger';
-import { tarjetaSchema } from './tarjetas.schema';
+import { NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/supabase";
+import { verifyAuthToken } from "@/lib/jwt";
+import { logger } from "@/lib/logger";
+import { tarjetaSchema } from "./tarjetas.schema";
 
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 
 /**
  * OBTIENE todas las tarjetas de un perfil específico (perfil_id).
  */
-export async function GET(
-  req: Request,
-  context: { params: { id: string } }
-) {
+export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     // 1. Autenticación
-    const auth = req.headers.get('authorization') ?? '';
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    const auth = req.headers.get("authorization") ?? "";
+    const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
     if (!token) {
-      return NextResponse.json({ error: 'Token requerido' }, { status: 401 });
+      return NextResponse.json({ error: "Token requerido" }, { status: 401 });
     }
     const claims = verifyAuthToken(token);
     if (!claims) {
-      return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
+      return NextResponse.json(
+        { error: "Token inválido o expirado" },
+        { status: 401 }
+      );
     }
-    
-    const perfilId = context.params.id; // Este es el perfil_id de la URL
 
-    // 2. Obtener las tarjetas (Sin validar propiedad, como pediste)
+    const { id: perfilId } = await context.params;
+    const adminId = claims.id;
+
+    if (!perfilId) {
+      return NextResponse.json(
+        { error: "ID de perfil requerido" },
+        { status: 400 }
+      );
+    }
+
+    // 2. Obtener las tarjetas
     const { data: tarjetas, error: fetchError } = await supabaseAdmin
-      .from('tarjetas')
-      .select('*') // Trae todas las tarjetas
-      .eq('perfil_id', perfilId) // ¡Aquí filtra por perfil_id!
-      .order('created_at', { ascending: true }); // Ordena por fecha de creación
+      .from("tarjetas")
+      .select("*")
+      .eq("perfil_id", perfilId)
+      .order("created_at", { ascending: true });
 
     if (fetchError) {
-      logger.error(fetchError, `Error al obtener tarjetas para el perfil: ${perfilId}`);
-      return NextResponse.json({ error: 'No se pudieron obtener las tarjetas' }, { status: 500 });
+      logger.error(
+        fetchError,
+        `Error al obtener tarjetas para el perfil: ${perfilId}`
+      );
+      return NextResponse.json(
+        { error: "No se pudieron obtener las tarjetas" },
+        { status: 500 }
+      );
     }
 
-    // Devuelve la lista de tarjetas (puede ser una lista vacía [])
     return NextResponse.json(tarjetas, { status: 200 });
-
   } catch (error: any) {
-    logger.error(error, 'Error inesperado en GET .../[id]/tarjetas');
-    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
+    logger.error(error, "Error inesperado en GET .../[id]/tarjetas");
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
   }
 }
 
 /**
  * CREA una nueva tarjeta para un perfil específico (perfil_id).
  */
-export async function POST(
-  req: Request,
-  context: { params: { id: string } }
-) {
+export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
   try {
     // 1. Autenticación
-    const auth = req.headers.get('authorization') ?? '';
-    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    const auth = req.headers.get("authorization") ?? "";
+    const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
     if (!token) {
-      return NextResponse.json({ error: 'Token requerido' }, { status: 401 });
+      return NextResponse.json({ error: "Token requerido" }, { status: 401 });
     }
     const claims = verifyAuthToken(token);
     if (!claims) {
-      return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
+      return NextResponse.json(
+        { error: "Token inválido o expirado" },
+        { status: 401 }
+      );
     }
-    
-    const adminId = claims.id;
-    const perfilId = context.params.id; // perfil_id de la URL
 
-    // 2. Validar que el perfil exista (Sin validar propiedad, como pediste)
-    //    Esto previene crear tarjetas "huérfanas" para un perfil que no existe.
+    const adminId = claims.id;
+    const { id: perfilId } = await context.params;
+
+    if (!perfilId) {
+      return NextResponse.json(
+        { error: "ID de perfil requerido" },
+        { status: 400 }
+      );
+    }
+
+    // 2. Validar que el perfil exista
     const { data: perfil, error: perfilError } = await supabaseAdmin
-      .from('perfiles')
-      .select('id')
-      .eq('id', perfilId)
+      .from("perfiles")
+      .select("id")
+      .eq("id", perfilId)
       .maybeSingle();
 
     if (perfilError || !perfil) {
-      logger.warn(perfilError, `POST tarjetas: Perfil no encontrado. PerfilID: ${perfilId}`);
-      return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 404 });
+      logger.warn(
+        { perfilError, perfilId },
+        `POST tarjetas: Perfil no encontrado`
+      );
+      return NextResponse.json(
+        { error: "Perfil no encontrado" },
+        { status: 404 }
+      );
     }
 
-    // 3. Validar los datos de entrada (Body)
+    // 3. Validar los datos de entrada
     const body = await req.json();
-    const data = tarjetaSchema.parse(body); // Valida nombre_tarjeta y link
+    const data = tarjetaSchema.parse(body);
 
-    // 4. Crear la tarjeta en la base de datos
+    console.log("📦 BACKEND - Creando tarjeta con datos:", {
+      perfil_id: perfilId,
+      nombre_tarjeta: data.nombre_tarjeta,
+      link: data.link
+    });
+
+    // 4. Crear la tarjeta (SIN is_active)
     const { data: nuevaTarjeta, error: insertError } = await supabaseAdmin
-      .from('tarjetas')
+      .from("tarjetas")
       .insert({
-        perfil_id: perfilId, // Asigna la tarjeta a este perfil
+        perfil_id: perfilId,
         nombre_tarjeta: data.nombre_tarjeta,
-        link: data.link,
+        link: data.link
+        // ❌ ELIMINADO: is_active: true,
       })
-      .select('*')
+      .select("*")
       .single();
 
     if (insertError) {
-      logger.error(insertError, 'Error al crear la tarjeta en Supabase');
-      return NextResponse.json({ error: 'No se pudo crear la tarjeta' }, { status: 500 });
+      console.error("❌ BACKEND - Error al crear tarjeta:", insertError);
+      logger.error(insertError, "Error al crear la tarjeta en Supabase");
+      return NextResponse.json(
+        { error: "No se pudo crear la tarjeta: " + insertError.message },
+        { status: 500 }
+      );
     }
 
-    // Devuelve la tarjeta recién creada
+    console.log("✅ BACKEND - Tarjeta creada exitosamente:", nuevaTarjeta);
     return NextResponse.json(nuevaTarjeta, { status: 201 });
-
   } catch (error: any) {
-    // Maneja errores de validación de Zod
     if (error?.issues) {
-      return NextResponse.json({ error: 'Datos inválidos', details: error.issues }, { status: 400 });
+      return NextResponse.json(
+        { error: "Datos inválidos", details: error.issues },
+        { status: 400 }
+      );
     }
-    logger.error(error, 'Error inesperado en POST .../[id]/tarjetas');
-    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
+    console.error("❌ BACKEND - Error general:", error);
+    logger.error(error, "Error inesperado en POST .../[id]/tarjetas");
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
   }
 }
