@@ -48,13 +48,7 @@ export interface ThemeConfig {
     gap: string;
   };
   layout: {
-    type:
-      | "centered"
-      | "left-aligned"
-      | "right-aligned"
-      | "justified"
-      | "card"
-      | "minimal";
+    type: "centered" | "left-aligned" | "right-aligned" | "justified" | "card" | "minimal";
     showAvatar: boolean;
     showSocialLinks: boolean;
     textAlignment?: "left" | "center" | "right" | "justify";
@@ -104,6 +98,7 @@ interface ThemeEditorProps {
   onProfileUpdate?: (data: any) => void;
 }
 
+// ✅ Función debounce para optimizar el auto-guardado
 function useDebounce(callback: Function, delay: number) {
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -138,6 +133,7 @@ export function ThemeEditor({
   const [activeTab, setActiveTab] = useState("colors");
   const [isSaving, setIsSaving] = useState(false);
 
+  // ✅ Estado para las notificaciones Toast
   const [toast, setToast] = useState<{
     isVisible: boolean;
     message: string;
@@ -148,9 +144,11 @@ export function ThemeEditor({
     type: "success",
   });
 
+  // Usar useRef para los datos actuales (evita dependencias en useCallback)
   const themeRef = useRef(theme);
   const localProfileDataRef = useRef(profileData);
 
+  // Estado local para manejar los datos del perfil
   const defaultProfileData = {
     nombre: "Vicdan App",
     correo: "vicdanapp@gmail.com",
@@ -164,6 +162,25 @@ export function ThemeEditor({
     ...profileData,
   }));
 
+  // ✅ DEBUG: Monitorear estado de la sesión
+  useEffect(() => {
+    console.log("🔐 DEBUG Estado de sesión:", {
+      status,
+      hasSession: !!session,
+      hasToken: !!session?.accessToken,
+      token: session?.accessToken ? "✅ Disponible" : "❌ No disponible",
+      tokenPreview: session?.accessToken ? `${session.accessToken.substring(0, 20)}...` : "N/A",
+      user: session?.user
+    });
+  }, [session, status]);
+
+  // ✅ ACTUALIZAR las refs cuando cambien los estados
+  useEffect(() => {
+    themeRef.current = theme;
+    localProfileDataRef.current = localProfileData;
+  }, [theme, localProfileData]);
+
+  // ✅ FUNCIÓN para mostrar Toast
   const showToast = useCallback(
     (message: string, type: ToastType = "success") => {
       setToast({ isVisible: true, message, type });
@@ -171,6 +188,7 @@ export function ThemeEditor({
     []
   );
 
+  // ✅ FUNCIÓN para mostrar diálogo de confirmación con SweetAlert
   const showConfirmationDialog = async (
     title: string,
     text: string,
@@ -197,6 +215,7 @@ export function ThemeEditor({
     return result.isConfirmed;
   };
 
+  // ✅ FUNCIÓN para mostrar diálogo de restauración con SweetAlert
   const showRestoreDialog = async (): Promise<boolean> => {
     const result = await Swal.fire({
       title: "¿Restaurar cambios?",
@@ -229,14 +248,20 @@ export function ThemeEditor({
     return result.isConfirmed;
   };
 
-  const saveThemeToBackend = async (
-    themeData: ThemeConfig
-  ): Promise<boolean> => {
+  // ✅ FUNCIÓN para guardar el tema en el backend
+  const saveThemeToBackend = async (themeData: ThemeConfig): Promise<boolean> => {
     try {
+      console.log("🔐 DEBUG saveThemeToBackend - Verificando sesión:", {
+        status,
+        hasSession: !!session,
+        hasToken: !!session?.accessToken
+      });
+
+      // Verificar que la sesión esté cargada y autenticada
       if (status === "loading") {
         throw new Error("Sesión aún cargando...");
       }
-
+      
       if (status === "unauthenticated" || !session) {
         throw new Error("No hay sesión activa - Por favor inicia sesión");
       }
@@ -245,36 +270,49 @@ export function ThemeEditor({
         throw new Error("Token de acceso no disponible en la sesión");
       }
 
+      console.log("🚀 DEBUG Enviando request a /api/perfiles/${profileId}/diseno");
+      console.log("📦 DEBUG Datos enviados:", JSON.stringify(themeData, null, 2));
+
       const response = await fetch(`/api/perfiles/${profileId}/diseno`, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.accessToken}`,
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.accessToken}`
         },
-        body: JSON.stringify(themeData),
+        body: JSON.stringify(themeData)
       });
 
+      console.log("📡 DEBUG Response status:", response.status);
+      console.log("📡 DEBUG Response ok:", response.ok);
+
       if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ error: "Error desconocido" }));
-        throw new Error(
-          errorData.error || `Error ${response.status} al guardar el tema`
-        );
+        const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }));
+        console.error('❌ DEBUG Error del servidor:', errorData);
+        throw new Error(errorData.error || `Error ${response.status} al guardar el tema`);
       }
 
+      const result = await response.json();
+      console.log("✅ DEBUG Tema guardado en backend:", result);
       return true;
     } catch (error: any) {
-      throw new Error(error.message || "Error al guardar el tema");
+      console.error('❌ DEBUG Error guardando tema en backend:', error);
+      
+      // Si hay detalles de validación Zod, mostrarlos
+      if (error.details) {
+        console.error('📋 DEBUG Errores de validación:', error.details);
+      }
+      
+      throw new Error(error.message || 'Error al guardar el tema');
     }
   };
 
+  // ✅ FUNCIÓN SIMPLIFICADA para guardar los enlaces en el backend
   const saveLinksToBackend = async (links: LinkItem[]): Promise<boolean> => {
     try {
       if (status === "loading") {
         throw new Error("Sesión aún cargando...");
       }
-
+      
       if (status === "unauthenticated" || !session) {
         throw new Error("No hay sesión activa");
       }
@@ -283,40 +321,54 @@ export function ThemeEditor({
         throw new Error("Token de acceso no disponible");
       }
 
-      const createPromises = links.map((link) =>
+      // Estrategia simple: Solo crear nuevos enlaces por ahora
+      const createPromises = links.map(link =>
         fetch(`/api/perfiles/${profileId}/tarjetas`, {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.accessToken}`,
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.accessToken}`
           },
           body: JSON.stringify({
             nombre_tarjeta: link.name,
-            link: link.url,
-          }),
+            link: link.url
+          })
         })
       );
 
       const results = await Promise.all(createPromises);
-      const allSuccessful = results.every((response) => response.ok);
+      
+      // Verificar resultados
+      results.forEach((response, index) => {
+        console.log(`🔗 DEBUG Enlace ${index} - Status:`, response.status);
+        if (!response.ok) {
+          console.warn(`⚠️ Enlace ${links[index].name} falló:`, response.status);
+        }
+      });
+
+      const allSuccessful = results.every(response => response.ok);
 
       if (!allSuccessful) {
-        console.warn("Algunos enlaces no se pudieron guardar");
+        console.warn('⚠️ Algunos enlaces no se pudieron guardar');
+        // No lanzar error, continuar con los que sí se guardaron
       }
 
+      console.log("✅ Enlaces guardados en backend");
       return true;
     } catch (error) {
-      console.error("Error guardando enlaces en backend:", error);
+      console.error('❌ Error guardando enlaces en backend:', error);
+      // No lanzar error crítico, solo loggear y continuar
       return true;
     }
   };
 
+  // ✅ FUNCIÓN para guardar el perfil en el backend
   const saveProfileToBackend = async (profileData: any): Promise<boolean> => {
     try {
       if (status === "loading") {
         throw new Error("Sesión aún cargando...");
       }
-
+      
       if (status === "unauthenticated" || !session) {
         throw new Error("No hay sesión activa");
       }
@@ -326,30 +378,33 @@ export function ThemeEditor({
       }
 
       const response = await fetch(`/api/perfiles/${profileId}`, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.accessToken}`,
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.accessToken}`
         },
         body: JSON.stringify({
           nombre: profileData.nombre,
           correo: profileData.correo,
           logo_url: profileData.logo_url,
           descripcion: profileData.descripcion || "",
-        }),
+        })
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Error al guardar el perfil");
+        throw new Error(errorData.error || 'Error al guardar el perfil');
       }
 
+      console.log("✅ Perfil guardado en backend");
       return true;
     } catch (error) {
+      console.error('❌ Error guardando perfil en backend:', error);
       throw error;
     }
   };
 
+  // ✅ FUNCIÓN de auto-guardado
   const performAutoSave = useCallback(() => {
     if (!hasUnsavedChanges) return;
 
@@ -364,19 +419,17 @@ export function ThemeEditor({
     );
   }, [hasUnsavedChanges, profileId]);
 
+  // ✅ AUTO-GUARDADO con DEBOUNCE (500ms después del último cambio)
   const debouncedAutoSave = useDebounce(performAutoSave, 500);
 
-  useEffect(() => {
-    themeRef.current = theme;
-    localProfileDataRef.current = localProfileData;
-  }, [theme, localProfileData]);
-
+  // ✅ Cargar datos temporales al iniciar
   useEffect(() => {
     const savedData = localStorage.getItem(`vicdan-editor-${profileId}`);
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
 
+        // ✅ NUEVO: Usar SweetAlert en lugar de confirm nativo
         showRestoreDialog().then((shouldRestore) => {
           if (shouldRestore) {
             setTheme(parsed.theme);
@@ -389,11 +442,12 @@ export function ThemeEditor({
           }
         });
       } catch (error) {
-        // No hay datos temporales para restaurar
+        console.log("No hay datos temporales para restaurar");
       }
     }
   }, [profileId, showToast]);
 
+  // ✅ Confirmación antes de salir sin guardar
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (hasUnsavedChanges) {
@@ -410,6 +464,7 @@ export function ThemeEditor({
     };
   }, [hasUnsavedChanges]);
 
+  // ✅ Manejar navegación con OPCIONES de guardar/descartar usando SweetAlert
   const handleBack = async () => {
     if (hasUnsavedChanges) {
       const userChoice = await showConfirmationDialog(
@@ -420,8 +475,10 @@ export function ThemeEditor({
       );
 
       if (userChoice) {
+        // Usuario quiere GUARDAR y salir
         await handleSave();
       } else {
+        // Usuario quiere DESCARTAR cambios y salir
         clearTempStorage();
         showToast("Cambios descartados", "warning");
       }
@@ -429,6 +486,7 @@ export function ThemeEditor({
     router.back();
   };
 
+  // ✅ Limpiar almacenamiento temporal
   const clearTempStorage = () => {
     localStorage.removeItem(`vicdan-editor-${profileId}`);
   };
@@ -436,6 +494,7 @@ export function ThemeEditor({
   const updateTheme = (updates: Partial<ThemeConfig>) => {
     setTheme((prev) => ({ ...prev, ...updates }));
     setHasUnsavedChanges(true);
+    // ✅ AUTO-GUARDADO INMEDIATO con debounce
     debouncedAutoSave();
   };
 
@@ -444,16 +503,26 @@ export function ThemeEditor({
     setLocalProfileData(updatedData);
     setHasUnsavedChanges(true);
     onProfileUpdate?.(updatedData);
+    // ✅ AUTO-GUARDADO INMEDIATO con debounce
     debouncedAutoSave();
   };
 
+  // ✅ GUARDADO DEFINITIVO (ACTUALIZADO para usar el backend)
   const handleSave = async () => {
+    // ✅ DEBUG: Verificar autenticación antes de empezar
+    console.log("🎯 DEBUG handleSave - Estado inicial:", {
+      status,
+      hasSession: !!session,
+      hasToken: !!session?.accessToken,
+      profileId
+    });
+
     if (status === "unauthenticated" || !session?.accessToken) {
       Swal.fire({
         title: "Error de autenticación",
         text: "No se pudo verificar tu sesión. Por favor, recarga la página e inicia sesión nuevamente.",
         icon: "error",
-        confirmButtonText: "Entendido",
+        confirmButtonText: "Entendido"
       });
       return;
     }
@@ -461,6 +530,7 @@ export function ThemeEditor({
     setIsSaving(true);
 
     try {
+      // Mostrar loading con SweetAlert
       Swal.fire({
         title: "Guardando cambios...",
         text: "Por favor espera mientras guardamos tu configuración",
@@ -470,28 +540,46 @@ export function ThemeEditor({
         },
       });
 
+      console.log("🎯 GUARDANDO EN BACKEND:");
+      console.log("📦 Tema completo:", JSON.stringify(theme, null, 2));
+      console.log("👤 Perfil completo:", JSON.stringify(localProfileData, null, 2));
+
+      // ✅ GUARDAR EN BACKEND - Ejecutar todas las operaciones
       const saveOperations = [];
 
+      // 1. Guardar tema de diseño (CRÍTICO)
       saveOperations.push(saveThemeToBackend(theme));
+
+      // 2. Guardar datos del perfil (CRÍTICO)
       saveOperations.push(saveProfileToBackend(localProfileData));
 
+      // 3. Guardar enlaces si existen (NO CRÍTICO - puede fallar sin afectar el resto)
       if (localProfileData.links && localProfileData.links.length > 0) {
         saveOperations.push(saveLinksToBackend(localProfileData.links));
       }
 
+      // Esperar a que todas las operaciones se completen
       await Promise.all(saveOperations);
 
+      // ✅ Limpiar cambios temporales
       setHasUnsavedChanges(false);
       clearTempStorage();
 
+      // Cerrar loading y mostrar éxito
       Swal.close();
       showToast("✅ Cambios guardados exitosamente en el servidor", "success");
 
+      // ✅ Llamar callbacks para actualizar estado local
       onSave?.(theme);
       onProfileUpdate?.(localProfileData);
-    } catch (error) {
-      Swal.close();
 
+    } catch (error) {
+      console.error("Error al guardar los cambios en el backend:", error);
+
+      // Cerrar loading y mostrar error
+      Swal.close();
+      
+      // Mostrar diálogo de error con SweetAlert
       await Swal.fire({
         title: "Error al guardar",
         text: "Ha ocurrido un error al intentar guardar los cambios en el servidor. Por favor, intenta nuevamente.",
@@ -508,6 +596,7 @@ export function ThemeEditor({
 
   return (
     <div className="container mx-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+      {/* ✅ Toast notifications */}
       <Toast
         message={toast.message}
         type={toast.type}
@@ -550,9 +639,7 @@ export function ThemeEditor({
         <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
           <Button
             onClick={handleSave}
-            disabled={
-              !hasUnsavedChanges || isSaving || status === "unauthenticated"
-            }
+            disabled={!hasUnsavedChanges || isSaving || status === "unauthenticated"}
             size="sm"
             className="w-full sm:w-auto"
           >
@@ -678,6 +765,7 @@ export function ThemeEditor({
         </div>
       </div>
 
+      {/* ✅ Estilos personalizados para SweetAlert */}
       <style jsx global>{`
         .sweet-alert-popup {
           font-family: "Inter", sans-serif;

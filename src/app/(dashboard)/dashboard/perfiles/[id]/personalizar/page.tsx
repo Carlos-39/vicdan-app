@@ -1,9 +1,9 @@
 // app/dashboard/perfiles/[id]/personalizar/page.tsx
 "use client";
 
-import { useState, useEffect, useCallback, use } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import {
   ThemeEditor,
   type ThemeConfig,
@@ -11,28 +11,18 @@ import {
 import { Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-interface PersonalizarPageProps {
-  params: Promise<{
-    id: string;
-  }>;
-}
-
-export default function PersonalizarPage({ params }: PersonalizarPageProps) {
+export default function PersonalizarPage() {
   const router = useRouter();
   const { data: session } = useSession();
-  const resolvedParams = use(params);
-  const profileId = resolvedParams.id;
+  const params = useParams();
+  const profileId = params.id as string;
 
   const [currentTheme, setCurrentTheme] = useState<ThemeConfig | undefined>(
     undefined
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Obtener token JWT de la sesión
-  const getAuthToken = useCallback(async () => {
-    return (session as any)?.accessToken;
-  }, [session]);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   const [profileData, setProfileData] = useState<{
     nombre: string;
@@ -41,22 +31,26 @@ export default function PersonalizarPage({ params }: PersonalizarPageProps) {
     descripcion?: string;
   } | null>(null);
 
-  // Fetch profile theme by ID
+  // ✅ CORREGIDO: Fetch profile theme by ID - solo una vez
   const fetchProfileTheme = useCallback(async () => {
+    // Evitar múltiples llamadas
+    if (hasLoaded) return;
+
     try {
       setLoading(true);
       setError(null);
 
-      const token = await getAuthToken();
-      if (!token) {
+      if (!session?.accessToken) {
         setError("No se pudo obtener el token de autenticación");
         return;
       }
 
+      console.log("🔍 Fetching profile data for ID:", profileId);
+
       const response = await fetch(`/api/perfiles/${profileId}`, {
         method: "GET",
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${session.accessToken}`,
         },
       });
 
@@ -66,6 +60,7 @@ export default function PersonalizarPage({ params }: PersonalizarPageProps) {
       }
 
       const data = await response.json();
+      console.log("📦 Profile data received:", data);
 
       setProfileData({
         nombre: data.perfil.nombre,
@@ -74,44 +69,62 @@ export default function PersonalizarPage({ params }: PersonalizarPageProps) {
         descripcion: data.perfil.descripcion,
       });
 
-      // Si el perfil tiene theme_config, lo parseamos
-      if (data.perfil.theme_config) {
+      // ✅ CORREGIDO: Buscar en el campo correcto 'diseno'
+      if (data.perfil.diseno) {
         try {
-          const theme = JSON.parse(data.perfil.theme_config);
+          console.log("🎨 Found design data:", data.perfil.diseno);
+
+          const theme =
+            typeof data.perfil.diseno === "string"
+              ? JSON.parse(data.perfil.diseno)
+              : data.perfil.diseno;
+
+          console.log("🎨 Parsed theme:", theme);
           setCurrentTheme(theme);
         } catch (parseError) {
-          console.error("Error parsing theme config:", parseError);
+          console.error("❌ Error parsing design config:", parseError);
+          setCurrentTheme(undefined);
         }
+      } else {
+        console.log("ℹ️ No design data found, using default theme");
+        setCurrentTheme(undefined);
       }
+
+      setHasLoaded(true);
     } catch (err) {
-      console.error("Error fetching profile theme:", err);
+      console.error("❌ Error fetching profile theme:", err);
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setLoading(false);
     }
-  }, [profileId, getAuthToken]);
+  }, [profileId, session?.accessToken, hasLoaded]);
 
-  // Función para guardar el tema
+  // ✅ CORREGIDO: Función para guardar el tema
   const handleSaveTheme = async (theme: ThemeConfig) => {
     try {
-      const token = await getAuthToken();
-      if (!token) {
-        throw new Error("No se pudo obtener el token de autenticación");
-      }     
-      
+      console.log("💾 Theme saved callback:", theme);
+      setCurrentTheme(theme);
     } catch (err) {
-      console.error("Error saving theme:", err);
-      
-      
+      console.error("❌ Error in handleSaveTheme:", err);
       throw err;
     }
   };
 
+  // ✅ CORREGIDO: Manejo de actualización del perfil
+  const handleProfileUpdate = useCallback((updatedData: any) => {
+    console.log("👤 Profile updated:", updatedData);
+    setProfileData((prev) => ({
+      ...prev,
+      ...updatedData,
+    }));
+  }, []);
+
+  // ✅ CORREGIDO: useEffect simplificado - solo cargar una vez
   useEffect(() => {
-    if (session) {
+    if (session?.accessToken && profileId && !hasLoaded) {
       fetchProfileTheme();
     }
-  }, [session, fetchProfileTheme]);
+  }, [session?.accessToken, profileId, hasLoaded, fetchProfileTheme]);
 
   // Loading state
   if (loading) {
@@ -139,7 +152,14 @@ export default function PersonalizarPage({ params }: PersonalizarPageProps) {
             <h3 className="font-semibold text-lg">Error al cargar el perfil</h3>
             <p className="text-sm text-muted-foreground mt-1">{error}</p>
             <div className="flex gap-2 justify-center mt-4">
-              <Button onClick={fetchProfileTheme} variant="outline">
+              <Button
+                onClick={() => {
+                  setHasLoaded(false);
+                  setError(null);
+                  fetchProfileTheme();
+                }}
+                variant="outline"
+              >
                 Intentar de nuevo
               </Button>
               <Button
@@ -162,6 +182,7 @@ export default function PersonalizarPage({ params }: PersonalizarPageProps) {
         initialTheme={currentTheme}
         onSave={handleSaveTheme}
         profileData={profileData}
+        onProfileUpdate={handleProfileUpdate}
       />
     </div>
   );

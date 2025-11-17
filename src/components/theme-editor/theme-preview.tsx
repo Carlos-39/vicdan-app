@@ -164,17 +164,7 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
               </Button>
             ))}
         </div>
-      </div>
-
-      {/* Debug info */}
-      <div className="text-xs text-muted-foreground text-center space-y-1">
-        <div>Tema: {theme.layout.type}</div>
-        <div>Fuente: {theme.typography.fontFamily.split(",")[0]}</div>
-        <div>
-          Color principal:{" "}
-          <span className="font-mono">{theme.colors.primary}</span>
-        </div>
-      </div>
+      </div>      
     </div>
   );
 }
