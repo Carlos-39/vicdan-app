@@ -48,7 +48,13 @@ export interface ThemeConfig {
     gap: string;
   };
   layout: {
-    type: "centered" | "left-aligned" | "right-aligned" | "justified" | "card" | "minimal";
+    type:
+      | "centered"
+      | "left-aligned"
+      | "right-aligned"
+      | "justified"
+      | "card"
+      | "minimal";
     showAvatar: boolean;
     showSocialLinks: boolean;
     textAlignment?: "left" | "center" | "right" | "justify";
@@ -58,7 +64,7 @@ export interface ThemeConfig {
 const defaultTheme: ThemeConfig = {
   colors: {
     primary: "#877af7",
-    secondary: "#000000ff",
+    secondary: "#000000",
     background: "#ffffff",
     text: "#1f2937",
     card: "#877af7",
@@ -167,7 +173,7 @@ export function ThemeEditor({
     const loadExistingLinks = async () => {
       try {
         if (status === "loading") return;
-        
+
         if (status === "unauthenticated" || !session?.accessToken) {
           console.log("❌ No hay sesión para cargar enlaces");
           return;
@@ -195,7 +201,7 @@ export function ThemeEditor({
           }));
 
           // Actualizar el estado local con los enlaces cargados
-          setLocalProfileData(prev => ({
+          setLocalProfileData((prev) => ({
             ...prev,
             links: formattedLinks,
           }));
@@ -219,8 +225,10 @@ export function ThemeEditor({
       hasSession: !!session,
       hasToken: !!session?.accessToken,
       token: session?.accessToken ? "✅ Disponible" : "❌ No disponible",
-      tokenPreview: session?.accessToken ? `${session.accessToken.substring(0, 20)}...` : "N/A",
-      user: session?.user
+      tokenPreview: session?.accessToken
+        ? `${session.accessToken.substring(0, 20)}...`
+        : "N/A",
+      user: session?.user,
     });
   }, [session, status]);
 
@@ -299,19 +307,21 @@ export function ThemeEditor({
   };
 
   // ✅ FUNCIÓN para guardar el tema en el backend
-  const saveThemeToBackend = async (themeData: ThemeConfig): Promise<boolean> => {
+  const saveThemeToBackend = async (
+    themeData: ThemeConfig
+  ): Promise<boolean> => {
     try {
       console.log("🔐 DEBUG saveThemeToBackend - Verificando sesión:", {
         status,
         hasSession: !!session,
-        hasToken: !!session?.accessToken
+        hasToken: !!session?.accessToken,
       });
 
       // Verificar que la sesión esté cargada y autenticada
       if (status === "loading") {
         throw new Error("Sesión aún cargando...");
       }
-      
+
       if (status === "unauthenticated" || !session) {
         throw new Error("No hay sesión activa - Por favor inicia sesión");
       }
@@ -320,49 +330,57 @@ export function ThemeEditor({
         throw new Error("Token de acceso no disponible en la sesión");
       }
 
-      console.log("🚀 DEBUG Enviando request a /api/perfiles/${profileId}/diseno");
-      console.log("📦 DEBUG Datos enviados:", JSON.stringify(themeData, null, 2));
+      console.log(
+        "🚀 DEBUG Enviando request a /api/perfiles/${profileId}/diseno"
+      );
+      console.log(
+        "📦 DEBUG Datos enviados:",
+        JSON.stringify(themeData, null, 2)
+      );
 
       const response = await fetch(`/api/perfiles/${profileId}/diseno`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.accessToken}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.accessToken}`,
         },
-        body: JSON.stringify(themeData)
+        body: JSON.stringify(themeData),
       });
 
       console.log("📡 DEBUG Response status:", response.status);
       console.log("📡 DEBUG Response ok:", response.ok);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Error desconocido' }));
-        console.error('❌ DEBUG Error del servidor:', errorData);
-        throw new Error(errorData.error || `Error ${response.status} al guardar el tema`);
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Error desconocido" }));
+        console.error("❌ DEBUG Error del servidor:", errorData);
+        throw new Error(
+          errorData.error || `Error ${response.status} al guardar el tema`
+        );
       }
 
       const result = await response.json();
       console.log("✅ DEBUG Tema guardado en backend:", result);
       return true;
     } catch (error: any) {
-      console.error('❌ DEBUG Error guardando tema en backend:', error);
-      
+      console.error("❌ DEBUG Error guardando tema en backend:", error);
+
       // Si hay detalles de validación Zod, mostrarlos
       if (error.details) {
-        console.error('📋 DEBUG Errores de validación:', error.details);
+        console.error("📋 DEBUG Errores de validación:", error.details);
       }
-      
-      throw new Error(error.message || 'Error al guardar el tema');
+
+      throw new Error(error.message || "Error al guardar el tema");
     }
   };
 
-  // ✅ FUNCIÓN MEJORADA para guardar los enlaces en el backend
   const saveLinksToBackend = async (links: LinkItem[]): Promise<boolean> => {
     try {
       if (status === "loading") {
         throw new Error("Sesión aún cargando...");
       }
-      
+
       if (status === "unauthenticated" || !session) {
         throw new Error("No hay sesión activa");
       }
@@ -374,12 +392,15 @@ export function ThemeEditor({
       console.log("💾 Guardando enlaces en backend:", links);
 
       // 1. Obtener enlaces existentes para comparar
-      const existingLinksResponse = await fetch(`/api/perfiles/${profileId}/tarjetas`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      });
+      const existingLinksResponse = await fetch(
+        `/api/perfiles/${profileId}/tarjetas`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        }
+      );
 
       let existingLinks: any[] = [];
       if (existingLinksResponse.ok) {
@@ -387,14 +408,35 @@ export function ThemeEditor({
         console.log("📋 Enlaces existentes encontrados:", existingLinks);
       }
 
-      // 2. Eliminar enlaces que ya no están en la lista actual
-      const linksToDelete = existingLinks.filter(existingLink => 
-        !links.some(newLink => newLink.id === existingLink.id)
+      // 2. Identificar enlaces a eliminar (los que están en BD pero no en la lista actual)
+      const linksToDelete = existingLinks.filter(
+        (existingLink) =>
+          !links.some((newLink) => newLink.id === existingLink.id)
       );
 
       console.log("🗑️ Enlaces a eliminar:", linksToDelete);
 
-      const deletePromises = linksToDelete.map(linkToDelete =>
+      // 3. Identificar enlaces a crear (los que no tienen ID o tienen ID temporal)
+      const linksToCreate = links.filter(
+        (link) =>
+          !link.id ||
+          link.id.startsWith("temp-") ||
+          !existingLinks.some((existingLink) => existingLink.id === link.id)
+      );
+
+      // 4. Identificar enlaces a actualizar (los que tienen ID y existen en BD)
+      const linksToUpdate = links.filter(
+        (link) =>
+          link.id &&
+          !link.id.startsWith("temp-") &&
+          existingLinks.some((existingLink) => existingLink.id === link.id)
+      );
+
+      console.log("🆕 Enlaces a crear:", linksToCreate);
+      console.log("✏️ Enlaces a actualizar:", linksToUpdate);
+
+      // 5. Ejecutar operaciones de eliminación
+      const deletePromises = linksToDelete.map((linkToDelete) =>
         fetch(`/api/perfiles/${profileId}/tarjetas/${linkToDelete.id}`, {
           method: "DELETE",
           headers: {
@@ -403,53 +445,60 @@ export function ThemeEditor({
         })
       );
 
-      // 3. Crear/actualizar enlaces
-      const upsertPromises = links.map(link => {
-        // Si el enlace tiene ID y NO es temporal, es una actualización
-        if (link.id && !link.id.startsWith('temp-')) {
-          // Es un enlace existente, actualizar
-          return fetch(`/api/perfiles/${profileId}/tarjetas/${link.id}`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-            body: JSON.stringify({
-              nombre_tarjeta: link.name,
-              link: link.url,
-            }),
-          });
-        } else {
-          // Es un enlace nuevo (con ID temporal o sin ID)
-          return fetch(`/api/perfiles/${profileId}/tarjetas`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-            body: JSON.stringify({
-              nombre_tarjeta: link.name,
-              link: link.url,
-            }),
-          });
-        }
-      });
+      // 6. Ejecutar operaciones de creación
+      const createPromises = linksToCreate.map((link) =>
+        fetch(`/api/perfiles/${profileId}/tarjetas`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+          body: JSON.stringify({
+            nombre_tarjeta: link.name,
+            link: link.url,
+          }),
+        })
+      );
 
-      // 4. Ejecutar todas las operaciones
-      const allResults = await Promise.all([...deletePromises, ...upsertPromises]);
-      
-      // 5. Verificar resultados
-      const allSuccessful = allResults.every(response => response.ok);
+      // 7. Ejecutar operaciones de actualización
+      const updatePromises = linksToUpdate.map((link) =>
+        fetch(`/api/perfiles/${profileId}/tarjetas/${link.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+          body: JSON.stringify({
+            nombre_tarjeta: link.name,
+            link: link.url,
+          }),
+        })
+      );
+
+      // 8. Ejecutar todas las operaciones
+      const allResults = await Promise.all([
+        ...deletePromises,
+        ...createPromises,
+        ...updatePromises,
+      ]);
+
+      // 9. Verificar resultados
+      const allSuccessful = allResults.every((response) => response.ok);
 
       if (!allSuccessful) {
-        console.warn('⚠️ Algunas operaciones de enlaces fallaron');
-        // No lanzar error crítico, continuar con los que sí funcionaron
+        console.warn("⚠️ Algunas operaciones de enlaces fallaron");
+        // Podemos continuar aunque algunas operaciones fallen
       }
 
-      console.log("✅ Enlaces guardados exitosamente en backend");
+      console.log("✅ Operaciones de enlaces completadas:", {
+        eliminados: linksToDelete.length,
+        creados: linksToCreate.length,
+        actualizados: linksToUpdate.length,
+      });
+
       return true;
     } catch (error) {
-      console.error('❌ Error guardando enlaces en backend:', error);
+      console.error("❌ Error guardando enlaces en backend:", error);
       throw new Error("Error al guardar los enlaces");
     }
   };
@@ -460,7 +509,7 @@ export function ThemeEditor({
       if (status === "loading") {
         throw new Error("Sesión aún cargando...");
       }
-      
+
       if (status === "unauthenticated" || !session) {
         throw new Error("No hay sesión activa");
       }
@@ -470,28 +519,28 @@ export function ThemeEditor({
       }
 
       const response = await fetch(`/api/perfiles/${profileId}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.accessToken}`
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.accessToken}`,
         },
         body: JSON.stringify({
           nombre: profileData.nombre,
           correo: profileData.correo,
           logo_url: profileData.logo_url,
           descripcion: profileData.descripcion || "",
-        })
+        }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al guardar el perfil');
+        throw new Error(errorData.error || "Error al guardar el perfil");
       }
 
       console.log("✅ Perfil guardado en backend");
       return true;
     } catch (error) {
-      console.error('❌ Error guardando perfil en backend:', error);
+      console.error("❌ Error guardando perfil en backend:", error);
       throw error;
     }
   };
@@ -524,7 +573,7 @@ export function ThemeEditor({
         showRestoreDialog().then((shouldRestore) => {
           if (shouldRestore) {
             setTheme(parsed.theme);
-            setLocalProfileData(prev => ({
+            setLocalProfileData((prev) => ({
               ...prev,
               ...parsed.profileData,
               // Mantener los enlaces cargados de la BD si no hay enlaces en los datos temporales
@@ -610,7 +659,7 @@ export function ThemeEditor({
       status,
       hasSession: !!session,
       hasToken: !!session?.accessToken,
-      profileId
+      profileId,
     });
 
     if (status === "unauthenticated" || !session?.accessToken) {
@@ -618,7 +667,7 @@ export function ThemeEditor({
         title: "Error de autenticación",
         text: "No se pudo verificar tu sesión. Por favor, recarga la página e inicia sesión nuevamente.",
         icon: "error",
-        confirmButtonText: "Entendido"
+        confirmButtonText: "Entendido",
       });
       return;
     }
@@ -638,7 +687,10 @@ export function ThemeEditor({
 
       console.log("🎯 GUARDANDO EN BACKEND:");
       console.log("📦 Tema completo:", JSON.stringify(theme, null, 2));
-      console.log("👤 Perfil completo:", JSON.stringify(localProfileData, null, 2));
+      console.log(
+        "👤 Perfil completo:",
+        JSON.stringify(localProfileData, null, 2)
+      );
 
       // ✅ GUARDAR EN BACKEND - Ejecutar todas las operaciones
       const saveOperations = [];
@@ -668,13 +720,12 @@ export function ThemeEditor({
       // ✅ Llamar callbacks para actualizar estado local
       onSave?.(theme);
       onProfileUpdate?.(localProfileData);
-
     } catch (error) {
       console.error("Error al guardar los cambios en el backend:", error);
 
       // Cerrar loading y mostrar error
       Swal.close();
-      
+
       // Mostrar diálogo de error con SweetAlert
       await Swal.fire({
         title: "Error al guardar",
@@ -735,7 +786,9 @@ export function ThemeEditor({
         <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
           <Button
             onClick={handleSave}
-            disabled={!hasUnsavedChanges || isSaving || status === "unauthenticated"}
+            disabled={
+              !hasUnsavedChanges || isSaving || status === "unauthenticated"
+            }
             size="sm"
             className="w-full sm:w-auto"
           >
