@@ -97,19 +97,12 @@ export default function PersonalizarPage({ params }: PersonalizarPageProps) {
       const token = await getAuthToken();
       if (!token) {
         throw new Error("No se pudo obtener el token de autenticación");
-      }
-
-      console.log("Guardando tema:", theme);
-      console.log("Profile ID:", profileId);
-
-      // Simular guardado hasta que el backend esté listo
-      alert("Tema guardado exitosamente (simulado - backend pendiente)");
+      }     
+      
     } catch (err) {
       console.error("Error saving theme:", err);
-      alert(
-        "Error al guardar el tema: " +
-          (err instanceof Error ? err.message : "Error desconocido")
-      );
+      
+      
       throw err;
     }
   };
