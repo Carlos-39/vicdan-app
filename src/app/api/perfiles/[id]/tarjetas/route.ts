@@ -112,6 +112,7 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
 
     // 3. Validar los datos de entrada
     const body = await req.json();
+    console.log("📨 BACKEND POST - Datos recibidos:", body);
     const data = tarjetaSchema.parse(body);
 
     console.log("📦 BACKEND - Creando tarjeta con datos:", {
