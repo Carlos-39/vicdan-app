@@ -2,10 +2,10 @@
 "use client"
 
 import { Input } from "@/components/ui/input"
-import { Select } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Search, X } from "lucide-react"
 import { ProfileFilters } from "@/types/profile"
+import { cn } from "@/lib/utils"
 
 interface ProfileFiltersProps {
   filters: ProfileFilters
@@ -59,16 +59,21 @@ export function ProfileFiltersComponent({ filters, onFiltersChange }: ProfileFil
 
       {/* Filters Row */}
       <div className="flex items-center gap-2">
-        <Select
+        <select
           value={filters.estado || 'todos'}
           onChange={handleEstadoChange}
-          className="flex-1"
+          className={cn(
+            "flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors",
+            "focus-visible:outline-hidden focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+            "disabled:cursor-not-allowed disabled:opacity-50",
+            "flex-1"
+          )}
         >
           <option value="todos">Todos los estados</option>
           <option value="activo">Activo</option>
           <option value="inactivo">Inactivo</option>
           <option value="borrador">Borrador</option>
-        </Select>
+        </select>
 
         {hasActiveFilters && (
           <Button
