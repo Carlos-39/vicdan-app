@@ -10,6 +10,14 @@ const QR_BUCKET = 'perfiles-qrs';
 type ParamsCtx = { params: Promise<{ id: string }> };
 
 export async function POST(req: Request, ctx: ParamsCtx) {
+  const requiredFields = [
+    'nombre',
+    'logo_url',
+    'correo',
+    'fechas',
+    'diseno'
+  ];
+
   try {
     const auth = req.headers.get('authorization') ?? '';
     const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
@@ -25,7 +33,7 @@ export async function POST(req: Request, ctx: ParamsCtx) {
 
     const { data: existing, error: findErr } = await supabaseAdmin
       .from('perfiles')
-      .select('id, administrador_id, estado, slug')
+      .select('id, administrador_id, estado, slug, nombre, logo_url, correo, fechas, diseno')
       .eq('id', perfilId)
       .maybeSingle();
 
@@ -44,6 +52,25 @@ export async function POST(req: Request, ctx: ParamsCtx) {
     }
     if (existing.estado === 'publicado') {
       return NextResponse.json({ error: 'El perfil ya está publicado' }, { status: 409 });
+    }
+
+    const missingFields = requiredFields.filter(field => {
+      const value = existing[field as keyof typeof existing];
+      return !value || 
+             (typeof value === 'string' && value.trim() === '') ||
+             (Array.isArray(value) && value.length === 0) ||
+             (typeof value === 'object' && value !== null && Object.keys(value).length === 0);
+    });
+
+    if (missingFields.length > 0) {
+      return NextResponse.json(
+        {
+          error: 'No se puede publicar el perfil porque faltan campos obligatorios',
+          missingFields,
+          message: `Por favor completa los siguientes campos: ${missingFields.join(', ')}`
+        },
+        { status: 400 }
+      );
     }
 
     const { slug, url } = generatePublicProfileLink();
