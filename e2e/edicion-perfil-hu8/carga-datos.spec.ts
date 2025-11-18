@@ -34,13 +34,13 @@ test.describe("E2E - Test de carga de datos existentes", () => {
   }) => {
     await login(page);
 
-    const profileId = "test-profile-carga-datos-123";
+    const profileId = "7b12f9af-5aa9-418b-842a-fc55b046a7e0";
     const profileData = {
       id: profileId,
       nombre: "Perfil de Prueba Carga",
       correo: "test.carga@example.com",
       estado: "activo",
-      logo_url: "https://example.com/logo.png",
+      logo_url: "https://wkthjrftwyiwenmwuifl.supabase.co/storage/v1/object/public/perfiles-logos/logos/aac489dc-39b7-427e-8ca0-ce5582dce5b7-1762248105785-23e4e7aa8e7a9e2dbc75fece9d77fc99.jpg",
       administrador_id: "admin-123",
       fechas: "2024-01-01",
     };
@@ -123,7 +123,7 @@ test.describe("E2E - Test de carga de datos existentes", () => {
   test("debe cargar correctamente un perfil sin logo", async ({ page }) => {
     await login(page);
 
-    const profileId = "test-profile-sin-logo-456";
+    const profileId = "7b12f9af-5aa9-418b-842a-fc55b046a7e0";
     const profileData = {
       id: profileId,
       nombre: "Perfil Sin Logo",
