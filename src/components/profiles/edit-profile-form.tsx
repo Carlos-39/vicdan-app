@@ -11,9 +11,9 @@ import { z } from "zod";
 import { ProfileWithAdmin } from "@/types/profile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Upload, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // Schema de validación para edición
 const ALLOWED_IMAGE_FORMATS = ["image/jpeg", "image/png", "image/webp"];
@@ -34,7 +34,7 @@ const editProfileSchema = z.object({
     .optional()
     .or(z.literal("")),
 
-  estado: z.enum(["activo", "inactivo"], {
+  estado: z.enum(["activo", "inactivo", "borrador"], {
     required_error: "Debes seleccionar un estado",
   }),
 
@@ -257,13 +257,20 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
               <label className="block text-sm font-medium mb-2">
                 Estado <span className="text-destructive">*</span>
               </label>
-              <Select
+              <select
                 {...register("estado")}
+                className={cn(
+                  "flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors",
+                  "focus-visible:outline-hidden focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+                  "disabled:cursor-not-allowed disabled:opacity-50",
+                  errors.estado && "border-destructive aria-invalid:ring-destructive/20"
+                )}
                 aria-invalid={!!errors.estado}
               >
+                <option value="borrador">Borrador</option>
                 <option value="activo">Activo</option>
                 <option value="inactivo">Inactivo</option>
-              </Select>
+              </select>
               {errors.estado && (
                 <p className="text-destructive text-sm mt-1">
                   {errors.estado.message}
