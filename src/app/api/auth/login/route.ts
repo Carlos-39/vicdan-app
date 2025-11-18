@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     if (findErr || !admin) {
       await recordLoginAttempt({ correo: email, ip, userAgent, success: false, reason: 'user_not_found' });
       logger.warn(`Login fallido: ${email} (usuario no encontrado)`);
-      return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });
+      return NextResponse.json({ error: 'El correo ingresado no está registrado' }, { status: 401 });
     }
 
     // 2) Verifica contraseña
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
           { status: 429, headers: { 'Retry-After': '300' } }
         );
       }
-      return NextResponse.json({ error: 'Credenciales inválidas' }, { status: 401 });
+      return NextResponse.json({ error: 'La contraseña es incorrecta' }, { status: 401 });
     }
 
     // 3) Éxito
