@@ -138,6 +138,7 @@ export function ThemeEditor({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState("colors");
   const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // ✅ NUEVO: Estado de loading
 
   // ✅ Estado para las notificaciones Toast
   const [toast, setToast] = useState<{
@@ -167,6 +168,111 @@ export function ThemeEditor({
     ...defaultProfileData,
     ...profileData,
   }));
+
+  // ✅ FUNCIÓN PARA CARGAR TEMA EXISTENTE
+  const loadExistingTheme = async (): Promise<ThemeConfig | null> => {
+    try {
+      if (!session?.accessToken) {
+        console.log("❌ No hay token para cargar tema");
+        return null;
+      }
+
+      console.log("🎨 Cargando tema existente...");
+      
+      const response = await fetch(`/api/perfiles/${profileId}/diseno`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      });
+
+      if (response.ok) {
+        const themeData = await response.json();
+        console.log("🎨 Tema cargado:", themeData);
+        
+        if (themeData.diseno) {
+          let existingTheme = themeData.diseno;
+          
+          // Si el diseño viene como string, parsearlo
+          if (typeof existingTheme === 'string') {
+            try {
+              existingTheme = JSON.parse(existingTheme);
+            } catch (parseError) {
+              console.error("❌ Error parseando tema:", parseError);
+              return null;
+            }
+          }
+          
+          console.log("✅ Tema existente cargado:", existingTheme);
+          
+          // Combinar con el tema por defecto para asegurar que todas las propiedades estén presentes
+          const mergedTheme: ThemeConfig = {
+            colors: { ...defaultTheme.colors, ...existingTheme.colors },
+            typography: { ...defaultTheme.typography, ...existingTheme.typography },
+            spacing: { ...defaultTheme.spacing, ...existingTheme.spacing },
+            layout: { ...defaultTheme.layout, ...existingTheme.layout },
+          };
+          
+          return mergedTheme;
+        }
+      } else {
+        console.warn("⚠️ No se pudo cargar el tema existente");
+      }
+      return null;
+    } catch (error) {
+      console.error("❌ Error cargando tema:", error);
+      return null;
+    }
+  };
+
+  // ✅ CARGAR TEMA EXISTENTE Y DATOS DEL PERFIL AL INICIALIZAR
+  useEffect(() => {
+    const loadInitialData = async () => {
+      if (status === "authenticated" && session?.accessToken) {
+        setIsLoading(true);
+        console.log("🔄 Cargando datos iniciales...");
+        
+        // Cargar tema existente
+        const existingTheme = await loadExistingTheme();
+        if (existingTheme) {
+          console.log("✅ Aplicando tema existente:", existingTheme);
+          setTheme(existingTheme);
+        } else {
+          console.log("ℹ️ No hay tema existente, usando tema por defecto");
+        }
+
+        // Cargar datos del perfil
+        try {
+          const profileResponse = await fetch(`/api/perfiles/${profileId}`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          });
+
+          if (profileResponse.ok) {
+            const profileData = await profileResponse.json();
+            console.log("👤 Datos del perfil cargados:", profileData.perfil);
+            
+            // Actualizar datos del perfil
+            setLocalProfileData(prev => ({
+              ...prev,
+              nombre: profileData.perfil?.nombre || prev.nombre,
+              correo: profileData.perfil?.correo || prev.correo,
+              logo_url: profileData.perfil?.logo_url || prev.logo_url,
+              descripcion: profileData.perfil?.descripcion || prev.descripcion,
+            }));
+          }
+        } catch (error) {
+          console.error("❌ Error cargando datos del perfil:", error);
+        }
+
+        setIsLoading(false);
+      }
+    };
+
+    loadInitialData();
+  }, [status, session?.accessToken, profileId]);
 
   // ✅ NUEVO: Cargar enlaces existentes al inicializar
   useEffect(() => {
@@ -740,6 +846,18 @@ export function ThemeEditor({
       setIsSaving(false);
     }
   };
+
+  // ✅ Mostrar loading mientras se cargan los datos
+  if (isLoading) {
+    return (
+      <div className="container mx-auto p-6 flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="text-muted-foreground">Cargando configuración existente...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
