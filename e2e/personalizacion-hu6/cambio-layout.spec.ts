@@ -312,17 +312,16 @@ test.describe("E2E - Test de cambio de layout", () => {
         .or(page.locator(`[class*="Card"]:has-text("${layoutType.name}")`))
         .first();
 
+      
+
       if (await layoutCard.isVisible()) {
         await layoutCard.click();
-        await page.waitForTimeout(300);
-
-        // Verificar que el layout se seleccionó (debe tener un check o borde destacado)
-        const isSelected = await layoutCard
-          .locator('[class*="border-primary"], [class*="ring-primary"]')
-          .isVisible()
-          .catch(() => false);
-        expect(isSelected).toBeTruthy();
+      
+  
+        const selectedCard = page.locator('.border-primary.ring-primary\\/20');
+        await expect(selectedCard).toBeVisible({ timeout: 5000 });
       }
+      
     }
 
     // Guardar los cambios
