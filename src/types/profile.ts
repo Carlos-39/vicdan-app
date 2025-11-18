@@ -1,6 +1,6 @@
 // src/types/profile.ts
 
-export type ProfileStatus = 'activo' | 'inactivo';
+export type ProfileStatus = 'activo' | 'inactivo' | 'borrador';
 
 export interface Profile {
   id: string;
@@ -8,6 +8,7 @@ export interface Profile {
   nombre: string;
   logo_url: string | null;
   correo: string | null;
+  descripcion: string | null;
   estado: ProfileStatus;
   fechas: string;
 }
@@ -36,6 +37,7 @@ export interface ProfilesResponse {
 export interface CreateProfileInput {
   nombre: string;
   correo?: string;
+  descripcion?: string;
   logo_url?: string;
   estado?: ProfileStatus;
 }

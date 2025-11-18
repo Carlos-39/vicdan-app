@@ -26,6 +26,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: "jwt",
   },
+  // Configuración para permitir mensajes de error personalizados
+  debug: process.env.NODE_ENV === "development",
   providers: [
     Credentials({
       credentials: {
@@ -43,9 +45,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       async authorize(credentials) {
         try {
           if (!credentials || !credentials.email || !credentials.password) {
-            throw new Error("Email y contraseña son obligatorios", {
-              cause: { type: "CUSTOM" },
-            });
+            throw new Error("Email y contraseña son obligatorios");
           }
           const { email, password } = credentials;
 
@@ -58,9 +58,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           const { data, error } = await query;
 
           if (error || !data) {
-            throw new Error("El correo ingresado no está registrado", {
-              cause: { ...error, type: "CUSTOM" },
-            });
+            throw new Error("El correo ingresado no está registrado");
           }
 
           const isValidPassword = await comparePassword(
@@ -69,17 +67,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           );
 
           if (!isValidPassword) {
-            throw new Error("La contraseña es incorrecta", {
-              cause: { type: "CUSTOM" },
-            });
+            throw new Error("La contraseña es incorrecta");
           }
 
           return { id: data.id, name: data.nombre, email: data.correo };
           // eslint-disable-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-          throw error?.cause?.type === "CUSTOM"
-            ? error
-            : new Error("Error durante la autenticación");
+          // Re-lanzar el error con el mensaje original para que se muestre en el frontend
+          throw error;
         }
       },
     }),

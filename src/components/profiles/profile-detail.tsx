@@ -16,7 +16,10 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  FileEdit
+  FileEdit,
+  FileText,
+  Palette,
+  Eye
 } from "lucide-react"
 import { formatDate, formatDistanceToNow } from "@/lib/date-utils"
 import { useRouter } from "next/navigation"
@@ -78,6 +81,10 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
     }
   }
 
+  const handlePreviewDesign = () => {
+    window.open(`/perfil/${profile.id}`, "_blank", "noopener,noreferrer");
+  }
+
   return (
     <div className="space-y-6">
       {/* Header con botones de acción */}
@@ -93,6 +100,18 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
           </Button>
         )}
         <div className="flex items-center gap-2 ml-auto">
+          <Button variant="outline" size="sm" onClick={handlePreviewDesign}>
+            <Eye className="size-4" />
+            Vista previa de diseño
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push(`/dashboard/perfiles/${profile.id}/personalizar`)}
+          >
+            <Palette className="size-4" />
+            Personalizar diseño
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -210,6 +229,21 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
               </div>
             </div>
           </div>
+
+          {/* Descripción */}
+          {profile.descripcion && (
+            <div className="mt-6 pt-6 border-t">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                <FileText className="size-5 text-muted-foreground shrink-0 mt-0.5" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium mb-1">Descripción</p>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {profile.descripcion}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 

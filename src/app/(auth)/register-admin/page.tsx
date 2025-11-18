@@ -91,7 +91,8 @@ export default function RegisterAdminPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Error al registrar");
+        setError(result.error || "Error al registrar");
+        return;
       }
 
       setSuccess(true);

@@ -54,6 +54,7 @@ export function NewProfileForm() {
       const formData = new FormData();
       formData.append("nombre", `${data.nombre} ${data.apellido}`.trim());
       formData.append("correo", data.email);
+      formData.append("descripcion", data.descripcion || "");
       if (data.fotoPerfil instanceof File) {
         formData.append("logo", data.fotoPerfil);
       }
@@ -269,7 +270,7 @@ export function NewProfileForm() {
             </label>
             <textarea
               {...register("descripcion")}
-              placeholder="Cuéntanos más sobre ti..."
+              placeholder="Cuéntanos más sobre este perfil..."
               rows={4}
               className={`w-full px-4 py-2 rounded-lg border transition-colors ${
                 errors.descripcion
@@ -282,6 +283,9 @@ export function NewProfileForm() {
                 {errors.descripcion.message}
               </p>
             )}
+            <p className="text-xs text-gray-500 mt-1">
+              Máximo 500 caracteres
+            </p>
           </div>
         </div>
 
