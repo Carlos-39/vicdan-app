@@ -12,7 +12,7 @@ test.describe("E2E - Test de cambio de layout", () => {
   test("debe cambiar el layout del perfil correctamente", async ({ page }) => {
     await login(page);
 
-    const profileId = "test-profile-layout-123";
+    const profileId = "7b12f9af-5aa9-418b-842a-fc55b046a7e0";
     const initialTheme = {
       colors: {
         primary: "#877af7",
@@ -182,7 +182,7 @@ test.describe("E2E - Test de cambio de layout", () => {
   test("debe cambiar entre diferentes tipos de layout", async ({ page }) => {
     await login(page);
 
-    const profileId = "test-profile-layout-456";
+    const profileId = "7b12f9af-5aa9-418b-842a-fc55b046a7e0";
     const initialTheme = {
       colors: {
         primary: "#877af7",

@@ -14,7 +14,7 @@ test.describe("E2E - Test de actualización de colores", () => {
   }) => {
     await login(page);
 
-    const profileId = "test-profile-123";
+    const profileId = "7b12f9af-5aa9-418b-842a-fc55b046a7e0";
     const initialTheme = {
       colors: {
         primary: "#877af7",
@@ -292,7 +292,7 @@ test.describe("E2E - Test de actualización de colores", () => {
   }) => {
     await login(page);
 
-    const profileId = "test-profile-456";
+    const profileId = "7b12f9af-5aa9-418b-842a-fc55b046a7e0";
     const initialTheme = {
       colors: {
         primary: "#877af7",
