@@ -28,12 +28,6 @@ export async function PUT(
 
     const { id: perfilId, tarjetaId } = await context.params;
 
-    console.log("🔧 PUT tarjeta - Iniciando:", {
-      perfilId,
-      tarjetaId,
-      userId: claims.id,
-    });
-
     if (!perfilId || !tarjetaId) {
       return NextResponse.json(
         { error: "ID de perfil y tarjeta requeridos" },
@@ -43,13 +37,9 @@ export async function PUT(
 
     // 2. Validar datos de entrada
     const body = await req.json();
-    console.log("📨 BACKEND PUT - Datos recibidos:", body);
-
     const data = tarjetaSchema.parse(body);
-    console.log("✅ BACKEND PUT - Datos validados:", data);
 
     // 3. Verificar que el perfil existe y pertenece al usuario
-    console.log("🔍 BACKEND PUT - Verificando perfil...");
     const { data: perfil, error: perfilError } = await supabaseAdmin
       .from("perfiles")
       .select("administrador_id")
@@ -57,7 +47,6 @@ export async function PUT(
       .single();
 
     if (perfilError || !perfil) {
-      console.error("❌ BACKEND PUT - Perfil no encontrado:", perfilError);
       return NextResponse.json(
         { error: "Perfil no encontrado" },
         { status: 404 }
@@ -65,10 +54,6 @@ export async function PUT(
     }
 
     if (perfil.administrador_id !== claims.id) {
-      console.error("❌ BACKEND PUT - No autorizado:", {
-        perfilAdmin: perfil.administrador_id,
-        user: claims.id,
-      });
       return NextResponse.json(
         { error: "No autorizado para editar tarjetas de este perfil" },
         { status: 403 }
@@ -76,7 +61,6 @@ export async function PUT(
     }
 
     // 4. Verificar que la tarjeta existe
-    console.log("🔍 BACKEND PUT - Verificando tarjeta existente...");
     const { data: tarjetaExistente, error: tarjetaError } = await supabaseAdmin
       .from("tarjetas")
       .select("id, perfil_id")
@@ -84,7 +68,6 @@ export async function PUT(
       .single();
 
     if (tarjetaError || !tarjetaExistente) {
-      console.error("❌ BACKEND PUT - Tarjeta no encontrada:", tarjetaError);
       return NextResponse.json(
         { error: "Tarjeta no encontrada" },
         { status: 404 }
@@ -92,24 +75,18 @@ export async function PUT(
     }
 
     if (tarjetaExistente.perfil_id !== perfilId) {
-      console.error("❌ BACKEND PUT - Tarjeta no pertenece al perfil:", {
-        tarjetaPerfil: tarjetaExistente.perfil_id,
-        perfilSolicitado: perfilId,
-      });
       return NextResponse.json(
         { error: "La tarjeta no pertenece a este perfil" },
         { status: 403 }
       );
     }
 
-    // 5. Actualizar la tarjeta (SIN updated_at)
-    console.log("🔄 BACKEND PUT - Actualizando en Supabase...");
+    // 5. Actualizar la tarjeta
     const { data: tarjetaActualizada, error: updateError } = await supabaseAdmin
       .from("tarjetas")
       .update({
         nombre_tarjeta: data.nombre_tarjeta,
         link: data.link,
-        // updated_at removido porque no existe en la tabla
       })
       .eq("id", tarjetaId)
       .eq("perfil_id", perfilId)
@@ -117,7 +94,6 @@ export async function PUT(
       .single();
 
     if (updateError) {
-      console.error("❌ BACKEND PUT - Error en Supabase:", updateError);
       logger.error(updateError, "Error al actualizar la tarjeta en Supabase");
 
       if (updateError.code === "PGRST116") {
@@ -128,31 +104,25 @@ export async function PUT(
       }
 
       return NextResponse.json(
-        { error: "No se pudo actualizar la tarjeta: " + updateError.message },
+        { error: "No se pudo actualizar la tarjeta" },
         { status: 500 }
       );
     }
 
-    console.log(
-      "✅ BACKEND PUT - Tarjeta actualizada exitosamente:",
-      tarjetaActualizada
-    );
     return NextResponse.json(tarjetaActualizada, { status: 200 });
   } catch (error: any) {
     if (error?.issues) {
-      console.error("❌ BACKEND PUT - Error de validación Zod:", error.issues);
       return NextResponse.json(
         { error: "Datos inválidos", details: error.issues },
         { status: 400 }
       );
     }
-    console.error("❌ BACKEND PUT - Error general:", error);
     logger.error(
       error,
       "Error inesperado en PUT .../[id]/tarjetas/[tarjetaId]"
     );
     return NextResponse.json(
-      { error: "Error interno del servidor", details: error.message },
+      { error: "Error interno del servidor" },
       { status: 500 }
     );
   }
@@ -179,12 +149,6 @@ export async function DELETE(
 
     const { id: perfilId, tarjetaId } = await context.params;
 
-    console.log("🗑️ BACKEND DELETE - Eliminando tarjeta:", {
-      perfilId,
-      tarjetaId,
-      userId: claims.id,
-    });
-
     if (!perfilId || !tarjetaId) {
       return NextResponse.json(
         { error: "ID de perfil y tarjeta requeridos" },
@@ -200,7 +164,6 @@ export async function DELETE(
       .single();
 
     if (perfilError || !perfil) {
-      console.error("❌ BACKEND DELETE - Perfil no encontrado:", perfilError);
       return NextResponse.json(
         { error: "Perfil no encontrado" },
         { status: 404 }
@@ -215,7 +178,6 @@ export async function DELETE(
     }
 
     // 3. Eliminar tarjeta
-    console.log("🔄 BACKEND DELETE - Eliminando en Supabase...");
     const { error: deleteError } = await supabaseAdmin
       .from("tarjetas")
       .delete()
@@ -223,27 +185,24 @@ export async function DELETE(
       .eq("perfil_id", perfilId);
 
     if (deleteError) {
-      console.error("❌ BACKEND DELETE - Error en Supabase:", deleteError);
       logger.error(deleteError, "Error al eliminar la tarjeta en Supabase");
       return NextResponse.json(
-        { error: "No se pudo eliminar la tarjeta: " + deleteError.message },
+        { error: "No se pudo eliminar la tarjeta" },
         { status: 500 }
       );
     }
 
-    console.log("✅ BACKEND DELETE - Tarjeta eliminada exitosamente");
     return NextResponse.json(
       { message: "Tarjeta eliminada exitosamente" },
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("❌ BACKEND DELETE - Error general:", error);
     logger.error(
       error,
       "Error inesperado en DELETE .../[id]/tarjetas/[tarjetaId]"
     );
     return NextResponse.json(
-      { error: "Error interno del servidor", details: error.message },
+      { error: "Error interno del servidor" },
       { status: 500 }
     );
   }

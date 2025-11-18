@@ -14,7 +14,7 @@ export async function GET(
     // 1. Autenticación
     const auth = req.headers.get("authorization") ?? "";
     const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-    
+
     if (!token) {
       return NextResponse.json({ error: "Token requerido" }, { status: 401 });
     }
@@ -27,7 +27,7 @@ export async function GET(
       );
     }
 
-    // 2. Obtener parámetros - CORREGIDO: usar await context.params
+    // 2. Obtener parámetros
     const { id: perfilId } = await context.params;
 
     if (!perfilId) {
@@ -37,8 +37,6 @@ export async function GET(
       );
     }
 
-    console.log("🔍 Buscando diseño para perfil:", perfilId);
-
     // 3. Obtener diseño de la BD
     const { data: perfil, error: fetchError } = await supabaseAdmin
       .from("perfiles")
@@ -47,7 +45,6 @@ export async function GET(
       .single();
 
     if (fetchError) {
-      console.error("❌ Error obteniendo diseño:", fetchError);
       logger.error(fetchError, "Error al OBTENER el diseño del perfil");
 
       if (fetchError.code === "PGRST116") {
@@ -56,7 +53,7 @@ export async function GET(
           { status: 404 }
         );
       }
-      
+
       return NextResponse.json(
         { error: "No se pudo obtener el diseño" },
         { status: 500 }
@@ -71,18 +68,18 @@ export async function GET(
       );
     }
 
-    console.log("✅ Diseño encontrado:", perfil.diseno);
-    return NextResponse.json({ 
-      diseno: perfil.diseno,
-      existe: !!perfil.diseno 
-    }, { status: 200 });
-    
-  } catch (error: any) {
-    console.error("❌ Error inesperado en GET:", error);
-    logger.error(error, "Error inesperado en GET /api/perfiles/[id]/diseno");
-    
     return NextResponse.json(
-      { error: "Error interno del servidor", details: error.message },
+      {
+        diseno: perfil.diseno,
+        existe: !!perfil.diseno,
+      },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    logger.error(error, "Error inesperado en GET /api/perfiles/[id]/diseno");
+
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
       { status: 500 }
     );
   }
@@ -96,7 +93,7 @@ export async function PUT(
     // 1. Autenticación
     const auth = req.headers.get("authorization") ?? "";
     const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-    
+
     if (!token) {
       return NextResponse.json({ error: "Token requerido" }, { status: 401 });
     }
@@ -140,7 +137,7 @@ export async function PUT(
           { status: 404 }
         );
       }
-      
+
       return NextResponse.json(
         { error: "No se pudo editar el diseño" },
         { status: 500 }
@@ -148,7 +145,6 @@ export async function PUT(
     }
 
     return NextResponse.json(perfilActualizado.diseno, { status: 200 });
-    
   } catch (error: any) {
     // Manejar errores de validación Zod
     if (error?.issues) {
@@ -162,7 +158,7 @@ export async function PUT(
     }
 
     logger.error(error, "Error inesperado en PUT /api/perfiles/[id]/diseno");
-    
+
     return NextResponse.json(
       { error: "Error interno del servidor" },
       { status: 500 }

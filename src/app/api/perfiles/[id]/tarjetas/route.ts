@@ -9,7 +9,10 @@ export const runtime = "nodejs";
 /**
  * OBTIENE todas las tarjetas de un perfil específico (perfil_id).
  */
-export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
+export async function GET(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
     // 1. Autenticación
     const auth = req.headers.get("authorization") ?? "";
@@ -66,7 +69,10 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
 /**
  * CREA una nueva tarjeta para un perfil específico (perfil_id).
  */
-export async function POST(req: Request, context: { params: Promise<{ id: string }> }) {
+export async function POST(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
     // 1. Autenticación
     const auth = req.headers.get("authorization") ?? "";
@@ -112,37 +118,27 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
 
     // 3. Validar los datos de entrada
     const body = await req.json();
-    console.log("📨 BACKEND POST - Datos recibidos:", body);
     const data = tarjetaSchema.parse(body);
 
-    console.log("📦 BACKEND - Creando tarjeta con datos:", {
-      perfil_id: perfilId,
-      nombre_tarjeta: data.nombre_tarjeta,
-      link: data.link
-    });
-
-    // 4. Crear la tarjeta (SIN is_active)
+    // 4. Crear la tarjeta
     const { data: nuevaTarjeta, error: insertError } = await supabaseAdmin
       .from("tarjetas")
       .insert({
         perfil_id: perfilId,
         nombre_tarjeta: data.nombre_tarjeta,
-        link: data.link
-        // ❌ ELIMINADO: is_active: true,
+        link: data.link,
       })
       .select("*")
       .single();
 
     if (insertError) {
-      console.error("❌ BACKEND - Error al crear tarjeta:", insertError);
       logger.error(insertError, "Error al crear la tarjeta en Supabase");
       return NextResponse.json(
-        { error: "No se pudo crear la tarjeta: " + insertError.message },
+        { error: "No se pudo crear la tarjeta" },
         { status: 500 }
       );
     }
 
-    console.log("✅ BACKEND - Tarjeta creada exitosamente:", nuevaTarjeta);
     return NextResponse.json(nuevaTarjeta, { status: 201 });
   } catch (error: any) {
     if (error?.issues) {
@@ -151,7 +147,6 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
         { status: 400 }
       );
     }
-    console.error("❌ BACKEND - Error general:", error);
     logger.error(error, "Error inesperado en POST .../[id]/tarjetas");
     return NextResponse.json(
       { error: "Error interno del servidor" },

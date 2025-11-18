@@ -45,8 +45,6 @@ export default function PersonalizarPage() {
         return;
       }
 
-      console.log("🔍 Fetching profile data for ID:", profileId);
-
       const response = await fetch(`/api/perfiles/${profileId}`, {
         method: "GET",
         headers: {
@@ -60,7 +58,6 @@ export default function PersonalizarPage() {
       }
 
       const data = await response.json();
-      console.log("📦 Profile data received:", data);
 
       setProfileData({
         nombre: data.perfil.nombre,
@@ -72,27 +69,21 @@ export default function PersonalizarPage() {
       // ✅ CORREGIDO: Buscar en el campo correcto 'diseno'
       if (data.perfil.diseno) {
         try {
-          console.log("🎨 Found design data:", data.perfil.diseno);
-
           const theme =
             typeof data.perfil.diseno === "string"
               ? JSON.parse(data.perfil.diseno)
               : data.perfil.diseno;
 
-          console.log("🎨 Parsed theme:", theme);
           setCurrentTheme(theme);
         } catch (parseError) {
-          console.error("❌ Error parsing design config:", parseError);
           setCurrentTheme(undefined);
         }
       } else {
-        console.log("ℹ️ No design data found, using default theme");
         setCurrentTheme(undefined);
       }
 
       setHasLoaded(true);
     } catch (err) {
-      console.error("❌ Error fetching profile theme:", err);
       setError(err instanceof Error ? err.message : "Error desconocido");
     } finally {
       setLoading(false);
@@ -102,17 +93,14 @@ export default function PersonalizarPage() {
   // ✅ CORREGIDO: Función para guardar el tema
   const handleSaveTheme = async (theme: ThemeConfig) => {
     try {
-      console.log("💾 Theme saved callback:", theme);
       setCurrentTheme(theme);
     } catch (err) {
-      console.error("❌ Error in handleSaveTheme:", err);
       throw err;
     }
   };
 
   // ✅ CORREGIDO: Manejo de actualización del perfil
   const handleProfileUpdate = useCallback((updatedData: any) => {
-    console.log("👤 Profile updated:", updatedData);
     setProfileData((prev) => ({
       ...prev,
       ...updatedData,
