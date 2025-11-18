@@ -23,7 +23,7 @@ export async function GET(
 
     const { data, error } = await supabaseAdmin
       .from('perfiles')
-      .select('id, administrador_id, nombre, logo_url, correo, estado, fechas')
+      .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, fechas')
       .eq('id', perfilId)
       .eq('administrador_id', adminId)
       .maybeSingle();
@@ -82,12 +82,14 @@ export async function PUT(
       
       const nombre = formData.get('nombre') as string | null;
       const correo = formData.get('correo') as string | null;
+      const descripcion = formData.get('descripcion') as string | null;
       const estado = formData.get('estado') as string | null;
       const logo = formData.get('logo') as File | null;
       const logo_url = formData.get('logo_url') as string | null;
 
       if (nombre) updates.nombre = nombre;
       if (correo !== undefined) updates.correo = correo || null;
+      if (descripcion !== undefined) updates.descripcion = descripcion || null;
       if (estado) updates.estado = estado;
 
       // Manejar la imagen
@@ -144,10 +146,11 @@ export async function PUT(
     } else {
       // Manejar JSON (sin imagen)
       const body = await req.json();
-      const { nombre, correo, estado } = body;
+      const { nombre, correo, descripcion, estado } = body;
 
       if (nombre !== undefined) updates.nombre = nombre;
       if (correo !== undefined) updates.correo = correo || null;
+      if (descripcion !== undefined) updates.descripcion = descripcion || null;
       if (estado !== undefined) updates.estado = estado;
     }
 

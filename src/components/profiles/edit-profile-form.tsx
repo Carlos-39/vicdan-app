@@ -34,6 +34,12 @@ const editProfileSchema = z.object({
     .optional()
     .or(z.literal("")),
 
+  descripcion: z
+    .string()
+    .max(500, "La descripción no puede exceder 500 caracteres")
+    .optional()
+    .or(z.literal("")),
+
   estado: z.enum(["activo", "inactivo", "borrador"], {
     required_error: "Debes seleccionar un estado",
   }),
@@ -80,6 +86,7 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
     defaultValues: {
       nombre: profile.nombre,
       correo: profile.correo || "",
+      descripcion: profile.descripcion || "",
       estado: profile.estado,
     },
   });
@@ -91,6 +98,7 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
     reset({
       nombre: profile.nombre,
       correo: profile.correo || "",
+      descripcion: profile.descripcion || "",
       estado: profile.estado,
     });
     setImagePreview(profile.logo_url || null);
@@ -135,6 +143,7 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
       const formData = new FormData();
       formData.append("nombre", data.nombre.trim());
       formData.append("correo", data.correo || "");
+      formData.append("descripcion", data.descripcion || "");
       formData.append("estado", data.estado);
 
       // Manejar la imagen
@@ -276,6 +285,33 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
                   {errors.estado.message}
                 </p>
               )}
+            </div>
+
+            {/* Descripción */}
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Descripción
+              </label>
+              <textarea
+                {...register("descripcion")}
+                placeholder="Describe brevemente este perfil..."
+                rows={4}
+                className={cn(
+                  "flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors",
+                  "focus-visible:outline-hidden focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+                  "disabled:cursor-not-allowed disabled:opacity-50 resize-none",
+                  errors.descripcion && "border-destructive aria-invalid:ring-destructive/20"
+                )}
+                aria-invalid={!!errors.descripcion}
+              />
+              {errors.descripcion && (
+                <p className="text-destructive text-sm mt-1">
+                  {errors.descripcion.message}
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Máximo 500 caracteres
+              </p>
             </div>
           </CardContent>
         </Card>
