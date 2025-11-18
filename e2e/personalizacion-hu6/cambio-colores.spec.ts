@@ -2,9 +2,29 @@ import { test, expect } from "@playwright/test";
 
 async function login(page: any) {
   await page.goto("/login");
+
+  // Esperar a que el formulario esté listo
+  await page.waitForSelector('input[type="email"]', { state: "visible" });
+  await page.waitForSelector('input[type="password"]', { state: "visible" });
+
+  // Llenar los campos
   await page.fill('input[type="email"]', "brayanss2018@gmail.com");
   await page.fill('input[type="password"]', "Steven-123");
-  await page.click('button[type="submit"]');
+
+  // Esperar a que el botón esté habilitado
+  const submitButton = page.locator('button[type="submit"]');
+  await expect(submitButton).toBeEnabled({ timeout: 5000 });
+
+  // Hacer click y esperar a que se complete el proceso de login
+  await submitButton.click();
+
+  // Esperar a que el botón muestre el estado de carga (opcional, pero ayuda a verificar que el proceso inició)
+  await page.waitForTimeout(500);
+
+  // Esperar a que la URL cambie a dashboard (con timeout más largo)
+  await page.waitForURL(/dashboard/, { timeout: 15000 });
+
+  // Verificar que efectivamente estamos en el dashboard
   await expect(page).toHaveURL(/dashboard/);
 }
 
@@ -124,7 +144,8 @@ test.describe("E2E - Test de actualización de colores", () => {
 
     // Asegurarse de que estamos en el tab de colores
     const colorsTab = page
-      .locator('[role="tab"]:has-text("Colores"), button:has-text("Colores")')
+      .locator('[role="tab"]:has-text("Colores")')
+      .or(page.locator('button:has-text("Colores")'))
       .first();
     if (await colorsTab.isVisible()) {
       await colorsTab.click();
@@ -262,7 +283,8 @@ test.describe("E2E - Test de actualización de colores", () => {
 
     // Buscar y hacer clic en el botón de guardar
     const saveButton = page
-      .locator('button:has-text("Guardar"), button:has-text("Guardar cambios")')
+      .locator('button:has-text("Guardar")')
+      .or(page.locator('button:has-text("Guardar cambios")'))
       .first();
 
     await expect(saveButton).toBeVisible({ timeout: 5000 });
@@ -385,7 +407,8 @@ test.describe("E2E - Test de actualización de colores", () => {
 
     // Asegurarse de que estamos en el tab de colores
     const colorsTab = page
-      .locator('[role="tab"]:has-text("Colores"), button:has-text("Colores")')
+      .locator('[role="tab"]:has-text("Colores")')
+      .or(page.locator('button:has-text("Colores")'))
       .first();
     if (await colorsTab.isVisible()) {
       await colorsTab.click();
@@ -395,7 +418,8 @@ test.describe("E2E - Test de actualización de colores", () => {
 
     // Buscar y hacer clic en una plantilla de color (por ejemplo, "blue")
     const bluePreset = page
-      .locator('button:has-text("blue"), button:has-text("Blue")')
+      .locator('button:has-text("blue")')
+      .or(page.locator('button:has-text("Blue")'))
       .or(page.locator('span:has-text("blue")').locator(".."))
       .first();
 
