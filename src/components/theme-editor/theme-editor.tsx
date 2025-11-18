@@ -178,7 +178,7 @@ export function ThemeEditor({
       }
 
       console.log("🎨 Cargando tema existente...");
-      
+
       const response = await fetch(`/api/perfiles/${profileId}/diseno`, {
         method: "GET",
         headers: {
@@ -189,12 +189,12 @@ export function ThemeEditor({
       if (response.ok) {
         const themeData = await response.json();
         console.log("🎨 Tema cargado:", themeData);
-        
+
         if (themeData.diseno) {
           let existingTheme = themeData.diseno;
-          
+
           // Si el diseño viene como string, parsearlo
-          if (typeof existingTheme === 'string') {
+          if (typeof existingTheme === "string") {
             try {
               existingTheme = JSON.parse(existingTheme);
             } catch (parseError) {
@@ -202,17 +202,20 @@ export function ThemeEditor({
               return null;
             }
           }
-          
+
           console.log("✅ Tema existente cargado:", existingTheme);
-          
+
           // Combinar con el tema por defecto para asegurar que todas las propiedades estén presentes
           const mergedTheme: ThemeConfig = {
             colors: { ...defaultTheme.colors, ...existingTheme.colors },
-            typography: { ...defaultTheme.typography, ...existingTheme.typography },
+            typography: {
+              ...defaultTheme.typography,
+              ...existingTheme.typography,
+            },
             spacing: { ...defaultTheme.spacing, ...existingTheme.spacing },
             layout: { ...defaultTheme.layout, ...existingTheme.layout },
           };
-          
+
           return mergedTheme;
         }
       } else {
@@ -231,7 +234,7 @@ export function ThemeEditor({
       if (status === "authenticated" && session?.accessToken) {
         setIsLoading(true);
         console.log("🔄 Cargando datos iniciales...");
-        
+
         // Cargar tema existente
         const existingTheme = await loadExistingTheme();
         if (existingTheme) {
@@ -253,9 +256,9 @@ export function ThemeEditor({
           if (profileResponse.ok) {
             const profileData = await profileResponse.json();
             console.log("👤 Datos del perfil cargados:", profileData.perfil);
-            
+
             // Actualizar datos del perfil
-            setLocalProfileData(prev => ({
+            setLocalProfileData((prev) => ({
               ...prev,
               nombre: profileData.perfil?.nombre || prev.nombre,
               correo: profileData.perfil?.correo || prev.correo,
@@ -567,20 +570,46 @@ export function ThemeEditor({
       );
 
       // 7. Ejecutar operaciones de actualización
-      const updatePromises = linksToUpdate.map((link) =>
-        fetch(`/api/perfiles/${profileId}/tarjetas/${link.id}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-          body: JSON.stringify({
+      const updatePromises = linksToUpdate.map(async (link) => {
+        try {
+          console.log(`🔄 Actualizando tarjeta ${link.id}:`, {
             nombre_tarjeta: link.name,
             link: link.url,
-          }),
-        })
-      );
+          });
 
+          const response = await fetch(
+            `/api/perfiles/${profileId}/tarjetas/${link.id}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${session.accessToken}`,
+              },
+              body: JSON.stringify({
+                nombre_tarjeta: link.name,
+                link: link.url,
+              }),
+            }
+          );
+
+          // Capturar la respuesta de error
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error(`❌ Error actualizando tarjeta ${link.id}:`, {
+              status: response.status,
+              error: errorData,
+            });
+          } else {
+            const successData = await response.json();
+            console.log(`✅ Tarjeta ${link.id} actualizada:`, successData);
+          }
+
+          return response;
+        } catch (error) {
+          console.error(`❌ Excepción actualizando tarjeta ${link.id}:`, error);
+          throw error;
+        }
+      });
       // 8. Ejecutar todas las operaciones
       const allResults = await Promise.all([
         ...deletePromises,
@@ -853,7 +882,9 @@ export function ThemeEditor({
       <div className="container mx-auto p-6 flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          <p className="text-muted-foreground">Cargando configuración existente...</p>
+          <p className="text-muted-foreground">
+            Cargando configuración existente...
+          </p>
         </div>
       </div>
     );
