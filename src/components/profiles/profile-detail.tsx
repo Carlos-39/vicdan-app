@@ -45,7 +45,8 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
   const [shareModalOpen, setShareModalOpen] = useState(false)
   const [shareData, setShareData] = useState<any>(null)
 
-  const isPublished = profile.estado === 'publicado'
+  // Un perfil está publicado si tiene slug (independiente del estado)
+  const isPublished = !!profile.slug
   
   const checkIfComplete = () => {
     const requiredFields = [
@@ -92,9 +93,10 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
       const data = await response.json()
       
       // Guardar datos para compartir
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
       setShareData({
         slug: data.slug,
-        publicUrl: data.publicUrl,
+        publicUrl: `${baseUrl}/${data.slug}`,
         qrUrl: data.qrPublicUrl,
         nombre: profile.nombre
       })
@@ -140,8 +142,6 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
     switch (estado) {
       case 'activo':
         return 'success'
-      case 'publicado':
-        return 'success'
       case 'inactivo':
         return 'secondary'
       case 'borrador':
@@ -154,8 +154,6 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
   const getStatusIcon = (estado: string) => {
     switch (estado) {
       case 'activo':
-        return <CheckCircle2 className="size-4" />
-      case 'publicado':
         return <CheckCircle2 className="size-4" />
       case 'inactivo':
         return <XCircle className="size-4" />
@@ -170,8 +168,6 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
     switch (estado) {
       case 'activo':
         return 'Activo'
-      case 'publicado':
-        return 'Publicado'
       case 'inactivo':
         return 'Inactivo'
       case 'borrador':
@@ -188,71 +184,67 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
   return (
     <div className="space-y-6">
       {/* Header con botones de acción */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         {showBackButton && (
           <Button
             variant="ghost"
             size="sm"
             onClick={() => router.back()}
+            className="self-start"
           >
             <ArrowLeft className="size-4" />
             Volver
           </Button>
         )}
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:ml-auto">
+          {/* Botones siempre visibles */}
+          <Button variant="outline" size="sm" onClick={handlePreviewDesign}>
+            <Eye className="size-4" />
+            <span className="hidden sm:inline ml-2">Vista previa</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push(`/dashboard/perfiles/${profile.id}/personalizar`)}
+          >
+            <Palette className="size-4" />
+            <span className="hidden sm:inline ml-2">Personalizar</span>
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={
+              onEdit ||
+              (() => router.push(`/dashboard/perfiles/${profile.id}/editar`))
+            }
+          >
+            <Edit className="size-4" />
+            <span className="hidden sm:inline ml-2">Editar</span>
+          </Button>
+          
+          {/* Botón de publicar o compartir */}
           {!isPublished ? (
-            <>
-              <Button variant="outline" size="sm" onClick={handlePreviewDesign}>
-                <Eye className="size-4" />
-                Vista previa
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push(`/dashboard/perfiles/${profile.id}/personalizar`)}
-              >
-                <Palette className="size-4" />
-                Personalizar
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={
-                  onEdit ||
-                  (() => router.push(`/dashboard/perfiles/${profile.id}/editar`))
-                }
-              >
-                <Edit className="size-4" />
-                Editar
-              </Button>
-              <Button
-                size="sm"
-                onClick={handlePublish}
-                disabled={!isComplete || isPublishing}
-              >
-                {isPublishing ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Upload className="size-4" />
-                )}
-                {isPublishing ? 'Publicando...' : 'Publicar'}
-              </Button>
-            </>
+            <Button
+              size="sm"
+              onClick={handlePublish}
+              disabled={!isComplete || isPublishing}
+            >
+              {isPublishing ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Upload className="size-4" />
+              )}
+              <span className="ml-2">{isPublishing ? 'Publicando...' : 'Publicar'}</span>
+            </Button>
           ) : (
-            <>
-              <Button variant="outline" size="sm" onClick={handlePreviewDesign}>
-                <Eye className="size-4" />
-                Vista previa
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleOpenShareModal}
-                className="gap-2"
-              >
-                <Share2 className="size-4" />
-                Compartir
-              </Button>
-            </>
+            <Button
+              size="sm"
+              onClick={handleOpenShareModal}
+              className="gap-2"
+            >
+              <Share2 className="size-4" />
+              Compartir
+            </Button>
           )}
         </div>
       </div>

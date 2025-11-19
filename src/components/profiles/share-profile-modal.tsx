@@ -5,7 +5,7 @@ import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Copy, Download, Share2, Check, Facebook, Twitter, Linkedin, Mail } from "lucide-react"
+import { Copy, Download, Share2, Check, Facebook, Twitter, Mail, MessageCircle } from "lucide-react"
 import Image from "next/image"
 
 interface ShareProfileModalProps {
@@ -21,6 +21,7 @@ interface ShareProfileModalProps {
 
 export function ShareProfileModal({ open, onOpenChange, profileData }: ShareProfileModalProps) {
   const [copied, setCopied] = useState(false)
+  const [qrCopied, setQrCopied] = useState(false)
 
   const handleCopyLink = async () => {
     try {
@@ -29,6 +30,22 @@ export function ShareProfileModal({ open, onOpenChange, profileData }: ShareProf
       setTimeout(() => setCopied(false), 2000)
     } catch (error) {
       console.error('Error copiando enlace:', error)
+    }
+  }
+
+  const handleCopyQR = async () => {
+    try {
+      const response = await fetch(profileData.qrUrl)
+      const blob = await response.blob()
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          [blob.type]: blob
+        })
+      ])
+      setQrCopied(true)
+      setTimeout(() => setQrCopied(false), 2000)
+    } catch (error) {
+      console.error('Error copiando QR:', error)
     }
   }
 
@@ -49,14 +66,14 @@ export function ShareProfileModal({ open, onOpenChange, profileData }: ShareProf
     }
   }
 
-  const shareOnSocial = (platform: 'facebook' | 'twitter' | 'linkedin' | 'email') => {
+  const shareOnSocial = (platform: 'facebook' | 'twitter' | 'whatsapp' | 'email') => {
     const text = `Mira mi perfil: ${profileData.nombre}`
     const url = profileData.publicUrl
 
     const urls = {
       facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
-      linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`,
       email: `mailto:?subject=${encodeURIComponent(text)}&body=${encodeURIComponent(url)}`
     }
 
@@ -120,15 +137,35 @@ export function ShareProfileModal({ open, onOpenChange, profileData }: ShareProf
                   className="object-contain"
                 />
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownloadQR}
-                className="gap-2"
-              >
-                <Download className="size-4" />
-                Descargar QR
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCopyQR}
+                  className="gap-2"
+                >
+                  {qrCopied ? (
+                    <>
+                      <Check className="size-4 text-success" />
+                      Copiado
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="size-4" />
+                      Copiar QR
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadQR}
+                  className="gap-2"
+                >
+                  <Download className="size-4" />
+                  Descargar
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -155,10 +192,10 @@ export function ShareProfileModal({ open, onOpenChange, profileData }: ShareProf
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => shareOnSocial('linkedin')}
-                title="Compartir en LinkedIn"
+                onClick={() => shareOnSocial('whatsapp')}
+                title="Compartir en WhatsApp"
               >
-                <Linkedin className="size-4" />
+                <MessageCircle className="size-4" />
               </Button>
               <Button
                 variant="outline"

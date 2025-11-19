@@ -44,10 +44,14 @@ async function getProfileBySlug(slug: string) {
       .from('perfiles')
       .select('*')
       .eq('slug', slug)
-      .eq('estado', 'publicado')
       .single();
 
     if (profileError || !profile) {
+      return null;
+    }
+
+    // Verificar que el perfil esté activo (no inactivo ni borrador)
+    if (profile.estado !== 'activo') {
       return null;
     }
 
