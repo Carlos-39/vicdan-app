@@ -6,7 +6,8 @@ export default auth((req) => {
   
   // Rutas públicas que no requieren autenticación
   const publicPaths = ["/login", "/register-admin", "/"];
-  const isPublicPath = publicPaths.some(path => pathname.startsWith(path));
+  // Allow paths starting with /p_ (public profiles)
+  const isPublicPath = publicPaths.some(path => pathname.startsWith(path)) || pathname.startsWith("/p_");
   
   if (isPublicPath) {
     return NextResponse.next();
