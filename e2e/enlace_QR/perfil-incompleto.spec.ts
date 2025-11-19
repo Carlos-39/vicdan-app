@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { login } from "../helpers/auth.helper";
 
 test.describe("Validación de Perfil Incompleto - Escenarios Detallados", () => {
   // Perfil base con todos los campos llenos
@@ -23,12 +24,7 @@ test.describe("Validación de Perfil Incompleto - Escenarios Detallados", () => 
   };
 
   test.beforeEach(async ({ page }) => {
-    // Login
-    await page.goto("/login");
-    await page.fill('input[type="email"]', "brayanss2018@gmail.com");
-    await page.fill('input[type="password"]', "Steven-123");
-    await page.click('button[type="submit"]');
-    await page.waitForURL(/\/dashboard/);
+    await login(page)
   });
 
   // Definir los casos de prueba

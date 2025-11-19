@@ -1,32 +1,6 @@
 import { test, expect } from "@playwright/test";
+import { login } from "../helpers/auth.helper";
 
-async function login(page: any) {
-  await page.goto("/login");
-
-  // Esperar a que el formulario esté listo
-  await page.waitForSelector('input[type="email"]', { state: "visible" });
-  await page.waitForSelector('input[type="password"]', { state: "visible" });
-
-  // Llenar los campos
-  await page.fill('input[type="email"]', "brayanss2018@gmail.com");
-  await page.fill('input[type="password"]', "Steven-123");
-
-  // Esperar a que el botón esté habilitado
-  const submitButton = page.locator('button[type="submit"]');
-  await expect(submitButton).toBeEnabled({ timeout: 5000 });
-
-  // Hacer click y esperar a que se complete el proceso de login
-  await submitButton.click();
-
-  // Esperar a que el botón muestre el estado de carga (opcional, pero ayuda a verificar que el proceso inició)
-  await page.waitForTimeout(500);
-
-  // Esperar a que la URL cambie a dashboard (con timeout más largo)
-  await page.waitForURL(/dashboard/, { timeout: 15000 });
-
-  // Verificar que efectivamente estamos en el dashboard
-  await expect(page).toHaveURL(/dashboard/);
-}
 
 test.describe("E2E - Test de cambio de layout", () => {
   test("debe cambiar el layout del perfil correctamente", async ({ page }) => {
@@ -332,16 +306,16 @@ test.describe("E2E - Test de cambio de layout", () => {
         .or(page.locator(`[class*="Card"]:has-text("${layoutType.name}")`))
         .first();
 
-      
+
 
       if (await layoutCard.isVisible()) {
         await layoutCard.click();
-      
-  
+
+
         const selectedCard = page.locator('.border-primary.ring-primary\\/20');
         await expect(selectedCard).toBeVisible({ timeout: 5000 });
       }
-      
+
     }
 
     // Guardar los cambios

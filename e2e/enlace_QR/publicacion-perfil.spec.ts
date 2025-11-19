@@ -1,13 +1,5 @@
 import { test, expect } from "@playwright/test";
-
-// Helper para login
-async function login(page: any) {
-  await page.goto("/login");
-  await page.fill('input[type="email"]', "brayanss2018@gmail.com");
-  await page.fill('input[type="password"]', "Steven-123");
-  await page.click('button[type="submit"]');
-  await expect(page).toHaveURL(/dashboard/);
-}
+import { login } from "../helpers/auth.helper";
 
 test.describe("E2E - Publicación de Perfil", () => {
   const profileId = "test-profile-id";

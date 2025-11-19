@@ -1,36 +1,17 @@
 import { test, expect } from "@playwright/test";
+import { login } from "../helpers/auth.helper";
 
-async function login(page: any) {
-  await page.goto("/login");
 
-  // Esperar a que el formulario esté listo
-  await page.waitForSelector('input[type="email"]', { state: "visible" });
-  await page.waitForSelector('input[type="password"]', { state: "visible" });
 
-  // Llenar los campos
-  await page.fill('input[type="email"]', "brayanss2018@gmail.com");
-  await page.fill('input[type="password"]', "Steven-123");
 
-  // Esperar a que el botón esté habilitado
-  const submitButton = page.locator('button[type="submit"]');
-  await expect(submitButton).toBeEnabled({ timeout: 5000 });
 
-  // Hacer click y esperar a que se complete el proceso de login
-  await submitButton.click();
 
-  // Esperar a que el botón muestre el estado de carga (opcional, pero ayuda a verificar que el proceso inició)
-  await page.waitForTimeout(500);
-
-  // Esperar a que la URL cambie a dashboard (con timeout más largo)
-  await page.waitForURL(/dashboard/, { timeout: 15000 });
-
-  // Verificar que efectivamente estamos en el dashboard
-  await expect(page).toHaveURL(/dashboard/);
-}
 
 test.describe("E2E - Flujo completo de personalización hasta vista previa", () => {
   test("debe completar todo el flujo de personalización y verificar la vista previa", async ({
     page,
+
+
   }) => {
     await login(page);
 
@@ -262,7 +243,7 @@ test.describe("E2E - Flujo completo de personalización hasta vista previa", () 
       }
     } else {
       console.log('No se encontraron botones de fuente visibles');
-      
+
       // Alternativa: buscar en contenedores de fuente
       const fontContainers = page.locator('[class*="font-"], [class*="typography"]');
       const containerCount = await fontContainers.count();
@@ -329,9 +310,9 @@ test.describe("E2E - Flujo completo de personalización hasta vista previa", () 
 
     // Verificar que el nombre del perfil está visible en la vista previa
     //await expect(
-      //page
-        //.locator('text="Perfil de Prueba Completo"')
-        //.or(page.locator('text="Perfil de Prueba"'))
+    //page
+    //.locator('text="Perfil de Prueba Completo"')
+    //.or(page.locator('text="Perfil de Prueba"'))
     //).toBeVisible({ timeout: 5000 });
 
     // PASO 6: Guardar todos los cambios
