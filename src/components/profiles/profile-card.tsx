@@ -54,9 +54,9 @@ export function ProfileCard({ profile, onView, onEdit, onDelete }: ProfileCardPr
 
   return (
     <Card className="p-4 hover:shadow-md transition-shadow group">
-      <div className="flex items-start gap-3">
+      <div className="flex gap-3">
         {/* Avatar */}
-        <Avatar className="size-12 shrink-0">
+        <Avatar className="size-20 shrink-0 items-center justify-center bg-primary/10 mx-auto my-auto">
           <AvatarImage src={profile.logo_url || undefined} alt={profile.nombre} />
           <AvatarFallback className="bg-primary/10 text-primary">
             {getInitials(profile.nombre)}
@@ -119,11 +119,11 @@ export function ProfileCard({ profile, onView, onEdit, onDelete }: ProfileCardPr
           </div>
 
           {/* Quick Preview Button - Visible al hacer hover */}
-          <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="mt-2 group-hover:opacity-100 transition-opacity">
             <Button
               variant="outline"
               size="sm"
-              className="w-full text-xs h-7"
+              className="w-full text-xs h-7 cursor-pointer"
               onClick={handlePreview}
             >
               <ExternalLink className="size-3" />

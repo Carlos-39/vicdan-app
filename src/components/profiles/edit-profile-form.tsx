@@ -279,7 +279,6 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
                 <option value="borrador">Borrador</option>
                 <option value="activo">Activo</option>
                 <option value="inactivo">Inactivo</option>
-                <option value="publicado">Publicado</option>
               </select>
               {errors.estado && (
                 <p className="text-destructive text-sm mt-1">
