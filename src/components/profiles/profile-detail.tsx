@@ -1,6 +1,7 @@
 // src/components/profiles/profile-detail.tsx
 "use client"
 
+import { useState } from "react"
 import { ProfileWithAdmin } from "@/types/profile"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -19,10 +20,16 @@ import {
   FileEdit,
   FileText,
   Palette,
-  Eye
+  Eye,
+  Upload,
+  Share2,
+  Loader2
 } from "lucide-react"
 import { formatDate, formatDistanceToNow } from "@/lib/date-utils"
 import { useRouter } from "next/navigation"
+import { ProfileCompletenessCheck } from "./profile-completeness-check"
+import { ShareProfileModal } from "./share-profile-modal"
+import { useSession } from "next-auth/react"
 
 interface ProfileDetailProps {
   profile: ProfileWithAdmin
@@ -32,6 +39,93 @@ interface ProfileDetailProps {
 
 export function ProfileDetail({ profile, onEdit, showBackButton = true }: ProfileDetailProps) {
   const router = useRouter()
+  const { data: session } = useSession()
+  const [isPublishing, setIsPublishing] = useState(false)
+  const [publishError, setPublishError] = useState<string | null>(null)
+  const [shareModalOpen, setShareModalOpen] = useState(false)
+  const [shareData, setShareData] = useState<any>(null)
+
+  const isPublished = profile.estado === 'publicado'
+  
+  const checkIfComplete = () => {
+    const requiredFields = [
+      profile.nombre,
+      profile.logo_url,
+      profile.correo,
+      profile.descripcion,
+      profile.diseno
+    ]
+    return requiredFields.every(field => {
+      if (!field) return false
+      if (typeof field === 'string' && field.trim() === '') return false
+      if (typeof field === 'object' && Object.keys(field).length === 0) return false
+      return true
+    })
+  }
+
+  const isComplete = checkIfComplete()
+
+  const handlePublish = async () => {
+    if (!isComplete) return
+
+    setIsPublishing(true)
+    setPublishError(null)
+
+    try {
+      const token = (session as any)?.accessToken
+      if (!token) {
+        throw new Error('No se pudo obtener el token de autenticación')
+      }
+
+      const response = await fetch(`/api/perfiles/${profile.id}/publicar`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Error al publicar el perfil')
+      }
+
+      const data = await response.json()
+      
+      // Guardar datos para compartir
+      setShareData({
+        slug: data.slug,
+        publicUrl: data.publicUrl,
+        qrUrl: data.qrPublicUrl,
+        nombre: profile.nombre
+      })
+
+      // Abrir modal de compartir
+      setShareModalOpen(true)
+
+      // Recargar la página para actualizar el estado
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+    } catch (error) {
+      console.error('Error publicando perfil:', error)
+      setPublishError(error instanceof Error ? error.message : 'Error al publicar el perfil')
+    } finally {
+      setIsPublishing(false)
+    }
+  }
+
+  const handleOpenShareModal = () => {
+    if (profile.slug && profile.qr_url) {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
+      setShareData({
+        slug: profile.slug,
+        publicUrl: `${baseUrl}/${profile.slug}`,
+        qrUrl: profile.qr_url,
+        nombre: profile.nombre
+      })
+      setShareModalOpen(true)
+    }
+  }
 
   const getInitials = (name: string) => {
     return name
@@ -46,6 +140,8 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
     switch (estado) {
       case 'activo':
         return 'success'
+      case 'publicado':
+        return 'success'
       case 'inactivo':
         return 'secondary'
       case 'borrador':
@@ -58,6 +154,8 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
   const getStatusIcon = (estado: string) => {
     switch (estado) {
       case 'activo':
+        return <CheckCircle2 className="size-4" />
+      case 'publicado':
         return <CheckCircle2 className="size-4" />
       case 'inactivo':
         return <XCircle className="size-4" />
@@ -72,6 +170,8 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
     switch (estado) {
       case 'activo':
         return 'Activo'
+      case 'publicado':
+        return 'Publicado'
       case 'inactivo':
         return 'Inactivo'
       case 'borrador':
@@ -100,26 +200,60 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
           </Button>
         )}
         <div className="flex items-center gap-2 ml-auto">
-          <Button variant="outline" size="sm" onClick={handlePreviewDesign}>
-            <Eye className="size-4" />
-            Vista previa de diseño
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push(`/dashboard/perfiles/${profile.id}/personalizar`)}
-          >
-            <Palette className="size-4" />
-            Personalizar diseño
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onEdit || (() => router.push(`/dashboard/perfiles/${profile.id}/editar`))}
-          >
-            <Edit className="size-4" />
-            Editar perfil
-          </Button>
+          {!isPublished ? (
+            <>
+              <Button variant="outline" size="sm" onClick={handlePreviewDesign}>
+                <Eye className="size-4" />
+                Vista previa
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(`/dashboard/perfiles/${profile.id}/personalizar`)}
+              >
+                <Palette className="size-4" />
+                Personalizar
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={
+                  onEdit ||
+                  (() => router.push(`/dashboard/perfiles/${profile.id}/editar`))
+                }
+              >
+                <Edit className="size-4" />
+                Editar
+              </Button>
+              <Button
+                size="sm"
+                onClick={handlePublish}
+                disabled={!isComplete || isPublishing}
+              >
+                {isPublishing ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Upload className="size-4" />
+                )}
+                {isPublishing ? 'Publicando...' : 'Publicar'}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="outline" size="sm" onClick={handlePreviewDesign}>
+                <Eye className="size-4" />
+                Vista previa
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleOpenShareModal}
+                className="gap-2"
+              >
+                <Share2 className="size-4" />
+                Compartir
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -140,6 +274,11 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
                   {getStatusIcon(profile.estado)}
                   {getStatusLabel(profile.estado)}
                 </Badge>
+                {isPublished && profile.fecha_publicacion && (
+                  <span className="text-xs text-muted-foreground">
+                    Publicado el {formatDate(profile.fecha_publicacion)}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -246,6 +385,33 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
           )}
         </CardContent>
       </Card>
+
+      {/* Mensaje de error al publicar */}
+      {publishError && (
+        <Card className="border-destructive">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3 p-3 rounded-lg bg-destructive/10">
+              <XCircle className="size-5 text-destructive shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-destructive">Error al publicar</p>
+                <p className="text-sm text-destructive/80">{publishError}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Checklist de completitud (solo si no está publicado) */}
+      {!isPublished && <ProfileCompletenessCheck profile={profile} />}
+
+      {/* Modal de compartir */}
+      {shareData && (
+        <ShareProfileModal
+          open={shareModalOpen}
+          onOpenChange={setShareModalOpen}
+          profileData={shareData}
+        />
+      )}
 
       {/* Card de ID (útil para debugging/admin) */}
       <Card>

@@ -23,7 +23,7 @@ export async function GET(
 
     const { data, error } = await supabaseAdmin
       .from('perfiles')
-      .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, fechas')
+      .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, diseno, slug, fecha_publicacion, qr_url, fechas')
       .eq('id', perfilId)
       .eq('administrador_id', adminId)
       .maybeSingle();
