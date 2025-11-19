@@ -15,6 +15,7 @@ export async function POST(req: Request, ctx: ParamsCtx) {
     'logo_url',
     'correo',
     'fechas',
+    'descripcion',
     'diseno'
   ];
 
@@ -33,7 +34,7 @@ export async function POST(req: Request, ctx: ParamsCtx) {
 
     const { data: existing, error: findErr } = await supabaseAdmin
       .from('perfiles')
-      .select('id, administrador_id, estado, slug, nombre, logo_url, correo, fechas, diseno')
+      .select('id, administrador_id, estado, slug, nombre, logo_url, correo, descripcion, diseno, qr_url')
       .eq('id', perfilId)
       .maybeSingle();
 
@@ -50,8 +51,19 @@ export async function POST(req: Request, ctx: ParamsCtx) {
         { status: 403 }
       );
     }
-    if (existing.estado === 'publicado') {
-      return NextResponse.json({ error: 'El perfil ya está publicado' }, { status: 409 });
+    // Si ya tiene slug, solo retornar la información existente
+    if (existing.slug) {
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      return NextResponse.json(
+        {
+          message: 'El perfil ya está publicado',
+          perfil: existing,
+          slug: existing.slug,
+          publicUrl: `${baseUrl}/${existing.slug}`,
+          qrPublicUrl: existing.qr_url,
+        },
+        { status: 200 }
+      );
     }
 
     const missingFields = requiredFields.filter(field => {
