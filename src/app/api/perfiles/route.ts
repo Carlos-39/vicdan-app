@@ -27,7 +27,7 @@ export async function GET(req: Request) {
 
     let query = supabaseAdmin
       .from('perfiles')
-      .select('id, administrador_id, nombre, logo_url, correo, estado, fechas')
+      .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, fechas')
       .eq('administrador_id', adminId);
 
     if (estado && estado.trim()) {
@@ -64,12 +64,14 @@ export async function POST(req: Request) {
 
     let nombre: string;
     let correo: string;
+    let descripcion: string;
     let logoFile: File | null = null;
 
     if (isMultipart) {
       const form = await req.formData();
       nombre = String(form.get("nombre") ?? "");
       correo = String(form.get("correo") ?? "");
+      descripcion = String(form.get("descripcion") ?? "");
       const maybeFile = form.get("logo");
 
       if (maybeFile instanceof File && maybeFile.size > 0) {
@@ -79,6 +81,7 @@ export async function POST(req: Request) {
       const body = await req.json();
       nombre = String(body?.nombre ?? "");
       correo = String(body?.correo ?? "");
+      descripcion = String(body?.descripcion ?? "");
     }
 
     const data = perfilSchema.parse({ nombre, correo });
@@ -111,7 +114,7 @@ export async function POST(req: Request) {
 
     const estado = "borrador";
 
-    let perfil: any = null; //eslint-disable-line @typescript-eslint/no-explicit-any
+    let perfil: any = null;
     try {
       const insertRes = await supabaseAdmin
         .from("perfiles")
@@ -120,6 +123,7 @@ export async function POST(req: Request) {
           nombre: data.nombre,
           logo_url: logoUrl,
           correo: data.correo,
+          descripcion: descripcion || null,
           estado,
         })
         .select("id")
@@ -149,7 +153,7 @@ export async function POST(req: Request) {
       { id: perfil.id, message: "Perfil creado exitosamente" },
       { status: 201 }
     );
-  } catch (error: any) { //eslint-disable-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
     if (error?.issues) {
       return NextResponse.json(
         { error: "Datos inválidos", details: error.issues },

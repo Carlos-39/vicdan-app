@@ -1,6 +1,6 @@
 // src/types/profile.ts
 
-export type ProfileStatus = 'activo' | 'inactivo';
+export type ProfileStatus = 'activo' | 'inactivo' | 'borrador';
 
 export interface Profile {
   id: string;
@@ -8,7 +8,12 @@ export interface Profile {
   nombre: string;
   logo_url: string | null;
   correo: string | null;
+  descripcion: string | null;
+  diseno: any | null;
   estado: ProfileStatus;
+  slug: string | null;
+  fecha_publicacion: string | null;
+  qr_url: string | null;
   fechas: string;
 }
 
@@ -36,10 +41,18 @@ export interface ProfilesResponse {
 export interface CreateProfileInput {
   nombre: string;
   correo?: string;
+  descripcion?: string;
   logo_url?: string;
   estado?: ProfileStatus;
 }
 
 export interface UpdateProfileInput extends Partial<CreateProfileInput> {
   id: string;
+}
+
+export interface ProfileCompleteness {
+  isComplete: boolean;
+  missingFields: string[];
+  completedFields: string[];
+  progress: number;
 }
