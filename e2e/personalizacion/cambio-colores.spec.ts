@@ -431,3 +431,4 @@ test.describe("E2E - Test de actualización de colores", () => {
     expect(savedTheme.colors.primary).not.toBe(initialTheme.colors.primary);
   });
 });
+
