@@ -6,11 +6,7 @@ import { hashPassword } from '@/lib/crypto';
 import { supabaseAdmin } from '@/lib/supabase';
 import { generateAuthToken } from '@/lib/jwt'; // <-- 1. Importar función para JWT
 import { logger } from '@/lib/logger'; // <-- 2. Importar tu logger
-
-const ADMIN_WHITELIST = [
-  "lauraserna090@gmail.com",
-  "danielramirezzapata10@gmail.com",
-];
+import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export async function POST(req: Request) {
   try {

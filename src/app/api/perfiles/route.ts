@@ -6,14 +6,9 @@ import { perfilSchema } from "./perfil.schema";
 import { verifyAuthToken } from '@/lib/jwt';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
+import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export const runtime = 'nodejs';
-
-const ADMIN_WHITELIST = [
-  "lauraserna090@gmail.com",
-  "danielramirezzapata10@gmail.com",
-  "brayansl0523@gmail.com"
-];
 
 export async function GET(req: Request) {
   try {

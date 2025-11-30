@@ -4,15 +4,10 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuthToken } from '@/lib/jwt';
 import { generatePublicProfileLink } from '@/lib/publicUrl';
 import QRCode from 'qrcode';
+import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export const runtime = 'nodejs';
 const QR_BUCKET = 'perfiles-qrs';
-
-const ADMIN_WHITELIST = [
-  "lauraserna090@gmail.com",
-  "danielramirezzapata10@gmail.com",
-  "brayansl0523@gmail.com"
-];
 
 type ParamsCtx = { params: Promise<{ id: string }> };
 

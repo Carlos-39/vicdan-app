@@ -4,14 +4,9 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { verifyAuthToken } from "@/lib/jwt";
 import { logger } from "@/lib/logger";
 import { tarjetaSchema } from "../tarjetas.schema";
+import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export const runtime = "nodejs";
-
-const ADMIN_WHITELIST = [
-  "lauraserna090@gmail.com",
-  "danielramirezzapata10@gmail.com",
-  "brayansl0523@gmail.com"
-];
 
 export async function PUT(
   req: Request,
