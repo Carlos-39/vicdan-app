@@ -9,6 +9,12 @@ import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 
+const ADMIN_WHITELIST = [
+  "lauraserna090@gmail.com",
+  "danielramirezzapata10@gmail.com",
+  "brayansl0523@gmail.com"
+];
+
 export async function GET(req: Request) {
   try {
     const authHeader = req.headers.get('authorization') ?? '';
@@ -18,6 +24,7 @@ export async function GET(req: Request) {
     if (!claims) return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
 
     const adminId = claims.id;
+    const adminEmail = claims.email;
 
     const url = new URL(req.url);
     const estado = url.searchParams.get('estado');
@@ -27,8 +34,12 @@ export async function GET(req: Request) {
 
     let query = supabaseAdmin
       .from('perfiles')
-      .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, fechas')
-      .eq('administrador_id', adminId);
+      .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, fechas');
+    
+    // Permitir a los administradores ver todos los perfiles
+    if (!ADMIN_WHITELIST.includes(adminEmail)) {
+      query = query.eq('administrador_id', adminId);
+    }
 
     if (estado && estado.trim()) {
       query = query.eq('estado', estado.trim());

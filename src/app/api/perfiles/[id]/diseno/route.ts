@@ -6,6 +6,12 @@ import { disenoSchema } from "./diseno.schema";
 
 export const runtime = "nodejs";
 
+const ADMIN_WHITELIST = [
+  "lauraserna090@gmail.com",
+  "danielramirezzapata10@gmail.com",
+  "brayansl0523@gmail.com"
+];
+
 export async function GET(
   req: Request,
   context: { params: Promise<{ id: string }> }
@@ -26,6 +32,8 @@ export async function GET(
         { status: 401 }
       );
     }
+
+    const adminEmail = claims.email;
 
     // 2. Obtener parámetros
     const { id: perfilId } = await context.params;
@@ -60,12 +68,14 @@ export async function GET(
       );
     }
 
-    // Verificar propiedad
-    if (perfil.administrador_id !== claims.id) {
-      return NextResponse.json(
-        { error: "No autorizado para acceder a este diseño" },
-        { status: 403 }
-      );
+    // Verificar propiedad solo si no son los Super Administradores 
+    if (!ADMIN_WHITELIST.includes(adminEmail)) {
+      if (perfil.administrador_id !== claims.id) {
+        return NextResponse.json(
+          { error: "No autorizado para acceder a este diseño" },
+          { status: 403 }
+        );
+      }
     }
 
     return NextResponse.json(

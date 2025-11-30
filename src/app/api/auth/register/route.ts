@@ -9,7 +9,7 @@ import { logger } from '@/lib/logger'; // <-- 2. Importar tu logger
 
 const ADMIN_WHITELIST = [
   "lauraserna090@gmail.com",
-  "danielramirezzapata10@gmail.com"
+  "danielramirezzapata10@gmail.com",
 ];
 
 export async function POST(req: Request) {

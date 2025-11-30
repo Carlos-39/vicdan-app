@@ -7,6 +7,12 @@ import { tarjetaSchema } from "../tarjetas.schema";
 
 export const runtime = "nodejs";
 
+const ADMIN_WHITELIST = [
+  "lauraserna090@gmail.com",
+  "danielramirezzapata10@gmail.com",
+  "brayansl0523@gmail.com"
+];
+
 export async function PUT(
   req: Request,
   context: { params: Promise<{ id: string; tarjetaId: string }> }
@@ -25,6 +31,8 @@ export async function PUT(
         { status: 401 }
       );
     }
+
+    const adminEmail = claims.email;
 
     const { id: perfilId, tarjetaId } = await context.params;
 
@@ -53,11 +61,14 @@ export async function PUT(
       );
     }
 
-    if (perfil.administrador_id !== claims.id) {
-      return NextResponse.json(
-        { error: "No autorizado para editar tarjetas de este perfil" },
-        { status: 403 }
-      );
+    // Verificar propiedad solo si no son los Super Administradores 
+    if (!ADMIN_WHITELIST.includes(adminEmail)) {
+      if (perfil.administrador_id !== claims.id) {
+        return NextResponse.json(
+          { error: "No autorizado para editar tarjetas de este perfil" },
+          { status: 403 }
+        );
+      }
     }
 
     // 4. Verificar que la tarjeta existe

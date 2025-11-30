@@ -8,6 +8,12 @@ import QRCode from 'qrcode';
 export const runtime = 'nodejs';
 const QR_BUCKET = 'perfiles-qrs';
 
+const ADMIN_WHITELIST = [
+  "lauraserna090@gmail.com",
+  "danielramirezzapata10@gmail.com",
+  "brayansl0523@gmail.com"
+];
+
 type ParamsCtx = { params: Promise<{ id: string }> };
 
 export async function POST(req: Request, ctx: ParamsCtx) {
@@ -29,6 +35,7 @@ export async function POST(req: Request, ctx: ParamsCtx) {
     if (!claims)
       return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
     const adminId = claims.id;
+    const adminEmail = claims.email;
 
     const { id: perfilId } = await ctx.params;
 
@@ -45,11 +52,14 @@ export async function POST(req: Request, ctx: ParamsCtx) {
     if (!existing) {
       return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 404 });
     }
-    if (existing.administrador_id !== adminId) {
-      return NextResponse.json(
-        { error: 'No autorizado para publicar este perfil' },
-        { status: 403 }
-      );
+    // Verificar propiedad solo si no son los Super Administradores 
+    if (!ADMIN_WHITELIST.includes(adminEmail)) {
+      if (existing.administrador_id !== adminId) {
+        return NextResponse.json(
+          { error: 'No autorizado para publicar este perfil' },
+          { status: 403 }
+        );
+      }
     }
     
     // Si ya tiene slug, solo retornar la información existente
