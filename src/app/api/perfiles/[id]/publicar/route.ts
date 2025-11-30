@@ -91,7 +91,7 @@ export async function POST(req: Request, ctx: ParamsCtx) {
       );
     }
 
-    const { slug, url } = generatePublicProfileLink();
+    const { slug, url } = generatePublicProfileLink(existing.nombre);
 
     const qrBuffer: Buffer = await QRCode.toBuffer(url, { type: 'png', width: 400 });
 

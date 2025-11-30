@@ -1,10 +1,21 @@
 import { customAlphabet } from 'nanoid';
 
-const ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz';
-const DEFAULT_SIZE = 10; 
+const ALPHABET = "0123456789abcdefghijklmnopqrstuvwxyz";
+const nano = customAlphabet(ALPHABET, 4); 
 
-const nano = customAlphabet(ALPHABET, DEFAULT_SIZE);
+function slugify(text: string) {
+  return text
+    .toString()
+    .normalize("NFD")                          // quita acentos
+    .replace(/[\u0300-\u036f]/g, "")          // remueve tildes
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")              // reemplaza todo por guiones
+    .replace(/^-+|-+$/g, "");                 // quita guiones extras
+}
 
-export function generateSlug(prefix = 'p') {
-  return `${prefix}_${nano()}`;
+export function generateFriendlySlug(nombre: string) {
+  const base = slugify(nombre);
+  const unique = nano();
+  return `${base}-${unique}`;
 }
