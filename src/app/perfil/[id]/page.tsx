@@ -51,6 +51,7 @@ const defaultTheme: ThemeConfig = {
     type: "centered",
     showAvatar: true,
     showSocialLinks: true,
+    socialIconsPosition: "above-links",
   },
 };
 
@@ -127,18 +128,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
       }}
     >
       <ThemePreview theme={theme} profileData={profileData} />
-      <div className="mt-12 p-6 bg-white border border-red-300 rounded-xl shadow-lg">
-        <h3 className="text-2xl font-bold text-red-700 border-b pb-2 mb-4">
-          Zona de Peligro
-        </h3>
-        <p className="text-gray-600 mb-4">
-          Ten en cuenta que eliminar el perfil es una acción permanente.
-        </p>
-        <ProfileDeleteAction
-          profileId={profile.id}
-          profileName={profile.nombre}
-        />
-      </div>
+      
     </div>
   );
 }
