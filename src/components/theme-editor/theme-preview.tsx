@@ -39,12 +39,72 @@ const defaultProfileData: ProfileData = {
   links: [],
 };
 
+// Definir patternOptions aquí para que esté disponible
+const patternOptions = [
+  { id: 'dots', name: 'Puntos', css: 'radial-gradient(circle, currentColor 1px, transparent 1px)' },
+  { id: 'lines', name: 'Líneas', css: 'repeating-linear-gradient(0deg, transparent, transparent 10px, currentColor 10px, currentColor 11px)' },
+  { id: 'grid', name: 'Cuadrícula', css: 'linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)' },
+  { id: 'zigzag', name: 'Zigzag', css: 'linear-gradient(135deg, currentColor 25%, transparent 25%), linear-gradient(225deg, currentColor 25%, transparent 25%), linear-gradient(45deg, currentColor 25%, transparent 25%), linear-gradient(315deg, currentColor 25%, transparent 25%)' },
+  { id: 'stripes', name: 'Rayas', css: 'repeating-linear-gradient(45deg, currentColor, currentColor 5px, transparent 5px, transparent 10px)' },
+  { id: 'checker', name: 'Tablero', css: 'conic-gradient(currentColor 0% 25%, transparent 0% 50%, currentColor 0% 75%, transparent 0%)' }
+];
+
 export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
   // ✅ Combinar datos de forma segura con tipo explícito
   const displayData: ProfileData = {
     ...defaultProfileData,
     ...profileData,
     links: profileData?.links || defaultProfileData.links,
+  };
+
+  // Mover getBackgroundStyle dentro del componente para que tenga acceso al theme
+  const getBackgroundStyle = () => {
+    const { background } = theme;
+
+    switch (background?.type) {
+      case "gradient":
+        if (background.gradient?.direction === "circle") {
+          return {
+            background: `radial-gradient(circle, ${background.gradient.colors?.[0] || '#877af7'}, ${background.gradient.colors?.[1] || '#3b82f6'})`,
+          };
+        }
+        return {
+          background: `linear-gradient(${
+            background.gradient?.direction || "to right"
+          }, ${background.gradient?.colors?.[0] || "#877af7"}, ${
+            background.gradient?.colors?.[1] || "#3b82f6"
+          })`,
+        };
+
+      case "pattern":
+        const pattern =
+          patternOptions.find((p) => p.id === background.pattern?.type) ||
+          patternOptions[0];
+        return {
+          background: pattern.css.replace(
+            /currentColor/g,
+            background.pattern?.color || "#877af7"
+          ),
+          backgroundSize: `${background.pattern?.size || 50}%`,
+          backgroundColor: theme.colors.background,
+          opacity: background.pattern?.opacity || 0.1,
+        };
+
+      case "image":
+        return {
+          backgroundImage: background.image?.url ? `url('${background.image.url}')` : 'none',
+          backgroundSize: background.image?.size || "cover",
+          backgroundPosition: background.image?.position || "center",
+          backgroundRepeat: background.image?.repeat || "no-repeat",
+          opacity: background.image?.opacity || 1,
+        };
+
+      case "color":
+      default:
+        return {
+          backgroundColor: theme.colors.background,
+        };
+    }
   };
 
   const getInitials = (name: string) => {
@@ -96,11 +156,11 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
       <div
         className={`rounded-lg transition-all w-full overflow-hidden scale-90 sm:scale-95 md:scale-100 ${getLayoutStyles()}`}
         style={{
-          backgroundColor: theme.colors.background,
+          ...getBackgroundStyle(), // Aplicar el fondo aquí
           color: theme.colors.text,
           fontFamily: theme.typography.fontFamily,
-          padding: `calc(${theme.spacing.padding} * 0.8)`, // ✅ Padding aplicado
-          gap: theme.spacing.gap, // ✅ Gap aplicado al contenedor principal
+          padding: `calc(${theme.spacing.padding} * 0.8)`,
+          gap: theme.spacing.gap,
           margin: "0 auto",
           display: "flex",
           flexDirection: "column",
