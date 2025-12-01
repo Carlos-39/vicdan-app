@@ -20,7 +20,7 @@ import { ColorPicker } from "./color-picker";
 import { FontSelector } from "./font-selector";
 import { SpacingControls } from "./spacing-controls";
 import { ThemePreview } from "./theme-preview";
-import { LinksManager, LinkItem } from "../ui/links-manager";
+import { LinksManager, LinkItem, SocialIcon } from "./links-manager";
 import { Toast, ToastType } from "@/components/ui/toast";
 import Swal from "sweetalert2";
 import { useSession } from "next-auth/react";
@@ -58,6 +58,7 @@ export interface ThemeConfig {
     showAvatar: boolean;
     showSocialLinks: boolean;
     textAlignment?: "left" | "center" | "right" | "justify";
+    socialIconsPosition: "above-links" | "below-links" | "both";
   };
 }
 
@@ -87,6 +88,7 @@ const defaultTheme: ThemeConfig = {
     type: "centered",
     showAvatar: true,
     showSocialLinks: true,
+    socialIconsPosition: "above-links", // VALOR POR DEFECTO
   },
 };
 
@@ -100,6 +102,7 @@ interface ThemeEditorProps {
     logo_url?: string;
     descripcion?: string;
     links?: LinkItem[];
+    socialIcons?: SocialIcon[];
   } | null;
   onProfileUpdate?: (data: any) => void;
 }
@@ -158,11 +161,13 @@ export function ThemeEditor({
     logo_url: "",
     descripcion: "",
     links: [],
+    socialIcons: [],
   };
 
   const [localProfileData, setLocalProfileData] = useState(() => ({
     ...defaultProfileData,
     ...profileData,
+    socialIcons: profileData?.socialIcons || [],
   }));
 
   const loadExistingTheme = async (): Promise<ThemeConfig | null> => {
@@ -607,6 +612,7 @@ export function ThemeEditor({
     };
   }, [hasUnsavedChanges]);
 
+  // FUNCIÓN handleBack FALTANTE - LA AGREGAMOS
   const handleBack = async () => {
     if (hasUnsavedChanges) {
       const userChoice = await showConfirmationDialog(
@@ -626,6 +632,15 @@ export function ThemeEditor({
     router.back();
   };
 
+  const handleSocialIconsChange = (socialIcons: SocialIcon[]) => {
+    const updatedData = { ...localProfileData, socialIcons };
+    setLocalProfileData(updatedData);
+    setHasUnsavedChanges(true);
+    onProfileUpdate?.(updatedData);
+    debouncedAutoSave();
+  };
+
+  // FUNCIÓN clearTempStorage FALTANTE - LA AGREGAMOS
   const clearTempStorage = () => {
     localStorage.removeItem(`vicdan-editor-${profileId}`);
   };
@@ -644,6 +659,7 @@ export function ThemeEditor({
     debouncedAutoSave();
   };
 
+  // FUNCIÓN handleSave FALTANTE - LA AGREGAMOS
   const handleSave = async () => {
     if (status === "unauthenticated" || !session?.accessToken) {
       Swal.fire({
@@ -860,6 +876,10 @@ export function ThemeEditor({
                   <LinksManager
                     links={localProfileData.links || []}
                     onChange={handleLinksUpdate}
+                    theme={theme}
+                    onThemeUpdate={updateTheme}
+                    socialIcons={localProfileData.socialIcons || []}
+                    onSocialIconsChange={handleSocialIconsChange}
                   />
                 </TabsContent>
               </Tabs>
@@ -878,7 +898,13 @@ export function ThemeEditor({
             <CardContent className="p-0">
               <div className="max-w-full overflow-auto">
                 <div className="min-h-[400px] sm:min-h-[500px] flex items-center justify-center p-3 sm:p-4">
-                  <ThemePreview theme={theme} profileData={localProfileData} />
+                  <ThemePreview
+                    theme={theme}
+                    profileData={{
+                      ...localProfileData,
+                      socialIcons: localProfileData.socialIcons || [],
+                    }}
+                  />
                 </div>
               </div>
             </CardContent>

@@ -1,8 +1,9 @@
 // src/app/perfil/[id]/page.tsx
-import { notFound } from 'next/navigation';
-import { supabaseAdmin } from '@/lib/supabase';
-import { ThemePreview } from '@/components/theme-editor/theme-preview';
-import { ThemeConfig } from '@/components/theme-editor/theme-editor';
+import { notFound } from "next/navigation";
+import { supabaseAdmin } from "@/lib/supabase";
+import { ThemePreview } from "@/components/theme-editor/theme-preview";
+import { ThemeConfig } from "@/components/theme-editor/theme-editor";
+import { ProfileDeleteAction } from "@/components/profiles/profile-delete-action";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -50,15 +51,16 @@ const defaultTheme: ThemeConfig = {
     type: "centered",
     showAvatar: true,
     showSocialLinks: true,
+    socialIconsPosition: "above-links",
   },
 };
 
 async function getProfileData(profileId: string) {
   try {
     const { data: profile, error: profileError } = await supabaseAdmin
-      .from('perfiles')
-      .select('*')
-      .eq('id', profileId)
+      .from("perfiles")
+      .select("*")
+      .eq("id", profileId)
       .single();
 
     if (profileError || !profile) {
@@ -66,10 +68,10 @@ async function getProfileData(profileId: string) {
     }
 
     const { data: links, error: linksError } = await supabaseAdmin
-      .from('tarjetas')
-      .select('*')
-      .eq('perfil_id', profile.id)
-      .order('created_at', { ascending: true });
+      .from("tarjetas")
+      .select("*")
+      .eq("perfil_id", profile.id)
+      .order("created_at", { ascending: true });
 
     return {
       profile,
@@ -82,7 +84,7 @@ async function getProfileData(profileId: string) {
 
 export default async function PublicProfilePage({ params }: PageProps) {
   const { id } = await params;
-  
+
   const data = await getProfileData(id);
 
   if (!data) {
@@ -95,39 +97,38 @@ export default async function PublicProfilePage({ params }: PageProps) {
   let theme = defaultTheme;
   if (profile.diseno) {
     try {
-      theme = typeof profile.diseno === 'string' 
-        ? JSON.parse(profile.diseno) 
-        : profile.diseno;
+      theme =
+        typeof profile.diseno === "string"
+          ? JSON.parse(profile.diseno)
+          : profile.diseno;
     } catch (error) {
       // Usar default theme si hay error
     }
   }
-  
+
   const profileData = {
     nombre: profile.nombre,
     correo: profile.correo,
     logo_url: profile.logo_url,
     descripcion: profile.descripcion,
-    links: links.map(link => ({
+    links: links.map((link) => ({
       id: link.id,
       name: link.nombre_tarjeta,
       url: link.link,
-      isActive: true
-    }))
+      isActive: true,
+    })),
   };
 
   return (
-    <div 
+    <div
       className="min-h-screen w-full flex items-center justify-center p-4"
       style={{
         backgroundColor: theme.colors.background,
         fontFamily: theme.typography.fontFamily,
       }}
     >
-      <ThemePreview 
-        theme={theme} 
-        profileData={profileData}
-      />
+      <ThemePreview theme={theme} profileData={profileData} />
+      
     </div>
   );
 }

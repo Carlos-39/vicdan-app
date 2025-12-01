@@ -1,63 +1,70 @@
-// src/components/profiles/profile-card.tsx
-"use client"
+"use client";
 
-import { ProfileWithAdmin } from "@/types/profile"
-import { Card } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { ProfileWithAdmin } from "@/types/profile";
+import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Edit, Eye, MoreVertical, Trash2, ExternalLink } from "lucide-react"
-import { formatDistanceToNow } from "@/lib/date-utils"
-import { useRouter } from "next/navigation"
+} from "@/components/ui/dropdown-menu";
+import { Edit, Eye, MoreVertical, Trash2, ExternalLink } from "lucide-react";
+import { formatDistanceToNow } from "@/lib/date-utils";
+import { useRouter } from "next/navigation";
+import { ProfileCardDeleteMenuItem } from "./profile-card-delete-menu-item";
+import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 
 interface ProfileCardProps {
-  profile: ProfileWithAdmin
-  onView: (profile: ProfileWithAdmin) => void
-  onEdit: (profile: ProfileWithAdmin) => void
-  onDelete: (profile: ProfileWithAdmin) => void
+  profile: ProfileWithAdmin;
+  onView: (profile: ProfileWithAdmin) => void;
+  onEdit: (profile: ProfileWithAdmin) => void;
 }
 
-export function ProfileCard({ profile, onView, onEdit, onDelete }: ProfileCardProps) {
-  const router = useRouter()
+export function ProfileCard({ profile, onView, onEdit }: ProfileCardProps) {
+  const router = useRouter();
 
   const getInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
       .toUpperCase()
-      .slice(0, 2)
-  }
+      .slice(0, 2);
+  };
 
   const getStatusVariant = (estado: string) => {
     switch (estado) {
-      case 'activo':
-        return 'success'
-      case 'inactivo':
-        return 'secondary'
-      case 'borrador':
-        return 'draft'
+      case "activo":
+        return "success";
+      case "inactivo":
+        return "secondary";
+      case "borrador":
+        return "draft";
       default:
-        return 'secondary'
+        return "secondary";
     }
-  }
+  };
 
   const handlePreview = () => {
-    router.push(`/dashboard/perfiles/${profile.id}`)
-  }
+    router.push(`/dashboard/perfiles/${profile.id}`);
+  };
+
+  const handleEdit = () => {
+    router.push(`/dashboard/perfiles/${profile.id}/editar`);
+  };
 
   return (
     <Card className="p-4 hover:shadow-md transition-shadow group">
       <div className="flex gap-3">
         {/* Avatar */}
         <Avatar className="size-20 shrink-0 items-center justify-center bg-primary/10 mx-auto my-auto">
-          <AvatarImage src={profile.logo_url || undefined} alt={profile.nombre} />
+          <AvatarImage
+            src={profile.logo_url || undefined}
+            alt={profile.nombre}
+          />
           <AvatarFallback className="bg-primary/10 text-primary">
             {getInitials(profile.nombre)}
           </AvatarFallback>
@@ -67,9 +74,13 @@ export function ProfileCard({ profile, onView, onEdit, onDelete }: ProfileCardPr
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-sm truncate">{profile.nombre}</h3>
+              <h3 className="font-semibold text-sm truncate">
+                {profile.nombre}
+              </h3>
               {profile.correo && (
-                <p className="text-xs text-muted-foreground truncate">{profile.correo}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {profile.correo}
+                </p>
               )}
             </div>
 
@@ -94,13 +105,13 @@ export function ProfileCard({ profile, onView, onEdit, onDelete }: ProfileCardPr
                   <Edit className="size-4" />
                   Editar
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  variant="destructive"
-                  onClick={() => onDelete(profile)}
-                >
-                  <Trash2 className="size-4" />
-                  Eliminar
-                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+
+                <ProfileCardDeleteMenuItem
+                  profileId={profile.id}
+                  profileName={profile.nombre}
+                  logoUrl={profile.logo_url ?? undefined}
+                />
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -133,5 +144,5 @@ export function ProfileCard({ profile, onView, onEdit, onDelete }: ProfileCardPr
         </div>
       </div>
     </Card>
-  )
+  );
 }
