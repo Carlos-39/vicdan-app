@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { verifyAuthToken } from "@/lib/jwt";
 import { logger } from "@/lib/logger";
 import { tarjetaSchema } from "../tarjetas.schema";
+import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export const runtime = "nodejs";
 
@@ -25,6 +26,8 @@ export async function PUT(
         { status: 401 }
       );
     }
+
+    const adminEmail = claims.email;
 
     const { id: perfilId, tarjetaId } = await context.params;
 
@@ -53,11 +56,14 @@ export async function PUT(
       );
     }
 
-    if (perfil.administrador_id !== claims.id) {
-      return NextResponse.json(
-        { error: "No autorizado para editar tarjetas de este perfil" },
-        { status: 403 }
-      );
+    // Verificar propiedad solo si no son los Super Administradores 
+    if (!ADMIN_WHITELIST.includes(adminEmail)) {
+      if (perfil.administrador_id !== claims.id) {
+        return NextResponse.json(
+          { error: "No autorizado para editar tarjetas de este perfil" },
+          { status: 403 }
+        );
+      }
     }
 
     // 4. Verificar que la tarjeta existe

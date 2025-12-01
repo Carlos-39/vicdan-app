@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuthToken } from '@/lib/jwt';
 import { logger } from "@/lib/logger";
+import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export const runtime = 'nodejs';
 
@@ -21,13 +22,18 @@ export async function GET(
 
     const { id: perfilId } = await ctx.params;
     const adminId = claims.id;
+    const adminEmail = claims.email;
 
-    const { data, error } = await supabaseAdmin
+    let query = supabaseAdmin
       .from('perfiles')
       .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, diseno, slug, fecha_publicacion, qr_url, fechas')
-      .eq('id', perfilId)
-      .eq('administrador_id', adminId)
-      .maybeSingle();
+      .eq('id', perfilId);
+    
+    if (!ADMIN_WHITELIST.includes(adminEmail)) {
+      query = query.eq('administrador_id', adminId);
+    }
+    
+    const { data, error } = await query.maybeSingle();
 
     if (error) {
       return NextResponse.json({ error: 'No se pudo obtener el perfil' }, { status: 500 });

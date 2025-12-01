@@ -3,7 +3,19 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ThemeConfig } from "./theme-editor";
-import { ExternalLink } from "lucide-react";
+import {
+  ExternalLink,
+  Instagram,
+  MessageCircle,
+  Music,
+  Facebook,
+  Twitter,
+  Youtube,
+  Linkedin,
+  Mail,
+  Phone,
+  Globe,
+} from "lucide-react";
 
 interface ThemePreviewProps {
   theme: ThemeConfig;
@@ -13,6 +25,7 @@ interface ThemePreviewProps {
     logo_url?: string;
     descripcion?: string;
     links?: LinkItem[];
+    socialIcons?: SocialIcon[];
   } | null;
 }
 
@@ -23,28 +36,102 @@ interface LinkItem {
   isActive: boolean;
 }
 
-// ✅ Definir un tipo explícito para los datos del perfil
-type ProfileData = {
-  nombre: string;
-  correo?: string;
-  logo_url?: string;
-  descripcion?: string;
-  links?: LinkItem[];
+interface SocialIcon {
+  id: string;
+  platform: string;
+  url: string;
+  isActive: boolean;
+}
+
+// Mapeo de iconos para redes sociales
+const SOCIAL_ICONS: { [key: string]: React.ComponentType<any> } = {
+  instagram: Instagram,
+  whatsapp: MessageCircle,
+  tiktok: Music,
+  facebook: Facebook,
+  twitter: Twitter,
+  youtube: Youtube,
+  linkedin: Linkedin,
+  email: Mail,
+  phone: Phone,
+  website: Globe,
+  default: ExternalLink,
 };
 
-const defaultProfileData: ProfileData = {
+const defaultProfileData = {
   nombre: "Juan Pérez",
   correo: "juan@ejemplo.com",
   descripcion: "Apasionado por crear experiencias digitales excepcionales.",
   links: [],
+  socialIcons: [],
 };
 
+// Definir patternOptions aquí para que esté disponible
+const patternOptions = [
+  { id: 'dots', name: 'Puntos', css: 'radial-gradient(circle, currentColor 1px, transparent 1px)' },
+  { id: 'lines', name: 'Líneas', css: 'repeating-linear-gradient(0deg, transparent, transparent 10px, currentColor 10px, currentColor 11px)' },
+  { id: 'grid', name: 'Cuadrícula', css: 'linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)' },
+  { id: 'zigzag', name: 'Zigzag', css: 'linear-gradient(135deg, currentColor 25%, transparent 25%), linear-gradient(225deg, currentColor 25%, transparent 25%), linear-gradient(45deg, currentColor 25%, transparent 25%), linear-gradient(315deg, currentColor 25%, transparent 25%)' },
+  { id: 'stripes', name: 'Rayas', css: 'repeating-linear-gradient(45deg, currentColor, currentColor 5px, transparent 5px, transparent 10px)' },
+  { id: 'checker', name: 'Tablero', css: 'conic-gradient(currentColor 0% 25%, transparent 0% 50%, currentColor 0% 75%, transparent 0%)' }
+];
+
 export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
-  // ✅ Combinar datos de forma segura con tipo explícito
-  const displayData: ProfileData = {
+  const displayData = {
     ...defaultProfileData,
     ...profileData,
     links: profileData?.links || defaultProfileData.links,
+    socialIcons: profileData?.socialIcons || defaultProfileData.socialIcons,
+  };
+
+  // Mover getBackgroundStyle dentro del componente para que tenga acceso al theme
+  const getBackgroundStyle = () => {
+    const { background } = theme;
+
+    switch (background?.type) {
+      case "gradient":
+        if (background.gradient?.direction === "circle") {
+          return {
+            background: `radial-gradient(circle, ${background.gradient.colors?.[0] || '#877af7'}, ${background.gradient.colors?.[1] || '#3b82f6'})`,
+          };
+        }
+        return {
+          background: `linear-gradient(${
+            background.gradient?.direction || "to right"
+          }, ${background.gradient?.colors?.[0] || "#877af7"}, ${
+            background.gradient?.colors?.[1] || "#3b82f6"
+          })`,
+        };
+
+      case "pattern":
+        const pattern =
+          patternOptions.find((p) => p.id === background.pattern?.type) ||
+          patternOptions[0];
+        return {
+          background: pattern.css.replace(
+            /currentColor/g,
+            background.pattern?.color || "#877af7"
+          ),
+          backgroundSize: `${background.pattern?.size || 50}%`,
+          backgroundColor: theme.colors.background,
+          opacity: background.pattern?.opacity || 0.1,
+        };
+
+      case "image":
+        return {
+          backgroundImage: background.image?.url ? `url('${background.image.url}')` : 'none',
+          backgroundSize: background.image?.size || "cover",
+          backgroundPosition: background.image?.position || "center",
+          backgroundRepeat: background.image?.repeat || "no-repeat",
+          opacity: background.image?.opacity || 1,
+        };
+
+      case "color":
+      default:
+        return {
+          backgroundColor: theme.colors.background,
+        };
+    }
   };
 
   const getInitials = (name: string) => {
@@ -75,12 +162,10 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
     }
   };
 
-  // ✅ Función para obtener la alineación de texto específica
   const getTextAlignment = () => {
-    return theme.layout.textAlignment || "center"; // Valor por defecto
+    return theme.layout.textAlignment || "center";
   };
 
-  // ✅ Función para obtener la justificación del flex según la alineación
   const getFlexJustification = () => {
     const alignment = getTextAlignment();
     return alignment === "center"
@@ -90,23 +175,81 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
       : "flex-start";
   };
 
+  // Función para obtener iconos sociales activos con URL válida
+  const getActiveSocialIcons = () => {
+    return displayData.socialIcons?.filter((icon) => {
+      const hasValidUrl = icon.url && 
+                          icon.url.trim() !== '' && 
+                          icon.url !== 'https://' &&
+                          icon.url !== 'mailto:' &&
+                          icon.url !== 'tel:';
+      
+      return icon.isActive && hasValidUrl;
+    }) || [];
+  };
+
+  // Componente para renderizar iconos sociales
+  const SocialIconsSection = ({ position }: { position: "above" | "below" }) => {
+    const activeIcons = getActiveSocialIcons();
+
+    if (activeIcons.length === 0) return null;
+
+    return (
+      <div
+        className={`flex justify-center gap-4 flex-wrap ${
+          position === "above" ? "mb-4" : "mt-4"
+        }`}
+      >
+        {activeIcons.map((socialIcon) => {
+          const IconComponent = SOCIAL_ICONS[socialIcon.platform] || ExternalLink;
+          const platformName = socialIcon.platform.charAt(0).toUpperCase() + socialIcon.platform.slice(1);
+
+          return (
+            <a
+              key={socialIcon.id}
+              href={socialIcon.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-3 rounded-full transition-all hover:scale-110 hover:shadow-lg active:scale-95"
+              style={{
+                backgroundColor: theme.colors.primary, // Mismo color que las tarjetas
+                color: theme.colors.cardText, // Mismo color del texto de las tarjetas
+              }}
+              title={`Visitar ${platformName}`}
+              onClick={(e) => {
+                if (!socialIcon.url || socialIcon.url.trim() === '' || 
+                    socialIcon.url === 'https://' || 
+                    socialIcon.url === 'mailto:' || 
+                    socialIcon.url === 'tel:') {
+                  e.preventDefault();
+                }
+              }}
+            >
+              <IconComponent className="size-6" />
+            </a>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-4 w-full max-w-full px-2 sm:px-0">
       {/* Vista previa del perfil */}
       <div
         className={`rounded-lg transition-all w-full overflow-hidden scale-90 sm:scale-95 md:scale-100 ${getLayoutStyles()}`}
         style={{
-          backgroundColor: theme.colors.background,
+          ...getBackgroundStyle(), // Aplicar el fondo aquí
           color: theme.colors.text,
           fontFamily: theme.typography.fontFamily,
-          padding: `calc(${theme.spacing.padding} * 0.8)`, // ✅ Padding aplicado
-          gap: theme.spacing.gap, // ✅ Gap aplicado al contenedor principal
+          padding: `calc(${theme.spacing.padding} * 0.8)`,
+          gap: theme.spacing.gap,
           margin: "0 auto",
           display: "flex",
           flexDirection: "column",
         }}
       >
-        {/* Avatar - Aplicar alineación del layout */}
+        {/* Avatar */}
         {theme.layout.showAvatar && (
           <div
             className="mb-4"
@@ -145,12 +288,11 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
           </div>
         )}
 
-        {/* Información principal - Aplicar alineación del layout */}
+        {/* Información principal */}
         <div
           className="space-y-3"
           style={{
             textAlign: getTextAlignment() as any,
-            // ✅ Aplicar margin como line-height a los elementos de texto
             lineHeight: theme.spacing.margin,
           }}
         >
@@ -159,7 +301,7 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
             style={{
               fontSize: theme.typography.fontSize.heading,
               color: theme.colors.secondary,
-              marginBottom: `calc(${theme.spacing.margin} / 2)`, // ✅ Espacio después del título
+              marginBottom: `calc(${theme.spacing.margin} / 2)`,
             }}
           >
             {displayData.nombre}
@@ -171,8 +313,8 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
               style={{
                 fontSize: theme.typography.fontSize.base,
                 color: theme.colors.text,
-                lineHeight: theme.spacing.margin, // ✅ Margin como line-height
-                margin: 0, // Resetear margen por defecto
+                lineHeight: theme.spacing.margin,
+                margin: 0,
               }}
             >
               {displayData.descripcion}
@@ -180,14 +322,19 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
           )}
         </div>
 
-        {/* Enlaces - ✅ Aplicar gap entre tarjetas */}
+        {/* Iconos sociales - ARRIBA de los enlaces */}
+        {(theme.layout.socialIconsPosition === "above-links" || theme.layout.socialIconsPosition === "both") && (
+          <SocialIconsSection position="above" />
+        )}
+
+        {/* Enlaces principales */}
         <div
           className="mt-4"
           style={{
             textAlign: getTextAlignment() as any,
             display: "flex",
             flexDirection: "column",
-            gap: theme.spacing.gap, // ✅ Gap entre tarjetas de enlaces
+            gap: theme.spacing.gap,
           }}
         >
           {displayData.links
@@ -201,7 +348,6 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
                   color: theme.colors.cardText,
                   border: "none",
                   fontSize: theme.typography.fontSize.cardText,
-                  // ✅ Aplicar alineación al contenido interno del botón
                   justifyContent: getFlexJustification(),
                   textAlign: getTextAlignment() as any,
                 }}
@@ -227,6 +373,11 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
               </Button>
             ))}
         </div>
+
+        {/* Iconos sociales - DEBAJO de los enlaces */}
+        {(theme.layout.socialIconsPosition === "below-links" || theme.layout.socialIconsPosition === "both") && (
+          <SocialIconsSection position="below" />
+        )}
       </div>
     </div>
   );

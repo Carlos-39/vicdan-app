@@ -20,10 +20,11 @@ import { ColorPicker } from "./color-picker";
 import { FontSelector } from "./font-selector";
 import { SpacingControls } from "./spacing-controls";
 import { ThemePreview } from "./theme-preview";
-import { LinksManager, LinkItem } from "../ui/links-manager";
+import { LinksManager, LinkItem, SocialIcon } from "./links-manager";
 import { Toast, ToastType } from "@/components/ui/toast";
 import Swal from "sweetalert2";
 import { useSession } from "next-auth/react";
+import { BackgroundSelector } from "./background-selector";
 
 export interface ThemeConfig {
   colors: {
@@ -33,6 +34,27 @@ export interface ThemeConfig {
     text: string;
     card: string;
     cardText: string;
+  };
+  background: {
+    type: "color" | "gradient" | "pattern" | "image";
+    gradient?: {
+      colors: string[];
+      direction: string;
+      type: "linear" | "radial";
+    };
+    pattern?: {
+      type: string;
+      color: string;
+      size: number;
+      opacity: number;
+    };
+    image?: {
+      url: string;
+      position: string;
+      size: "cover" | "contain" | "auto";
+      repeat: "no-repeat" | "repeat" | "repeat-x" | "repeat-y";
+      opacity: number;
+    };
   };
   typography: {
     fontFamily: string;
@@ -58,6 +80,7 @@ export interface ThemeConfig {
     showAvatar: boolean;
     showSocialLinks: boolean;
     textAlignment?: "left" | "center" | "right" | "justify";
+    socialIconsPosition: "above-links" | "below-links" | "both";
   };
 }
 
@@ -69,6 +92,9 @@ const defaultTheme: ThemeConfig = {
     text: "#1f2937",
     card: "#877af7",
     cardText: "#ffffff",
+  },
+  background: {
+    type: "color",
   },
   typography: {
     fontFamily: "Inter, sans-serif",
@@ -87,6 +113,7 @@ const defaultTheme: ThemeConfig = {
     type: "centered",
     showAvatar: true,
     showSocialLinks: true,
+    socialIconsPosition: "above-links", // VALOR POR DEFECTO
   },
 };
 
@@ -100,6 +127,7 @@ interface ThemeEditorProps {
     logo_url?: string;
     descripcion?: string;
     links?: LinkItem[];
+    socialIcons?: SocialIcon[];
   } | null;
   onProfileUpdate?: (data: any) => void;
 }
@@ -158,11 +186,13 @@ export function ThemeEditor({
     logo_url: "",
     descripcion: "",
     links: [],
+    socialIcons: [],
   };
 
   const [localProfileData, setLocalProfileData] = useState(() => ({
     ...defaultProfileData,
     ...profileData,
+    socialIcons: profileData?.socialIcons || [],
   }));
 
   const loadExistingTheme = async (): Promise<ThemeConfig | null> => {
@@ -194,6 +224,7 @@ export function ThemeEditor({
 
           const mergedTheme: ThemeConfig = {
             colors: { ...defaultTheme.colors, ...existingTheme.colors },
+            background: { ...defaultTheme.background, ...existingTheme.background },
             typography: {
               ...defaultTheme.typography,
               ...existingTheme.typography,
@@ -607,6 +638,7 @@ export function ThemeEditor({
     };
   }, [hasUnsavedChanges]);
 
+  // FUNCIÓN handleBack FALTANTE - LA AGREGAMOS
   const handleBack = async () => {
     if (hasUnsavedChanges) {
       const userChoice = await showConfirmationDialog(
@@ -626,6 +658,15 @@ export function ThemeEditor({
     router.back();
   };
 
+  const handleSocialIconsChange = (socialIcons: SocialIcon[]) => {
+    const updatedData = { ...localProfileData, socialIcons };
+    setLocalProfileData(updatedData);
+    setHasUnsavedChanges(true);
+    onProfileUpdate?.(updatedData);
+    debouncedAutoSave();
+  };
+
+  // FUNCIÓN clearTempStorage FALTANTE - LA AGREGAMOS
   const clearTempStorage = () => {
     localStorage.removeItem(`vicdan-editor-${profileId}`);
   };
@@ -644,6 +685,7 @@ export function ThemeEditor({
     debouncedAutoSave();
   };
 
+  // FUNCIÓN handleSave FALTANTE - LA AGREGAMOS
   const handleSave = async () => {
     if (status === "unauthenticated" || !session?.accessToken) {
       Swal.fire({
@@ -833,6 +875,17 @@ export function ThemeEditor({
                     colors={theme.colors}
                     onChange={(colors) => updateTheme({ colors })}
                   />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm">Fondo Avanzado</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <BackgroundSelector
+                        background={theme.background}
+                        onChange={(background) => updateTheme({ background })}
+                      />
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
                 <TabsContent value="layout" className="space-y-3 mt-3">
@@ -860,6 +913,10 @@ export function ThemeEditor({
                   <LinksManager
                     links={localProfileData.links || []}
                     onChange={handleLinksUpdate}
+                    theme={theme}
+                    onThemeUpdate={updateTheme}
+                    socialIcons={localProfileData.socialIcons || []}
+                    onSocialIconsChange={handleSocialIconsChange}
                   />
                 </TabsContent>
               </Tabs>
@@ -878,7 +935,13 @@ export function ThemeEditor({
             <CardContent className="p-0">
               <div className="max-w-full overflow-auto">
                 <div className="min-h-[400px] sm:min-h-[500px] flex items-center justify-center p-3 sm:p-4">
-                  <ThemePreview theme={theme} profileData={localProfileData} />
+                  <ThemePreview
+                    theme={theme}
+                    profileData={{
+                      ...localProfileData,
+                      socialIcons: localProfileData.socialIcons || [],
+                    }}
+                  />
                 </div>
               </div>
             </CardContent>

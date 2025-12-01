@@ -6,6 +6,7 @@ import { perfilSchema } from "./perfil.schema";
 import { verifyAuthToken } from '@/lib/jwt';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
+import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export const runtime = 'nodejs';
 
@@ -18,6 +19,7 @@ export async function GET(req: Request) {
     if (!claims) return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
 
     const adminId = claims.id;
+    const adminEmail = claims.email;
 
     const url = new URL(req.url);
     const estado = url.searchParams.get('estado');
@@ -27,8 +29,12 @@ export async function GET(req: Request) {
 
     let query = supabaseAdmin
       .from('perfiles')
-      .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, fechas')
-      .eq('administrador_id', adminId);
+      .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, fechas');
+    
+    // Permitir a los administradores ver todos los perfiles
+    if (!ADMIN_WHITELIST.includes(adminEmail)) {
+      query = query.eq('administrador_id', adminId);
+    }
 
     if (estado && estado.trim()) {
       query = query.eq('estado', estado.trim());

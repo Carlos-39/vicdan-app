@@ -6,6 +6,7 @@ export const registerSchema = z.object({
   password: z.string()
   .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/, 
          'Debe tener 8+ chars, minúscula, mayúscula, dígito y símbolo'),
+  codigo: z.string().optional(),
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;
