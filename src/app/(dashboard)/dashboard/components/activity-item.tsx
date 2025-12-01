@@ -18,15 +18,25 @@ interface ActivityItemProps {
 const statusConfig = {
   completed: {
     label: "ACTIVO",
-    className: "bg-gradient-to-r from-[var(--primary)] to-indigo-600 text-white shadow-md shadow-purple-500/20",
+    className: "text-white font-bold",
+    style: {
+      backgroundColor: "#877af7",
+    },
   },
   pending: {
     label: "INACTIVO",
-    className: "bg-gradient-to-r from-purple-400 to-indigo-500 text-white shadow-md shadow-purple-500/20",
+    className: "text-white font-bold",
+    style: {
+      backgroundColor: "#9ca3af",
+    },
   },
   draft: {
     label: "BORRADOR",
-    className: "bg-gradient-to-r from-purple-500 to-indigo-600 text-white shadow-md shadow-purple-500/20",
+    className: "text-white font-bold",
+    style: {
+      backgroundColor: "#877af7",
+      opacity: 0.7,
+    },
   },
 }
 
@@ -52,22 +62,46 @@ export function ActivityItem({
   return (
     <div 
       className={cn(
-        "flex items-start gap-3 p-4 rounded-xl transition-all duration-200 border border-purple-100/50",
-        onClick ? "cursor-pointer hover:bg-gradient-to-r hover:from-purple-50/50 hover:to-indigo-50/30 hover:shadow-md hover:scale-[1.01] hover:border-purple-200" : ""
+        "flex items-start gap-3 p-4 rounded-lg transition-all duration-200 border bg-white",
+        onClick ? "cursor-pointer hover:bg-gray-50 hover:shadow-sm hover:border-gray-300" : ""
       )}
+      style={{
+        borderColor: "#e5e7eb",
+      }}
       onClick={onClick}
     >
       {/* Avatar o Icono */}
       {logoUrl ? (
-        <Avatar className="h-12 w-12 flex-shrink-0 border-2 border-purple-200">
+        <Avatar 
+          className="h-12 w-12 flex-shrink-0 border-2"
+          style={{
+            borderColor: "#877af7",
+          }}
+        >
           <AvatarImage src={logoUrl} alt={subtitle} />
-          <AvatarFallback className="bg-gradient-to-br from-[var(--primary)] to-indigo-600 text-white font-semibold">
+          <AvatarFallback 
+            className="font-semibold"
+            style={{
+              backgroundColor: "#877af7",
+              color: "#ffffff",
+            }}
+          >
             {initials}
           </AvatarFallback>
         </Avatar>
       ) : (
-        <div className={cn("h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0", iconBgColor)}>
-          <Icon className="h-6 w-6" />
+        <div 
+          className="h-12 w-12 rounded-lg flex items-center justify-center flex-shrink-0"
+          style={{
+            backgroundColor: "#877af720",
+          }}
+        >
+          <Icon 
+            className="h-6 w-6"
+            style={{
+              color: "#877af7",
+            }}
+          />
         </div>
       )}
       
@@ -76,11 +110,16 @@ export function ActivityItem({
         <div className="flex items-start justify-between gap-2 mb-1">
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-foreground leading-tight">
-              {title} <span className="text-[var(--primary)] font-medium">{subtitle}</span>
+              Perfil <span style={{ color: "#877af7" }}>{subtitle}</span>
             </p>
             {email && (
               <div className="flex items-center gap-1.5 mt-1">
-                <Mail className="h-3 w-3 text-purple-400" />
+                <Mail 
+                  className="h-3 w-3"
+                  style={{
+                    color: "#877af7",
+                  }}
+                />
                 <p className="text-xs text-muted-foreground truncate">{email}</p>
               </div>
             )}
@@ -90,7 +129,10 @@ export function ActivityItem({
       </div>
       
       {/* Badge de estado */}
-      <span className={cn("text-xs font-bold px-3 py-1.5 rounded-full whitespace-nowrap flex-shrink-0", statusInfo.className)}>
+      <span 
+        className={cn("text-xs px-3 py-1.5 rounded-full whitespace-nowrap flex-shrink-0", statusInfo.className)}
+        style={statusInfo.style}
+      >
         {statusInfo.label}
       </span>
     </div>

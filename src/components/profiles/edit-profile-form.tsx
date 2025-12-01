@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
@@ -68,6 +68,8 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const successMessageRef = useRef<HTMLDivElement>(null);
+  const errorMessageRef = useRef<HTMLDivElement>(null);
   const [removeCurrentImage, setRemoveCurrentImage] = useState(false);
   const router = useRouter();
   const { data: session } = useSession();
@@ -185,6 +187,30 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
     }
   };
 
+  // Scroll automático al mensaje de éxito cuando se actualiza el perfil
+  useEffect(() => {
+    if (submitSuccess && successMessageRef.current) {
+      setTimeout(() => {
+        successMessageRef.current?.scrollIntoView({ 
+          behavior: "smooth", 
+          block: "start" 
+        });
+      }, 100);
+    }
+  }, [submitSuccess]);
+
+  // Scroll automático al mensaje de error cuando hay un error
+  useEffect(() => {
+    if (submitError && errorMessageRef.current) {
+      setTimeout(() => {
+        errorMessageRef.current?.scrollIntoView({ 
+          behavior: "smooth", 
+          block: "start" 
+        });
+      }, 100);
+    }
+  }, [submitError]);
+
   return (
     <div className="w-full max-w-2xl mx-auto">
       <form
@@ -203,14 +229,65 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
 
         {/* Mensajes de validación global */}
         {submitError && (
-          <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
-            {submitError}
+          <div 
+            ref={errorMessageRef}
+            className="p-5 bg-gradient-to-r from-red-50 to-rose-50 border-2 border-red-400 rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2 duration-300"
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <svg 
+                  className="w-6 h-6 text-red-600" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2.5} 
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-base font-semibold text-red-900">
+                  {submitError}
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
         {submitSuccess && (
-          <div className="p-4 bg-success/10 border border-success/20 rounded-lg text-success">
-            ¡Perfil actualizado exitosamente! Redirigiendo...
+          <div 
+            ref={successMessageRef}
+            className="p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2 duration-300"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <svg 
+                  className="w-6 h-6 text-green-600" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" 
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-base font-semibold text-green-800">
+                  ¡Perfil actualizado exitosamente!
+                </p>
+                <p className="text-sm text-green-700 mt-1">
+                  Redirigiendo...
+                </p>
+              </div>
+            </div>
           </div>
         )}
 

@@ -84,6 +84,14 @@ export function ProfileCardDeleteMenuItem({
       await deleteProfile(id, session.accessToken);
       console.log("Eliminación completada exitosamente");
 
+      // Guardar mensaje de éxito en sessionStorage para mostrarlo después de recargar
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('profileDeleteSuccess', JSON.stringify({
+          message: `El perfil "${profileName}" ha sido eliminado exitosamente.`,
+          timestamp: Date.now()
+        }));
+      }
+
       toast.success(`✅ El perfil "${profileName}" ha sido eliminado exitosamente.`, {
         duration: 3000,
       });
@@ -99,12 +107,21 @@ export function ProfileCardDeleteMenuItem({
         } else {
           router.refresh();
         }
-      }, 1000);
+      }, 1500);
       
     } catch (e) {
       console.error("Error completo al eliminar perfil:", e);
       const errorMessage =
         e instanceof Error ? e.message : "Ocurrió un error inesperado.";
+      
+      // Guardar mensaje de error en sessionStorage
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('profileDeleteError', JSON.stringify({
+          message: errorMessage,
+          timestamp: Date.now()
+        }));
+      }
+      
       toast.error(`❌ ${errorMessage}`, { duration: 5000 });
       setIsDeleting(false);
       // No cerrar el modal si hay error para que el usuario pueda intentar de nuevo
