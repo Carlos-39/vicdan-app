@@ -68,7 +68,7 @@ export function NewProfileForm() {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Error al crear el perfil");
+        throw new Error("Error al crear el perfil");
       }
 
       setSubmitSuccess(true);
@@ -81,9 +81,7 @@ export function NewProfileForm() {
       }, 3000);
     } catch (error) {
       console.error("Error al crear perfil:", error);
-      setSubmitError(
-        error instanceof Error ? error.message : "Error al crear el perfil"
-      );
+      setSubmitError("Error al crear el perfil");
     } finally {
       setIsSubmitting(false);
     }

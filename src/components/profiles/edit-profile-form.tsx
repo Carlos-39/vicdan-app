@@ -31,8 +31,7 @@ const editProfileSchema = z.object({
     .email("Por favor ingresa un correo electrónico válido")
     .toLowerCase()
     .trim()
-    .optional()
-    .or(z.literal("")),
+    .optional() ,
 
   descripcion: z
     .string()
@@ -164,7 +163,7 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Error al actualizar el perfil");
+        throw new Error("Error al actualizar el perfil");
       }
 
       setSubmitSuccess(true);
@@ -180,9 +179,7 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
       }, 2000);
     } catch (error) {
       console.error("Error al actualizar perfil:", error);
-      setSubmitError(
-        error instanceof Error ? error.message : "Error al actualizar el perfil"
-      );
+      setSubmitError("Error al actualizar el perfil");
     } finally {
       setIsSubmitting(false);
     }
@@ -246,7 +243,7 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
             {/* Email */}
             <div>
               <label className="block text-sm font-medium mb-2">
-                Correo Electrónico
+                Correo Electrónico <span className="text-destructive">*</span>
               </label>
               <Input
                 {...register("correo")}

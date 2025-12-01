@@ -87,7 +87,7 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
 
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || 'Error al publicar el perfil')
+        throw new Error('Error al publicar el perfil')
       }
 
       const data = await response.json()
@@ -110,7 +110,7 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
       }, 1000)
     } catch (error) {
       console.error('Error publicando perfil:', error)
-      setPublishError(error instanceof Error ? error.message : 'Error al publicar el perfil')
+      setPublishError('Error al publicar el perfil')
     } finally {
       setIsPublishing(false)
     }
