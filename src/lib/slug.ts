@@ -17,5 +17,5 @@ function slugify(text: string) {
 export function generateFriendlySlug(nombre: string) {
   const base = slugify(nombre);
   const unique = nano();
-  return `${base}-${unique}`;
+  return `p_${base}-${unique}`;
 }
