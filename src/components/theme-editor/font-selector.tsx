@@ -222,63 +222,7 @@ export function FontSelector({ typography, onChange }: FontSelectorProps) {
         </div>
       </div>
 
-      {/* Vista previa de tipografía */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm">
-            Previsualización tipográfica
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div
-            className="space-y-2 p-4 rounded-lg border"
-            style={{
-              fontFamily: typography.fontFamily,
-              backgroundColor: "var(--background)",
-              color: "var(--text)",
-            }}
-          >
-            <h1
-              style={{
-                fontSize: typography.fontSize.heading,
-                fontWeight: "bold",
-                margin: 0,
-              }}
-            >
-              Título principal
-            </h1>
-            <p
-              style={{
-                fontSize: typography.fontSize.base,
-                margin: 0,
-                lineHeight: "1.5",
-              }}
-            >
-              Este es un texto de ejemplo que muestra cómo se verá el contenido
-              con la tipografía seleccionada.
-            </p>
 
-            {/* Preview de texto de tarjetas */}
-            <div
-              className="mt-4 p-3 rounded-lg"
-              style={{
-                backgroundColor: "#877af7",
-                color: "#ffffff",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: typography.fontSize.cardText,
-                  fontWeight: "600",
-                  textAlign: "center",
-                }}
-              >
-                Así se verá el texto en tus tarjetas
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

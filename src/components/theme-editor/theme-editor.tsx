@@ -759,7 +759,7 @@ export function ThemeEditor({
   }
 
   return (
-    <div className="container max-w-4xl mx-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+    <div className="container max-w-7xl mx-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
       <Toast
         message={toast.message}
         type={toast.type}
@@ -770,15 +770,7 @@ export function ThemeEditor({
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleBack}
-            className="hidden sm:flex"
-          >
-            <ArrowLeft className="size-4" />
-            Volver
-          </Button>
+          
           <div className="text-center sm:text-left">
             <h1 className="text-2xl sm:text-3xl font-bold">
               Personalizar Diseño

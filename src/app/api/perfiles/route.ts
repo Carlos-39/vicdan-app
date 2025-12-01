@@ -137,6 +137,28 @@ export async function POST(req: Request) {
 
       if (insertRes.error) {
         console.error("[api/perfiles] insert error:", insertRes.error);
+        
+        // Detectar error de correo duplicado
+        const errorMessage = String(insertRes.error.message ?? insertRes.error).toLowerCase();
+        const errorCode = insertRes.error.code;
+        
+        if (
+          errorCode === "23505" || 
+          errorMessage.includes("duplicate") || 
+          errorMessage.includes("unique") ||
+          errorMessage.includes("correo") ||
+          errorMessage.includes("email")
+        ) {
+          return NextResponse.json(
+            {
+              error: "Este correo electrónico ya está registrado",
+              details: "Por favor, utiliza un correo electrónico diferente.",
+              code: "DUPLICATE_EMAIL",
+            },
+            { status: 409 }
+          );
+        }
+        
         return NextResponse.json(
           {
             error: "No se pudo crear el perfil",

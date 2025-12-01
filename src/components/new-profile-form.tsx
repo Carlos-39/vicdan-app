@@ -67,8 +67,16 @@ export function NewProfileForm() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error("Error al crear el perfil");
+        const errorData = await response.json().catch(() => ({
+          error: "Error al crear el perfil",
+        }));
+        
+        // Mensaje de error más específico
+        if (errorData.code === "DUPLICATE_EMAIL" || errorData.error?.includes("correo") || errorData.error?.includes("email")) {
+          throw new Error(errorData.error || "Este correo electrónico ya está registrado. Por favor, utiliza un correo diferente.");
+        }
+        
+        throw new Error(errorData.error || errorData.details || "Error al crear el perfil. Por favor, intenta nuevamente.");
       }
 
       setSubmitSuccess(true);
@@ -81,7 +89,10 @@ export function NewProfileForm() {
       }, 3000);
     } catch (error) {
       console.error("Error al crear perfil:", error);
-      setSubmitError("Error al crear el perfil");
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Error al crear el perfil. Por favor, intenta nuevamente.";
+      setSubmitError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -105,8 +116,34 @@ export function NewProfileForm() {
 
         {/* Mensajes de validación global */}
         {submitError && (
-          <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg text-destructive">
-            {submitError}
+          <div className="p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0 mt-0.5">
+                <svg 
+                  className="w-5 h-5 text-amber-600 dark:text-amber-400" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  {submitError}
+                </p>
+                {submitError.includes("correo") || submitError.includes("email") ? (
+                  <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                    Verifica que el correo no esté registrado o intenta con otro correo electrónico.
+                  </p>
+                ) : null}
+              </div>
+            </div>
           </div>
         )}
 

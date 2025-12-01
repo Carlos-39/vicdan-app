@@ -185,17 +185,7 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
     <div className="space-y-6">
       {/* Header con botones de acción */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        {showBackButton && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.back()}
-            className="self-start"
-          >
-            <ArrowLeft className="size-4" />
-            Volver
-          </Button>
-        )}
+        
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:ml-auto">
           {/* Botones siempre visibles */}
           <Button variant="outline" size="sm" onClick={handlePreviewDesign}>
@@ -280,9 +270,6 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
           <div className="grid gap-6 md:grid-cols-2">
             {/* Información de Contacto */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                Información de Contacto
-              </h3>
               
               {profile.correo ? (
                 <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
@@ -322,10 +309,6 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
 
             {/* Información del Sistema */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                Información del Sistema
-              </h3>
-
               {profile.administrador && (
                 <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                   <User className="size-5 text-muted-foreground shrink-0 mt-0.5" />
@@ -405,30 +388,7 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
         />
       )}
 
-      {/* Card de ID (útil para debugging/admin) */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Información Técnica</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between py-2 border-b">
-              <span className="text-sm text-muted-foreground">ID del Perfil</span>
-              <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
-                {profile.id}
-              </code>
-            </div>
-            {profile.administrador_id && (
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-muted-foreground">ID del Administrador</span>
-                <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
-                  {profile.administrador_id}
-                </code>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      
     </div>
   )
 }
