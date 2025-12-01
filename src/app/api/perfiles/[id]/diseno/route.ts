@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { verifyAuthToken } from "@/lib/jwt";
 import { logger } from "@/lib/logger";
 import { disenoSchema } from "./diseno.schema";
+import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export const runtime = "nodejs";
 
@@ -26,6 +27,8 @@ export async function GET(
         { status: 401 }
       );
     }
+
+    const adminEmail = claims.email;
 
     // 2. Obtener parámetros
     const { id: perfilId } = await context.params;
@@ -60,12 +63,14 @@ export async function GET(
       );
     }
 
-    // Verificar propiedad
-    if (perfil.administrador_id !== claims.id) {
-      return NextResponse.json(
-        { error: "No autorizado para acceder a este diseño" },
-        { status: 403 }
-      );
+    // Verificar propiedad solo si no son los Super Administradores 
+    if (!ADMIN_WHITELIST.includes(adminEmail)) {
+      if (perfil.administrador_id !== claims.id) {
+        return NextResponse.json(
+          { error: "No autorizado para acceder a este diseño" },
+          { status: 403 }
+        );
+      }
     }
 
     return NextResponse.json(

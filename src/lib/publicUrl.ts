@@ -1,9 +1,9 @@
-import { generateSlug } from './slug';
+import { generateFriendlySlug } from "./slug";
 
-const BASE_PUBLIC_URL = 'https://vicdan-app.vercel.app';
+const BASE_PUBLIC_URL = process.env.NEXT_PUBLIC_APP_URL || "https://vicdan-app.vercel.app";
 
-export function generatePublicProfileLink() {
-  const slug = generateSlug('p');
-  const url = `${BASE_PUBLIC_URL}/${slug}`;
+export function generatePublicProfileLink(nombre: string) {
+  const slug = generateFriendlySlug(nombre);
+  const url = `${BASE_PUBLIC_URL}/p/${slug}`;
   return { slug, url };
 }
