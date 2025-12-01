@@ -24,6 +24,7 @@ import { LinksManager, LinkItem, SocialIcon } from "./links-manager";
 import { Toast, ToastType } from "@/components/ui/toast";
 import Swal from "sweetalert2";
 import { useSession } from "next-auth/react";
+import { BackgroundSelector } from "./background-selector";
 
 export interface ThemeConfig {
   colors: {
@@ -33,6 +34,27 @@ export interface ThemeConfig {
     text: string;
     card: string;
     cardText: string;
+  };
+  background: {
+    type: "color" | "gradient" | "pattern" | "image";
+    gradient?: {
+      colors: string[];
+      direction: string;
+      type: "linear" | "radial";
+    };
+    pattern?: {
+      type: string;
+      color: string;
+      size: number;
+      opacity: number;
+    };
+    image?: {
+      url: string;
+      position: string;
+      size: "cover" | "contain" | "auto";
+      repeat: "no-repeat" | "repeat" | "repeat-x" | "repeat-y";
+      opacity: number;
+    };
   };
   typography: {
     fontFamily: string;
@@ -70,6 +92,9 @@ const defaultTheme: ThemeConfig = {
     text: "#1f2937",
     card: "#877af7",
     cardText: "#ffffff",
+  },
+  background: {
+    type: "color",
   },
   typography: {
     fontFamily: "Inter, sans-serif",
@@ -199,6 +224,7 @@ export function ThemeEditor({
 
           const mergedTheme: ThemeConfig = {
             colors: { ...defaultTheme.colors, ...existingTheme.colors },
+            background: { ...defaultTheme.background, ...existingTheme.background },
             typography: {
               ...defaultTheme.typography,
               ...existingTheme.typography,
@@ -849,6 +875,17 @@ export function ThemeEditor({
                     colors={theme.colors}
                     onChange={(colors) => updateTheme({ colors })}
                   />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm">Fondo Avanzado</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <BackgroundSelector
+                        background={theme.background}
+                        onChange={(background) => updateTheme({ background })}
+                      />
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
                 <TabsContent value="layout" className="space-y-3 mt-3">
