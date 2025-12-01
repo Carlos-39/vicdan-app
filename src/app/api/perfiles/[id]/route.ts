@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuthToken } from '@/lib/jwt';
+import { logger } from "@/lib/logger";
 import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export const runtime = 'nodejs';
@@ -187,5 +188,61 @@ export async function PUT(
       { error: 'Error interno', details: String(e?.message ?? e) },
       { status: 500 }
     );
+  }
+}
+
+export async function DELETE(
+  req: Request,
+  // CAMBIO CLAVE: params es una Promise
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    // 1. Autenticación
+    const auth = req.headers.get('authorization') ?? '';
+    const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+    
+    if (!token) {
+      return NextResponse.json({ error: 'Token requerido' }, { status: 401 });
+    }
+
+    const claims = verifyAuthToken(token);
+    if (!claims) {
+      return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
+    }
+
+    // CAMBIO CLAVE: Esperamos la promesa para obtener el ID real
+    const { id: perfilId } = await context.params;
+    
+    // Log para depuración (ahora perfilId tendrá el valor correcto)
+    console.log(`Intentando eliminar perfil ID: ${perfilId} por Admin ID: ${claims.id}`);
+
+    // 2. Eliminación
+    const { error: deleteError } = await supabaseAdmin
+      .from('perfiles') 
+      .delete()
+      .eq('id', perfilId);
+
+    if (deleteError) {
+      console.error("Error de Supabase al borrar:", deleteError);
+      logger.error(deleteError, `Error al eliminar el perfil con ID: ${perfilId}`);
+      
+      if (deleteError.code === '23503') { 
+          return NextResponse.json({ error: 'No se puede eliminar porque tiene datos asociados. Configura CASCADE DELETE.' }, { status: 409 });
+      }
+
+      return NextResponse.json({ error: 'No se pudo eliminar el perfil', details: deleteError.message }, { status: 500 });
+    }
+
+    logger.info(`Perfil eliminado exitosamente. ID: ${perfilId}`);
+    
+    return NextResponse.json(
+      { message: 'Perfil eliminado correctamente' },
+      { status: 200 }
+    );
+
+  } catch (error: any) {
+    console.error("EXCEPCIÓN NO CONTROLADA EN DELETE:", error);
+    logger.error(error, 'Error inesperado en DELETE /api/perfiles/[id]');
+    return NextResponse.json({ error: 'Error interno del servidor', details: error.message }, { status: 500 });
   }
 }
