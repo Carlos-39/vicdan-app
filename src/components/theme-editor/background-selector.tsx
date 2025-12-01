@@ -68,12 +68,11 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <Tabs value={activeTab} onValueChange={(value) => handleTypeChange(value as any)}>
-        <TabsList className="grid grid-cols-4 mb-4">
+        <TabsList className="grid grid-cols-3 mb-3">
           <TabsTrigger value="color">Color</TabsTrigger>
           <TabsTrigger value="gradient">Degradado</TabsTrigger>
-          <TabsTrigger value="pattern">Patrón</TabsTrigger>
           <TabsTrigger value="image">Imagen</TabsTrigger>
         </TabsList>
 
@@ -149,88 +148,7 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
           </div>
         </TabsContent>
 
-        {/* Pestaña de Patrones */}
-        <TabsContent value="pattern" className="space-y-4">
-          <div className="space-y-2">
-            <Label>Selecciona un patrón</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {patternOptions.map(pattern => (
-                <button
-                  key={pattern.id}
-                  onClick={() => updateBackground({
-                    pattern: {
-                      ...background.pattern,
-                      type: pattern.id
-                    }
-                  })}
-                  className={`aspect-square rounded border-2 p-1 transition-all ${
-                    background.pattern?.type === pattern.id 
-                      ? 'border-primary ring-2 ring-primary/20' 
-                      : 'border-muted'
-                  }`}
-                >
-                  <div
-                    className="w-full h-full rounded"
-                    style={{
-                      background: pattern.css.replace(/currentColor/g, background.pattern?.color || '#877af7'),
-                      backgroundSize: '20px 20px',
-                      backgroundColor: 'transparent'
-                    }}
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Color del patrón</Label>
-            <input
-              type="color"
-              value={background.pattern?.color || '#877af7'}
-              onChange={(e) => updateBackground({
-                pattern: {
-                  ...background.pattern,
-                  color: e.target.value
-                }
-              })}
-              className="w-full h-10 rounded border cursor-pointer"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Tamaño del patrón: {background.pattern?.size || 50}%</Label>
-            <input
-              type="range"
-              min="10"
-              max="100"
-              value={background.pattern?.size || 50}
-              onChange={(e) => updateBackground({
-                pattern: {
-                  ...background.pattern,
-                  size: parseInt(e.target.value)
-                }
-              })}
-              className="w-full"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Opacidad: {((background.pattern?.opacity || 0.1) * 100).toFixed(0)}%</Label>
-            <input
-              type="range"
-              min="1"
-              max="100"
-              value={(background.pattern?.opacity || 0.1) * 100}
-              onChange={(e) => updateBackground({
-                pattern: {
-                  ...background.pattern,
-                  opacity: parseInt(e.target.value) / 100
-                }
-              })}
-              className="w-full"
-            />
-          </div>
-        </TabsContent>
+     
 
         {/* Pestaña de Imágenes */}
         <TabsContent value="image" className="space-y-4">
