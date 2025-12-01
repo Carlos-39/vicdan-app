@@ -8,6 +8,8 @@ import { ProfileWithAdmin } from "@/types/profile"
 import { EditProfileForm } from "@/components/profiles/edit-profile-form"
 import { Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { DashboardHeader } from "@/app/(dashboard)/dashboard/components/dashboard-header"
+import { BottomNavigation } from "@/app/(dashboard)/dashboard/components/bottom-navigation"
 
 interface EditProfilePageProps {
   params: Promise<{
@@ -115,13 +117,15 @@ export default function EditProfilePage({ params }: EditProfilePageProps) {
 
   // Success state
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container max-w-5xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-background pb-24">
+      <DashboardHeader />
+      <div className="container max-w-4xl mx-auto px-4 py-8">
         <EditProfileForm 
           profile={profile} 
           onSuccess={handleSuccess}
         />
       </div>
+      <BottomNavigation activeTab="profiles" />
     </div>
   )
 }

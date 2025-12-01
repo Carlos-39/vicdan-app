@@ -11,6 +11,8 @@ import { ViewProfileDialog } from "@/components/profiles/view-profile-dialog"
 import { Button } from "@/components/ui/button"
 import { Plus, Loader2, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { DashboardHeader } from "@/app/(dashboard)/dashboard/components/dashboard-header"
+import { BottomNavigation } from "../components/bottom-navigation"
 
 export default function ProfilesPage() {
   const router = useRouter()
@@ -161,9 +163,11 @@ export default function ProfilesPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      <DashboardHeader />
+
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background border-b">
-        <div className="px-4 py-4 max-w-7xl mx-auto">
+        <div className="px-4 py-4 max-w-4xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-2xl font-bold">Perfiles</h1>
@@ -176,9 +180,6 @@ export default function ProfilesPage() {
                 <Plus className="size-4" />
                 Nuevo perfil
               </Button>
-              <Button onClick={() => router.push('/dashboard')}>
-                Volver
-              </Button>
             </div>
           </div>
 
@@ -188,7 +189,7 @@ export default function ProfilesPage() {
       </header>
 
       {/* Content */}
-      <main className="px-4 py-6 max-w-7xl mx-auto">
+      <main className="px-4 py-6 max-w-4xl mx-auto">
         {/* Loading State */}
         {loading && page === 1 && (
           <div className="flex items-center justify-center py-12">
@@ -287,6 +288,8 @@ export default function ProfilesPage() {
         open={viewDialogOpen}
         onOpenChange={setViewDialogOpen}
       />
+
+      <BottomNavigation activeTab="profiles" />
     </div>
   )
 }

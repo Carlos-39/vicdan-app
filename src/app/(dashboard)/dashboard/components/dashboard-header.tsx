@@ -1,42 +1,37 @@
-import { Bell } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import HeaderOption from "./header-option";
 import { useSession } from "next-auth/react";
 
 export function DashboardHeader() {
   const { data } = useSession();
+  
+  const getInitials = (name?: string | null) => {
+    if (!name) return "U";
+    const parts = name.split(" ");
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
+  };
+
   return (
-    <header className="bg-primary px-4 py-4 rounded-b-3xl">
-      <div className="flex items-center justify-between">
+    <header className="bg-primary px-4 py-4">
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-3">
-          <Avatar className="h-12 w-12 bg-primary-foreground/20">
-            <AvatarFallback className="bg-transparent text-primary-foreground font-semibold text-base">
-              AD
-            </AvatarFallback>
-          </Avatar>
-          <div>
+          <div className="text-right hidden sm:block">
             {data?.user?.name ? (
-              <h1 className="text-primary-foreground font-semibold text-base leading-tight animate-fade-up overflow-hidden">
+              <h1 className="text-primary-foreground font-semibold text-sm leading-tight animate-fade-up">
                 {data.user.name}
               </h1>
             ) : (
-              <span className="h-5 w-[200px] bg-neutral-50/25 rounded block animate-pulse animate-fade-in" />
+              <span className="h-4 w-[120px] bg-neutral-50/25 rounded block animate-pulse" />
             )}
-            <p className="text-primary-foreground/80 text-sm">
-              Panel de Control
-            </p>
           </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-9 w-9 text-primary-foreground hover:bg-primary-foreground/10"
-          >
-            <Bell className="h-5 w-5" />
-          </Button>
-
+          <Avatar className="h-10 w-10 bg-primary-foreground/20 border-2 border-primary-foreground/30">
+            <AvatarFallback className="bg-transparent text-primary-foreground font-semibold text-sm">
+              {getInitials(data?.user?.name)}
+            </AvatarFallback>
+          </Avatar>
           <HeaderOption />
         </div>
       </div>

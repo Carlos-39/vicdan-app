@@ -10,6 +10,8 @@ import {
 } from "@/components/theme-editor/theme-editor";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DashboardHeader } from "@/app/(dashboard)/dashboard/components/dashboard-header";
+import { BottomNavigation } from "@/app/(dashboard)/dashboard/components/bottom-navigation";
 
 export default function PersonalizarPage() {
   const router = useRouter();
@@ -165,13 +167,17 @@ export default function PersonalizarPage() {
   // Success state
   return (
     <div className="min-h-screen bg-background">
-      <ThemeEditor
-        profileId={profileId}
-        initialTheme={currentTheme}
-        onSave={handleSaveTheme}
-        profileData={profileData}
-        onProfileUpdate={handleProfileUpdate}
-      />
+      <DashboardHeader />
+      <div className="pb-24">
+        <ThemeEditor
+          profileId={profileId}
+          initialTheme={currentTheme}
+          onSave={handleSaveTheme}
+          profileData={profileData}
+          onProfileUpdate={handleProfileUpdate}
+        />
+      </div>
+      <BottomNavigation activeTab="profiles" />
     </div>
   );
 }

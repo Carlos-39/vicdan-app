@@ -66,16 +66,26 @@ export async function PUT(
 
     const { id: perfilId } = await ctx.params;
     const adminId = claims.id;
+    const adminEmail = claims.email;
 
     // Verificar ownership
-    const { data: currentProfile, error: fetchError } = await supabaseAdmin
+    let perfilQuery = supabaseAdmin
       .from('perfiles')
       .select('administrador_id, logo_url')
-      .eq('id', perfilId)
-      .eq('administrador_id', adminId)
-      .maybeSingle();
+      .eq('id', perfilId);
 
-    if (fetchError || !currentProfile) {
+    // Verificar propiedad solo si no son los Super Administradores 
+    if (!ADMIN_WHITELIST.includes(adminEmail)) {
+      perfilQuery = perfilQuery.eq('administrador_id', adminId);
+    }
+
+    const { data: currentProfile, error: fetchError } = await perfilQuery.maybeSingle();
+
+    if (fetchError) {
+      return NextResponse.json({ error: 'Error al verificar el perfil' }, { status: 500 });
+    }
+
+    if (!currentProfile) {
       return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 404 });
     }
 
@@ -165,11 +175,17 @@ export async function PUT(
     updates.fechas = new Date().toISOString();
 
     // Actualizar en la base de datos
-    const { data: updatedProfile, error: updateError } = await supabaseAdmin
+    let updateQuery = supabaseAdmin
       .from('perfiles')
       .update(updates)
-      .eq('id', perfilId)
-      .eq('administrador_id', adminId)
+      .eq('id', perfilId);
+
+    // Verificar propiedad solo si no son los Super Administradores 
+    if (!ADMIN_WHITELIST.includes(adminEmail)) {
+      updateQuery = updateQuery.eq('administrador_id', adminId);
+    }
+
+    const { data: updatedProfile, error: updateError } = await updateQuery
       .select()
       .single();
 

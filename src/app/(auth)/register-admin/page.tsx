@@ -7,8 +7,9 @@ import TextInput from "./components/TextInput";
 import PasswordStrengthBar from "./components/PasswordStrengthBar";
 import { usePasswordStrength } from "./hooks/usePasswordStrength";
 import { useState, useEffect } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import styles from "./RegisterAdmin.module.css";
+import Link from "next/link";
 
 const schema = yup.object({
   name: yup.string().required("El nombre es obligatorio"),
@@ -107,42 +108,60 @@ export default function RegisterAdminPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
-      {/* Decorative background elements */}
-      <div className="absolute top-0 left-0 w-96 h-96 opacity-30 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 animate-pulse" style={{ background: 'var(--primary)' }}></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 opacity-30 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 animate-pulse" style={{ background: 'var(--primary)', animationDelay: '1s' }}></div>
-      <div className="absolute top-1/2 left-1/2 w-64 h-64 opacity-20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 animate-pulse" style={{ background: 'var(--primary)', animationDelay: '0.5s' }}></div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white relative overflow-hidden py-4">
+      {/* Decorative purple blobs */}
+      <div 
+        className="absolute top-0 left-0 w-96 h-96 opacity-20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 animate-pulse" 
+        style={{ 
+          background: 'var(--primary)',
+          animationDuration: '4s'
+        }}
+      ></div>
+      <div 
+        className="absolute bottom-0 right-0 w-96 h-96 opacity-20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 animate-pulse" 
+        style={{ 
+          background: 'color-mix(in srgb, var(--primary) 80%, white)',
+          animationDelay: '1s',
+          animationDuration: '4s'
+        }}
+      ></div>
+      <div 
+        className="absolute top-1/2 left-1/2 w-64 h-64 opacity-15 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 animate-pulse" 
+        style={{ 
+          background: 'color-mix(in srgb, var(--primary) 70%, black)',
+          animationDelay: '0.5s',
+          animationDuration: '4s'
+        }}
+      ></div>
+
+      {/* Header Section */}
+      <div className="relative z-10 text-center mb-4 px-4">
+        <div className="w-14 h-14 mx-auto mb-3 rounded-xl flex items-center justify-center" style={{
+          background: 'var(--primary)',
+          boxShadow: '0 4px 12px rgba(139, 92, 246, 0.3)'
+        }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-1">Crea tu cuenta</h1>
+        <p className="text-gray-600">Completa el formulario para registrarte</p>
+      </div>
 
       <div className={styles.container}>
         <div className={styles.card}>
-          {/* Logo decorativo */}
-          <div className="bg-primary mx-auto mb-4" style={{ 
-            width: '56px', 
-            height: '56px',
-            borderRadius: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 8px 16px color-mix(in srgb, var(--primary) 25%, transparent)',
-            animation: 'bounce 2s ease-in-out infinite'
-          }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-              <circle cx="9" cy="7" r="4"/>
-              <line x1="19" y1="8" x2="19" y2="14"/>
-              <line x1="22" y1="11" x2="16" y2="11"/>
-            </svg>
+          {/* Tab buttons */}
+          <div className={styles.tabButtons}>
+            <Link href="/login" className={`${styles.tabButton} ${styles.tabInactive}`}>
+              Iniciar sesión
+            </Link>
+            <button type="button" className={`${styles.tabButton} ${styles.tabActive}`}>
+              Registrarse
+            </button>
           </div>
-          
-          <h1 className={styles.title}>Registro de Administrador</h1>
-          <p style={{ 
-            textAlign: 'center', 
-            color: '#6b7280', 
-            fontSize: '0.9375rem', 
-            marginBottom: '1.5rem'
-          }}>
-            Completa el formulario para crear tu cuenta
-          </p>
 
         {success && (
           <div className={styles.successMessage}>
@@ -156,56 +175,80 @@ export default function RegisterAdminPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <TextInput
-            label="Nombre"
-            type="text"
-            {...register("name")}
-            error={errors.name?.message}
-          />
+        <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
+          <div className={styles.field}>
+            <label className={styles.label}>Nombre</label>
+            <div className={styles.inputWrapper}>
+              <User className={styles.inputIcon} size={20} />
+              <input
+                type="text"
+                className={styles.input}
+                placeholder="Tu nombre completo"
+                {...register("name")}
+              />
+            </div>
+            {errors.name && <p className={styles.errorText}>{errors.name.message}</p>}
+          </div>
 
-          <TextInput
-            label="Correo electrónico"
-            type="email"
-            {...register("email")}
-            error={errors.email?.message}
-          />
+          <div className={styles.field}>
+            <label className={styles.label}>Correo electrónico</label>
+            <div className={styles.inputWrapper}>
+              <Mail className={styles.inputIcon} size={20} />
+              <input
+                type="email"
+                className={styles.input}
+                placeholder="tu@email.com"
+                {...register("email")}
+              />
+            </div>
+            {errors.email && <p className={styles.errorText}>{errors.email.message}</p>}
+          </div>
 
           {/* Contraseña */}
-          <div className="relative">
-            <TextInput
-              label="Contraseña"
-              type={showPassword ? "text" : "password"}
-              {...register("password")}
-              error={errors.password?.message}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-[38px] text-gray-500 hover:text-purple-600"
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-            <p className="text-xs text-gray-500 mt-1">
+          <div className={styles.field}>
+            <label className={styles.label}>Contraseña</label>
+            <div className={styles.inputWrapper}>
+              <Lock className={styles.inputIcon} size={20} />
+              <input
+                type={showPassword ? "text" : "password"}
+                className={styles.input}
+                placeholder="........"
+                {...register("password")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className={styles.eyeButton}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+            {errors.password && <p className={styles.errorText}>{errors.password.message}</p>}
+            <p className={styles.passwordHint}>
               La contraseña debe tener al menos 8 caracteres, incluir una
               mayúscula, una minúscula, un número y un símbolo.
             </p>
           </div>
 
-          <div className="relative">
-            <TextInput
-              label="Confirmar contraseña"
-              type={showPassword ? "text" : "password"}
-              {...register("confirmPassword")}
-              error={errors.confirmPassword?.message}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-[38px] text-gray-500 hover:text-purple-600"
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
+          <div className={styles.field}>
+            <label className={styles.label}>Confirmar contraseña</label>
+            <div className={styles.inputWrapper}>
+              <Lock className={styles.inputIcon} size={20} />
+              <input
+                type={showPassword ? "text" : "password"}
+                className={styles.input}
+                placeholder="........"
+                {...register("confirmPassword")}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className={styles.eyeButton}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+            {errors.confirmPassword && <p className={styles.errorText}>{errors.confirmPassword.message}</p>}
           </div>
 
           {passwordStarted && (
@@ -219,8 +262,8 @@ export default function RegisterAdminPage() {
           <button
             type="submit"
             disabled={!isFormValid}
-            className={`${styles.button} ${
-              isFormValid ? styles.buttonEnabled : styles.buttonDisabled
+            className={`${styles.submitButton} ${
+              !isFormValid ? styles.disabled : ""
             }`}
           >
             Registrar
@@ -228,30 +271,16 @@ export default function RegisterAdminPage() {
 
           {success && <p className={styles.success}>¡Registro exitoso!</p>}
         </form>
-        
-        {/* Back to Login */}
-        <p style={{ 
-          textAlign: 'center', 
-          marginTop: '1.5rem',
-          fontSize: '0.875rem',
-          color: '#6b7280'
-        }}>
-          ¿Ya tienes cuenta?{' '}
-          <a 
-            href="/login" 
-            style={{ 
-              color: 'var(--primary)', 
-              fontWeight: 600,
-              textDecoration: 'none'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
-            onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
-          >
-            Inicia sesión
-          </a>
-        </p>
+        </div>
       </div>
-    </div>
+
+      {/* Footer */}
+      <p className={styles.footer}>
+        ¿Ya tienes cuenta?{' '}
+        <Link href="/login" className={styles.footerLink}>
+          Inicia sesión
+        </Link>
+      </p>
     </div>
   );
 }

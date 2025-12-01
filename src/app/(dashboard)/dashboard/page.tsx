@@ -1,72 +1,128 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import {
   UserPlus,
   ClipboardList,
   CheckCircle,
-  AlertCircle,
   FileEdit,
-  Plus,
   Clock,
-  Download,
-  MoreHorizontal,
 } from "lucide-react";
 import { DashboardHeader } from "./components/dashboard-header";
 import { ProcessCard } from "./components/process-card";
 import { ActivityItem } from "./components/activity-item";
-import { QuickActionButton } from "./components/quick-action-button";
 import { BottomNavigation } from "./components/bottom-navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-// Mock data for activities
-const mockActivities = [
-  {
-    id: 1,
-    icon: CheckCircle,
-    iconBgColor: "bg-success/20 text-success",
-    title: "Perfil",
-    subtitle: "Juan Martínez",
-    timestamp: "Hace 15 min",
-    status: "completed" as const,
-  },
-  {
-    id: 2,
-    icon: AlertCircle,
-    iconBgColor: "bg-pending/20 text-pending-foreground",
-    title: "Enlace único generado para",
-    subtitle: "Ana López",
-    timestamp: "Hace 32 min",
-    status: "pending" as const,
-  },
-  {
-    id: 3,
-    icon: FileEdit,
-    iconBgColor: "bg-success/20 text-success",
-    title: "Personalización",
-    subtitle: "Carlos Ruiz",
-    timestamp: "Hace 1 hora",
-    status: "completed" as const,
-  },
-  {
-    id: 4,
-    icon: FileEdit,
-    iconBgColor: "bg-draft/20 text-draft-foreground",
-    title: "Registro",
-    subtitle: "María García",
-    timestamp: "Hace 2 horas",
-    status: "draft" as const,
-  },
-];
+interface RecentProfile {
+  id: string;
+  nombre: string;
+  correo: string | null;
+  logo_url: string | null;
+  estado: string;
+  fechas: string;
+}
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<
-    "dashboard" | "profiles" | "config"
-  >("dashboard");
+  const { data: session } = useSession();
+  const [activeTab, setActiveTab] = useState<"dashboard" | "profiles">("dashboard");
+  const [recentProfiles, setRecentProfiles] = useState<RecentProfile[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  const getAuthToken = useCallback(async () => {
+    return (session as any)?.accessToken;
+  }, [session]);
+
+  const fetchRecentProfiles = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = await getAuthToken();
+      if (!token) return;
+
+      const response = await fetch(`/api/perfiles?orden=recientes`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) return;
+
+      const data = await response.json();
+      const perfiles = data.perfiles || [];
+      // Tomar solo los 4 más recientes
+      setRecentProfiles(perfiles.slice(0, 4));
+    } catch (error) {
+      console.error("Error fetching recent profiles:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [getAuthToken]);
+
+  useEffect(() => {
+    if (session) {
+      fetchRecentProfiles();
+    }
+  }, [session, fetchRecentProfiles]);
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Hace un momento";
+    if (diffMins < 60) return `Hace ${diffMins} min`;
+    if (diffHours < 24) return `Hace ${diffHours} hora${diffHours > 1 ? "s" : ""}`;
+    if (diffDays < 7) return `Hace ${diffDays} día${diffDays > 1 ? "s" : ""}`;
+    return date.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+  };
+
+  const getActivityIcon = (estado: string) => {
+    switch (estado) {
+      case "activo":
+        return CheckCircle;
+      case "inactivo":
+        return Clock;
+      case "borrador":
+        return FileEdit;
+      default:
+        return FileEdit;
+    }
+  };
+
+  const getActivityStatus = (estado: string): "completed" | "pending" | "draft" => {
+    switch (estado) {
+      case "activo":
+        return "completed";
+      case "inactivo":
+        return "pending";
+      case "borrador":
+        return "draft";
+      default:
+        return "draft";
+    }
+  };
+
+  const getIconBgColor = (estado: string) => {
+    // Usar el color morado de la aplicación para todos los estados
+    switch (estado) {
+      case "activo":
+        return "bg-gradient-to-br from-[var(--primary)] to-indigo-600 text-white shadow-lg shadow-purple-500/30";
+      case "inactivo":
+        return "bg-gradient-to-br from-purple-400 to-indigo-500 text-white shadow-lg shadow-purple-500/30";
+      case "borrador":
+        return "bg-gradient-to-br from-purple-400 to-indigo-500 text-white shadow-lg shadow-purple-500/30";
+      default:
+        return "bg-gradient-to-br from-purple-400 to-indigo-500 text-white shadow-lg shadow-purple-500/30";
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -75,10 +131,10 @@ export default function DashboardPage() {
       <main className="px-4 py-6 max-w-md mx-auto space-y-6">
         {/* Main Processes Section */}
         <section>
-          <h2 className="text-foreground font-semibold text-lg mb-4">
+          <h2 className="text-foreground font-semibold text-lg mb-5 text-center">
             Procesos Principales
           </h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <ProcessCard
               title="Registro Cliente"
               description="Crear nuevo perfil"
@@ -104,44 +160,39 @@ export default function DashboardPage() {
             <Button
               variant="link"
               className="text-primary text-sm font-medium p-0 h-auto"
+              onClick={() => router.push("/dashboard/perfiles")}
             >
               Ver todo
             </Button>
           </div>
-          <Card className="p-2 space-y-1 border-0 shadow-sm">
-            {mockActivities.map((activity) => (
-              <ActivityItem key={activity.id} {...activity} />
-            ))}
-          </Card>
-        </section>
-
-        {/* Quick Actions Section */}
-        <section>
-          <h2 className="text-foreground font-semibold text-lg mb-4">
-            Acciones Rápidas
-          </h2>
-          <Card className="p-2 space-y-1 border-0 shadow-sm">
-            <QuickActionButton
-              icon={Plus}
-              label="Nuevo perfil"
-              onClick={() => router.push("/create-profile")}
-
-            />
-            <QuickActionButton
-              icon={Clock}
-              label="Ver pendientes"
-              onClick={() => console.log("View pending items")}
-            />
-            <QuickActionButton
-              icon={Download}
-              label="Exportar datos"
-              onClick={() => console.log("Export data")}
-            />
-            <QuickActionButton
-              icon={MoreHorizontal}
-              label="Operaciones masivas"
-              onClick={() => console.log("Bulk operations")}
-            />
+          <Card className="p-4 space-y-3 border border-purple-200/50 shadow-lg bg-gradient-to-br from-white via-purple-50/20 to-indigo-50/10">
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+              </div>
+            ) : recentProfiles.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                No hay actividad reciente
+              </div>
+            ) : (
+              recentProfiles.map((profile) => {
+                const Icon = getActivityIcon(profile.estado);
+                return (
+                  <ActivityItem
+                    key={profile.id}
+                    icon={Icon}
+                    iconBgColor={getIconBgColor(profile.estado)}
+                    title="Perfil"
+                    subtitle={profile.nombre}
+                    timestamp={formatTimeAgo(profile.fechas)}
+                    status={getActivityStatus(profile.estado)}
+                    email={profile.correo}
+                    logoUrl={profile.logo_url}
+                    onClick={() => router.push(`/dashboard/perfiles/${profile.id}`)}
+                  />
+                );
+              })
+            )}
           </Card>
         </section>
       </main>
