@@ -93,15 +93,15 @@ export function ProfileCard({ profile, onView, onEdit }: ProfileCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handlePreview}>
+                <DropdownMenuItem onClick={handlePreview} className="cursor-pointer">
                   <ExternalLink className="size-4" />
                   Vista completa
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onView(profile)}>
+                <DropdownMenuItem onClick={() => onView(profile)} className="cursor-pointer">
                   <Eye className="size-4" />
                   Vista rápida
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onEdit(profile)}>
+                <DropdownMenuItem onClick={() => onEdit(profile)} className="cursor-pointer">
                   <Edit className="size-4" />
                   Editar
                 </DropdownMenuItem>
@@ -134,7 +134,7 @@ export function ProfileCard({ profile, onView, onEdit }: ProfileCardProps) {
             <Button
               variant="outline"
               size="sm"
-              className="w-full text-xs h-7 cursor-pointer"
+              className="w-full text-xs h-7"
               onClick={handlePreview}
             >
               <ExternalLink className="size-3" />

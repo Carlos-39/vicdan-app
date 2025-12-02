@@ -299,7 +299,7 @@ export default function ProfilesPage() {
       </header>
 
       {/* Content */}
-      <main className="px-4 py-6 max-w-4xl mx-auto">
+      <main className="px-4 py-6 max-w-4xl xl:max-w-6xl mx-auto">
         {/* Alertas de eliminación */}
         {deleteSuccessMessage && (
           <div 

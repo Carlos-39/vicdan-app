@@ -120,11 +120,50 @@ export default async function PublicProfilePageBySlug({ params }: PageProps) {
     }))
   };
 
+  console.log(theme);
+
+  // Función para generar el background de la página
+  const getPageBackgroundStyle = () => {
+    const { background } = theme;
+
+    switch (background?.type) {
+      case "gradient":
+        // Si tiene gradiente, usarlo
+        if (background.gradient?.direction === "circle") {
+          return {
+            background: `radial-gradient(circle, ${background.gradient.colors?.[0] || theme.colors.primary}, ${background.gradient.colors?.[1] || theme.colors.card})`,
+          };
+        }
+        return {
+          background: `linear-gradient(${background.gradient?.direction || "to right"}, ${background.gradient?.colors?.[0] || theme.colors.primary}, ${background.gradient?.colors?.[1] || theme.colors.card})`,
+        };
+
+      case "color":
+        // Si es color sólido, generar gradiente basado en ese color
+        const baseColor = theme.colors.background;
+        return {
+          background: `linear-gradient(135deg, ${baseColor}, ${theme.colors.primary}20)`,
+        };
+
+      case "image":
+        // Si es imagen, usar gradiente del color primario
+        return {
+          background: `linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.card})`,
+        };
+
+      default:
+        // Por defecto, usar color de fondo
+        return {
+          backgroundColor: theme.colors.background,
+        };
+    }
+  };
+
   return (
     <div 
-      className="min-h-screen w-full flex items-center justify-center p-4"
+      className="min-h-screen w-full flex items-center justify-center"
       style={{
-        backgroundColor: theme.colors.background,
+        ...getPageBackgroundStyle(),
         fontFamily: theme.typography.fontFamily,
       }}
     >

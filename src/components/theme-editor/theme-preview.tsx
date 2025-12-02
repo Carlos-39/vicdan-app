@@ -3,6 +3,7 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ThemeConfig } from "./theme-editor";
+import { usePathname } from "next/navigation";
 import {
   ExternalLink,
   Instagram,
@@ -84,6 +85,32 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
     socialIcons: profileData?.socialIcons || defaultProfileData.socialIcons,
   };
 
+  const pathname = usePathname();
+    
+    // Determine if we should show the back button
+    const isPersonalizar = 
+      pathname?.includes("/personalizar")
+  
+    console.log(pathname, isPersonalizar);
+
+  // Función para convertir color hex a RGB
+  function hexToRgb(hex: string) {
+    // Eliminar el # si está presente
+    hex = hex.replace(/^#/, '');
+    
+    // Parsear los componentes
+    if (hex.length === 3) {
+      hex = hex.split('').map(char => char + char).join('');
+    }
+    
+    const num = parseInt(hex, 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    
+    return { r, g, b };
+  }
+
   // Mover getBackgroundStyle dentro del componente para que tenga acceso al theme
   const getBackgroundStyle = () => {
     const { background } = theme;
@@ -118,13 +145,33 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
         };
 
       case "image":
+      const opacity = background.image?.opacity || 1;
+      const bgColor = theme.colors.background || "#ffffff";
+      
+      // Si la opacidad es menor a 1, crear un gradiente superpuesto
+      if (opacity < 1 && background.image?.url) {
         return {
-          backgroundImage: background.image?.url ? `url('${background.image.url}')` : 'none',
+          backgroundImage: `
+            linear-gradient(
+              rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity}),
+              rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity})
+            ),
+            url('${background.image.url}')
+          `,
           backgroundSize: background.image?.size || "cover",
           backgroundPosition: background.image?.position || "center",
           backgroundRepeat: background.image?.repeat || "no-repeat",
-          opacity: background.image?.opacity || 1,
+          backgroundColor: bgColor,
         };
+      }
+      
+      return {
+        backgroundImage: background.image?.url ? `url('${background.image.url}')` : 'none',
+        backgroundSize: background.image?.size || "cover",
+        backgroundPosition: background.image?.position || "center",
+        backgroundRepeat: background.image?.repeat || "no-repeat",
+        backgroundColor: bgColor,
+      };
 
       case "color":
       default:
@@ -210,7 +257,7 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
               href={socialIcon.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-3  bg-transparent transition-all hover:scale-110 hover:shadow-lg active:scale-95"
+              className="p-3  bg-transparent transition-all hover:scale-110 active:scale-95"
               style={{
                 color: theme.colors.cardText, // Mismo color del texto de las tarjetas
               }}
@@ -233,12 +280,15 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
   };
 
   return (
-    <div className="space-y-4 w-full max-w-full px-2 sm:px-0">
+    <div className={isPersonalizar ? "w-full h-auto rounded-lg" 
+                                   : "w-full xl:w-1/3 xl:rounded-lg max-w-full h-screen xl:h-auto"}
+    style={{
+      ...getBackgroundStyle(),
+    }}>
       {/* Vista previa del perfil */}
       <div
         className={`rounded-lg transition-all w-full overflow-hidden scale-90 sm:scale-95 md:scale-100 ${getLayoutStyles()}`}
         style={{
-          ...getBackgroundStyle(), // Aplicar el fondo aquí
           color: theme.colors.text,
           fontFamily: theme.typography.fontFamily,
           padding: `calc(${theme.spacing.padding} * 0.8)`,

@@ -68,9 +68,9 @@ export default function HeaderOption() {
             <BookOpen className="mr-2 h-4 w-4" />
             Manual de Usuario
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleLogout}>
+          <DropdownMenuItem  onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" /> 
             Cerrar Sesión
-            <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

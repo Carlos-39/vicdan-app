@@ -142,8 +142,10 @@ export function ProfileCardDeleteMenuItem({
           color: "#877af7",
         }}
       >
-        <Trash2 className="mr-2 h-4 w-4" />
-        Eliminar
+        <div className="flex items-center gap-2 cursor-pointer text-red-400">
+          <Trash2 className="mr-2 h-4 w-4 text-red-400" />
+          Eliminar
+        </div>
       </DropdownMenuItem>
 
       <DeleteProfileDialog
