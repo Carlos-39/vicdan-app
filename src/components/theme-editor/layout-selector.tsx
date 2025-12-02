@@ -87,14 +87,14 @@ export function LayoutSelector({ layout, onChange }: LayoutSelectorProps) {
     <div className="space-y-6">
       {/* Tipo de layout principal */}
       <div>
-        <Label className="text-sm font-medium mb-3 block">
+        <Label className="text-xl font-semibold mb-3 block">
           Diseño Principal
         </Label>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
           {layoutTypes.map((layoutType) => (
             <Card
               key={layoutType.id}
-              className={`cursor-pointer transition-all hover:border-primary ${
+              className={`cursor-pointer py-2 transition-all hover:border-primary ${
                 layout.type === layoutType.id
                   ? "border-primary ring-2 ring-primary/20"
                   : "border-muted"

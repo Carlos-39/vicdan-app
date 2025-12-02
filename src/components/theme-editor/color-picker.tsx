@@ -74,7 +74,7 @@ export function ColorPicker({ colors, onChange }: ColorPickerProps) {
     <div className="space-y-6">
       {/* Presets rápidos */}
       <div>
-        <Label className="text-sm font-medium mb-3 block">
+        <Label className="text-xl font-semibold mb-3 block">
           Plantillas de color
         </Label>
         <div className="flex gap-2 flex-wrap">
@@ -82,7 +82,7 @@ export function ColorPicker({ colors, onChange }: ColorPickerProps) {
             <button
               key={name}
               onClick={() => applyPreset(name as keyof typeof colorPresets)}
-              className="flex flex-col items-center gap-1 group"
+              className="flex flex-col items-center gap-1 group cursor-pointer"
             >
               <div
                 className="size-8 rounded-md border shadow-sm group-hover:scale-110 transition-transform"

@@ -41,7 +41,7 @@ export function SpacingControls({ spacing, onChange }: SpacingControlsProps) {
         <div className="flex items-center justify-between">
           <Label htmlFor="padding-slider" className="text-sm font-medium">
             <span className="hidden sm:inline">Espaciado interno</span>
-            <span className="sm:hidden">Padding</span>
+            <span className="sm:hidden md">Padding</span>
           </Label>
           <span className="text-sm text-muted-foreground font-mono">
             {spacing.padding}

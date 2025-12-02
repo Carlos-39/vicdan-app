@@ -220,7 +220,7 @@ export function LinksManager({
           onClick={() => setActiveSection("links")}
         >
           <Link2 className="size-4 inline mr-2" />
-          Enlaces Principales
+          <span className="text-lg font-semibold cursor-pointer">Enlaces Principales</span>
         </button>
         <button
           className={`flex-1 py-2 px-4 text-sm font-medium ${
@@ -231,7 +231,7 @@ export function LinksManager({
           onClick={() => setActiveSection("social")}
         >
           <Share2 className="size-4 inline mr-2" />
-          Iconos Sociales
+          <span className="text-lg font-semibold cursor-pointer">Iconos Sociales</span>
         </button>
       </div>
 
@@ -383,9 +383,9 @@ export function LinksManager({
             <Label className="text-sm font-medium mb-2 block">
               Posición de los Iconos
             </Label>
-            <div className="grid grid-cols-3 gap-2 ">
+            <div className="flex gap-8 items-center justify-center">
               <Card
-                className={`cursor-pointer transition-all ${
+                className={`cursor-pointer transition-all min-w-[220px] ${
                   theme?.layout?.socialIconsPosition === "above-links"
                     ? "border-primary ring-2 ring-primary/20"
                     : "border-muted"
@@ -400,7 +400,7 @@ export function LinksManager({
                 </CardContent>
               </Card>
               <Card
-                className={`cursor-pointer transition-all ${
+                className={`cursor-pointer transition-all min-w-[220px] ${
                   theme?.layout?.socialIconsPosition === "below-links"
                     ? "border-primary ring-2 ring-primary/20"
                     : "border-muted"
@@ -414,6 +414,7 @@ export function LinksManager({
                   </div>
                 </CardContent>
               </Card>
+              {/* Ambos 
               <Card
                 className={`cursor-pointer transition-all ${
                   theme?.layout?.socialIconsPosition === "both"
@@ -429,6 +430,7 @@ export function LinksManager({
                   </div>
                 </CardContent>
               </Card>
+              */}
             </div>
           </div>
 
@@ -449,7 +451,6 @@ export function LinksManager({
             </div>
             <Button onClick={addSocialIcon} className="sm:w-auto">
               <Plus className="size-4" />
-              Agregar Icono
             </Button>
           </div>
 

@@ -831,20 +831,21 @@ export function ThemeEditor({
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
         <div className="xl:col-span-2 space-y-4 sm:space-y-6">
-          <Card className="overflow-hidden">
-            <CardHeader className="pb-2 sm:pb-3">
+          <Card className="overflow-hidden gap-1">
+            <CardHeader className="">
               <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                 <Palette className="size-4 sm:size-5" />
                 Editor de Tema
               </CardTitle>
             </CardHeader>
+
             <CardContent className="p-3 sm:p-4">
               <Tabs
                 value={activeTab}
                 onValueChange={setActiveTab}
                 className="space-y-3"
               >
-                <TabsList className="flex flex-nowrap gap-1 w-full overflow-hidden py-4 min-h-[60px] items-center border-b">
+                <TabsList className=" mb-4 flex flex-nowrap gap-1 w-full overflow-hidden py-4 min-h-[60px] items-center border-b">
                   <TabsTrigger
                     value="colors"
                     className="flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm py-3 px-3 min-w-0 flex-1 whitespace-nowrap h-auto"
@@ -891,7 +892,7 @@ export function ThemeEditor({
                   />
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-sm">Fondo Avanzado</CardTitle>
+                      <CardTitle className="text-xl font-semibold">Fondo Avanzado</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <BackgroundSelector
