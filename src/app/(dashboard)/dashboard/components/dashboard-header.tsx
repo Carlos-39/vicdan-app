@@ -1,11 +1,16 @@
 "use client";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import HeaderOption from "./header-option";
 import { useSession } from "next-auth/react";
+import { useRouter, usePathname } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 export function DashboardHeader() {
   const { data } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
   
   const getInitials = (name?: string | null) => {
     if (!name) return "U";
@@ -16,12 +21,35 @@ export function DashboardHeader() {
     return name.substring(0, 2).toUpperCase();
   };
 
+  // Determine if we should show the back button
+  const showBackButton = 
+    pathname?.includes("/create-profile") ||
+    pathname?.includes("/perfiles") ||
+    pathname?.includes("/perfil");
+
+  console.log(pathname, showBackButton);
+
+  const handleBack = () => {
+    router.back();
+  };
+
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-4">
       <div className="flex items-center justify-between max-w-7xl mx-auto">
         <div className="flex items-center gap-3">
+          {showBackButton && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleBack}
+              className="hover:bg-gray-100 animate-in fade-in slide-in-from-left-2 duration-300"
+              aria-label="Volver atrás"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
           <Avatar 
-            className="h-12 w-12 border-2"
+            className="h-12 w-12 border-2 transition-all duration-300"
             style={{
               borderColor: "#877af7",
             }}
@@ -36,7 +64,7 @@ export function DashboardHeader() {
               {getInitials(data?.user?.name)}
             </AvatarFallback>
           </Avatar>
-          <div className="hidden sm:block">
+          <div className="hidden sm:block transition-all duration-300">
             {data?.user?.name ? (
               <div>
                 <h1 className="text-foreground font-semibold text-base leading-tight">
