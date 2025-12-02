@@ -7,15 +7,15 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 export const createProfileSchema = z.object({
   nombre: z
     .string()
-    .min(2, "El nombre debe tener al menos 2 caracteres")
-    .max(50, "El nombre no puede exceder 50 caracteres")
+    .min(2, "El nombre del emprendimiento debe tener al menos 2 caracteres")
+    .max(50, "El nombre del emprendimiento no puede exceder 50 caracteres")
     .trim(),
 
   apellido: z
     .string()
-    .min(2, "El apellido debe tener al menos 2 caracteres")
     .max(50, "El apellido no puede exceder 50 caracteres")
-    .trim(),
+    .trim()
+    .optional(),
 
   email: z.string().email("Por favor ingresa un correo electrónico válido").toLowerCase().trim(),
 

@@ -1,7 +1,7 @@
 // src/app/dashboard/perfiles/page.tsx
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { ProfileWithAdmin, ProfileFilters } from "@/types/profile"
 import { ProfileCard } from "@/components/profiles/profile-card"
@@ -11,6 +11,8 @@ import { ViewProfileDialog } from "@/components/profiles/view-profile-dialog"
 import { Button } from "@/components/ui/button"
 import { Plus, Loader2, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { DashboardHeader } from "@/app/(dashboard)/dashboard/components/dashboard-header"
+import { BottomNavigation } from "../components/bottom-navigation"
 
 export default function ProfilesPage() {
   const router = useRouter()
@@ -31,6 +33,12 @@ export default function ProfilesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  
+  // Alert states
+  const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string | null>(null)
+  const [deleteErrorMessage, setDeleteErrorMessage] = useState<string | null>(null)
+  const successAlertRef = useRef<HTMLDivElement>(null)
+  const errorAlertRef = useRef<HTMLDivElement>(null)
 
   // Obtener token JWT de la sesión
   const getAuthToken = useCallback(async () => {
@@ -104,6 +112,64 @@ export default function ProfilesPage() {
     }
   }, [session, fetchProfiles])
 
+  // Verificar mensajes de eliminación en sessionStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const successData = sessionStorage.getItem('profileDeleteSuccess')
+      const errorData = sessionStorage.getItem('profileDeleteError')
+      
+      if (successData) {
+        try {
+          const data = JSON.parse(successData)
+          // Solo mostrar si el mensaje es reciente (menos de 5 segundos)
+          if (Date.now() - data.timestamp < 5000) {
+            setDeleteSuccessMessage(data.message)
+            // Scroll automático al mensaje
+            setTimeout(() => {
+              successAlertRef.current?.scrollIntoView({ 
+                behavior: "smooth", 
+                block: "start" 
+              })
+            }, 100)
+            // Limpiar después de 5 segundos
+            setTimeout(() => {
+              setDeleteSuccessMessage(null)
+              sessionStorage.removeItem('profileDeleteSuccess')
+            }, 5000)
+          } else {
+            sessionStorage.removeItem('profileDeleteSuccess')
+          }
+        } catch (e) {
+          sessionStorage.removeItem('profileDeleteSuccess')
+        }
+      }
+      
+      if (errorData) {
+        try {
+          const data = JSON.parse(errorData)
+          if (Date.now() - data.timestamp < 5000) {
+            setDeleteErrorMessage(data.message)
+            // Scroll automático al mensaje
+            setTimeout(() => {
+              errorAlertRef.current?.scrollIntoView({ 
+                behavior: "smooth", 
+                block: "start" 
+              })
+            }, 100)
+            setTimeout(() => {
+              setDeleteErrorMessage(null)
+              sessionStorage.removeItem('profileDeleteError')
+            }, 5000)
+          } else {
+            sessionStorage.removeItem('profileDeleteError')
+          }
+        } catch (e) {
+          sessionStorage.removeItem('profileDeleteError')
+        }
+      }
+    }
+  }, [])
+
   // Reset to page 1 when filters change
   useEffect(() => {
     setPage(1)
@@ -147,13 +213,59 @@ export default function ProfilesPage() {
         throw new Error('Error al eliminar el perfil')
       }
 
+      // Guardar mensaje de éxito
+      const successMessage = `El perfil "${selectedProfile.nombre}" ha sido eliminado exitosamente.`
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('profileDeleteSuccess', JSON.stringify({
+          message: successMessage,
+          timestamp: Date.now()
+        }))
+      }
+      
       // Refresh the list
       await fetchProfiles()
       setDeleteDialogOpen(false)
       setSelectedProfile(null)
+      
+      // Mostrar mensaje y hacer scroll
+      setDeleteSuccessMessage(successMessage)
+      setTimeout(() => {
+        successAlertRef.current?.scrollIntoView({ 
+          behavior: "smooth", 
+          block: "start" 
+        })
+      }, 100)
+      setTimeout(() => {
+        setDeleteSuccessMessage(null)
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('profileDeleteSuccess')
+        }
+      }, 5000)
     } catch (err) {
       console.error('Error deleting profile:', err)
-      alert('Error al eliminar el perfil. Por favor, intenta de nuevo.')
+      const errorMessage = err instanceof Error ? err.message : 'Error al eliminar el perfil. Por favor, intenta de nuevo.'
+      
+      // Guardar mensaje de error
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('profileDeleteError', JSON.stringify({
+          message: errorMessage,
+          timestamp: Date.now()
+        }))
+      }
+      
+      setDeleteErrorMessage(errorMessage)
+      setTimeout(() => {
+        errorAlertRef.current?.scrollIntoView({ 
+          behavior: "smooth", 
+          block: "start" 
+        })
+      }, 100)
+      setTimeout(() => {
+        setDeleteErrorMessage(null)
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('profileDeleteError')
+        }
+      }, 5000)
     } finally {
       setIsDeleting(false)
     }
@@ -161,23 +273,22 @@ export default function ProfilesPage() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
+      <DashboardHeader />
+
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background border-b">
-        <div className="px-4 py-4 max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
+        <div className="px-4 py-4 max-w-4xl mx-auto">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-2xl font-bold">Perfiles</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-xl sm:text-2xl font-bold">Perfiles</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {total} perfil{total !== 1 ? 'es' : ''} en total
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Button onClick={() => router.push('/create-profile')}>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button onClick={() => router.push('/create-profile')} className="w-full sm:w-auto">
                 <Plus className="size-4" />
-                Nuevo perfil
-              </Button>
-              <Button onClick={() => router.push('/dashboard')}>
-                Volver
+                <span className="ml-2">Nuevo perfil</span>
               </Button>
             </div>
           </div>
@@ -188,7 +299,100 @@ export default function ProfilesPage() {
       </header>
 
       {/* Content */}
-      <main className="px-4 py-6 max-w-7xl mx-auto">
+      <main className="px-4 py-6 max-w-4xl xl:max-w-6xl mx-auto">
+        {/* Alertas de eliminación */}
+        {deleteSuccessMessage && (
+          <div 
+            ref={successAlertRef}
+            className="mb-4 p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2 duration-300"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <svg 
+                  className="w-6 h-6 text-green-600" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" 
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-base font-semibold text-green-800">
+                  ¡Perfil eliminado exitosamente!
+                </p>
+                <p className="text-sm text-green-700 mt-1">
+                  {deleteSuccessMessage}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setDeleteSuccessMessage(null)
+                  if (typeof window !== 'undefined') {
+                    sessionStorage.removeItem('profileDeleteSuccess')
+                  }
+                }}
+                className="flex-shrink-0 text-green-600 hover:text-green-800"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {deleteErrorMessage && (
+          <div 
+            ref={errorAlertRef}
+            className="mb-4 p-5 bg-gradient-to-r from-red-50 to-rose-50 border-2 border-red-400 rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2 duration-300"
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <svg 
+                  className="w-6 h-6 text-red-600" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2.5} 
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" 
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-base font-semibold text-red-900">
+                  Error al eliminar perfil
+                </p>
+                <p className="text-sm text-red-800 mt-1">
+                  {deleteErrorMessage}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setDeleteErrorMessage(null)
+                  if (typeof window !== 'undefined') {
+                    sessionStorage.removeItem('profileDeleteError')
+                  }
+                }}
+                className="flex-shrink-0 text-red-600 hover:text-red-800"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Loading State */}
         {loading && page === 1 && (
           <div className="flex items-center justify-center py-12">
@@ -223,7 +427,7 @@ export default function ProfilesPage() {
                   : 'Comienza creando tu primer perfil'}
               </p>
               {!filters.searchTerm && (!filters.estado || filters.estado === 'todos') && (
-                <Button onClick={() => router.push('/dashboard/perfiles/nuevo')} className="mt-4">
+                <Button onClick={() => router.push('/create-profile')} className="mt-4">
                   <Plus className="size-4" />
                   Crear perfil
                 </Button>
@@ -235,14 +439,13 @@ export default function ProfilesPage() {
         {/* Profiles Grid */}
         {!loading && !error && profiles.length > 0 && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {profiles.map((profile) => (
                 <ProfileCard
                   key={profile.id}
                   profile={profile}
                   onView={handleView}
                   onEdit={handleEdit}
-                  onDelete={handleDeleteClick}
                 />
               ))}
             </div>
@@ -275,7 +478,12 @@ export default function ProfilesPage() {
 
       {/* Dialogs */}
       <DeleteProfileDialog
-        profile={selectedProfile}
+        profile={selectedProfile ? {
+          id: selectedProfile.id,
+          nombre: selectedProfile.nombre,
+          correo: selectedProfile.correo || undefined,
+          logo_url: selectedProfile.logo_url || undefined,
+        } : null}
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={handleDeleteConfirm}
@@ -287,6 +495,8 @@ export default function ProfilesPage() {
         open={viewDialogOpen}
         onOpenChange={setViewDialogOpen}
       />
+
+      <BottomNavigation activeTab="profiles" />
     </div>
   )
 }

@@ -1,14 +1,17 @@
-import { NewProfileForm } from "@/components/new-profile-form";
+"use client";
 
-export const metadata = {
-  title: "Crear Perfil | Vicdan",
-  description: "Crea un nuevo perfil con tu información básica",
-};
+import { NewProfileForm } from "@/components/new-profile-form";
+import { DashboardHeader } from "@/app/(dashboard)/dashboard/components/dashboard-header";
+import { BottomNavigation } from "@/app/(dashboard)/dashboard/components/bottom-navigation";
 
 export default function CreateProfilePage() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#f3e8ff] to-white py-12 px-4">
-      <NewProfileForm />
-    </main>
+    <div className="min-h-screen bg-background pb-24">
+      <DashboardHeader />
+      <main className="container max-w-4xl mx-auto px-4 py-8">
+        <NewProfileForm />
+      </main>
+      <BottomNavigation activeTab="dashboard" />
+    </div>
   );
 }

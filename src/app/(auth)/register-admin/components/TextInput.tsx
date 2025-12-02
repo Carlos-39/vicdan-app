@@ -18,7 +18,7 @@ const TextInput = forwardRef<HTMLInputElement, Props>(
           className={`w-full border-2 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none transition-all duration-300 ${
             error
               ? "border-red-300 bg-red-50 focus:border-red-500 focus:ring-4 focus:ring-red-100"
-              : "border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-white focus:border-[var(--primary)] focus:bg-white focus:ring-4 focus:ring-[color-mix(in_srgb,var(--primary)_8%,transparent)]"
+              : "border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-white focus:border-[#3B82F6] focus:bg-white focus:ring-4 focus:ring-[rgba(59,130,246,0.1)]"
           }`}
           style={{ fontSize: '0.9375rem' }}
         />

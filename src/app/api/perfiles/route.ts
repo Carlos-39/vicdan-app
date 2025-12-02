@@ -6,6 +6,7 @@ import { perfilSchema } from "./perfil.schema";
 import { verifyAuthToken } from '@/lib/jwt';
 import { z } from 'zod';
 import { logger } from '@/lib/logger';
+import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export const runtime = 'nodejs';
 
@@ -18,6 +19,7 @@ export async function GET(req: Request) {
     if (!claims) return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
 
     const adminId = claims.id;
+    const adminEmail = claims.email;
 
     const url = new URL(req.url);
     const estado = url.searchParams.get('estado');
@@ -27,8 +29,10 @@ export async function GET(req: Request) {
 
     let query = supabaseAdmin
       .from('perfiles')
-      .select('id, administrador_id, nombre, logo_url, correo, estado, fechas')
-      .eq('administrador_id', adminId);
+      .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, fechas')
+      .eq('eliminado', false);
+    
+    // Todos los administradores pueden ver todos los perfiles
 
     if (estado && estado.trim()) {
       query = query.eq('estado', estado.trim());
@@ -64,12 +68,14 @@ export async function POST(req: Request) {
 
     let nombre: string;
     let correo: string;
+    let descripcion: string;
     let logoFile: File | null = null;
 
     if (isMultipart) {
       const form = await req.formData();
       nombre = String(form.get("nombre") ?? "");
       correo = String(form.get("correo") ?? "");
+      descripcion = String(form.get("descripcion") ?? "");
       const maybeFile = form.get("logo");
 
       if (maybeFile instanceof File && maybeFile.size > 0) {
@@ -79,6 +85,7 @@ export async function POST(req: Request) {
       const body = await req.json();
       nombre = String(body?.nombre ?? "");
       correo = String(body?.correo ?? "");
+      descripcion = String(body?.descripcion ?? "");
     }
 
     const data = perfilSchema.parse({ nombre, correo });
@@ -111,7 +118,7 @@ export async function POST(req: Request) {
 
     const estado = "borrador";
 
-    let perfil: any = null; //eslint-disable-line @typescript-eslint/no-explicit-any
+    let perfil: any = null;
     try {
       const insertRes = await supabaseAdmin
         .from("perfiles")
@@ -120,6 +127,7 @@ export async function POST(req: Request) {
           nombre: data.nombre,
           logo_url: logoUrl,
           correo: data.correo,
+          descripcion: descripcion || null,
           estado,
         })
         .select("id")
@@ -127,6 +135,28 @@ export async function POST(req: Request) {
 
       if (insertRes.error) {
         console.error("[api/perfiles] insert error:", insertRes.error);
+        
+        // Detectar error de correo duplicado
+        const errorMessage = String(insertRes.error.message ?? insertRes.error).toLowerCase();
+        const errorCode = insertRes.error.code;
+        
+        if (
+          errorCode === "23505" || 
+          errorMessage.includes("duplicate") || 
+          errorMessage.includes("unique") ||
+          errorMessage.includes("correo") ||
+          errorMessage.includes("email")
+        ) {
+          return NextResponse.json(
+            {
+              error: "Este correo electrónico ya está registrado",
+              details: "Por favor, utiliza un correo electrónico diferente.",
+              code: "DUPLICATE_EMAIL",
+            },
+            { status: 409 }
+          );
+        }
+        
         return NextResponse.json(
           {
             error: "No se pudo crear el perfil",
@@ -149,7 +179,7 @@ export async function POST(req: Request) {
       { id: perfil.id, message: "Perfil creado exitosamente" },
       { status: 201 }
     );
-  } catch (error: any) { //eslint-disable-line @typescript-eslint/no-explicit-any
+  } catch (error: any) {
     if (error?.issues) {
       return NextResponse.json(
         { error: "Datos inválidos", details: error.issues },
@@ -162,3 +192,4 @@ export async function POST(req: Request) {
     );
   }
 }
+

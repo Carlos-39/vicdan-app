@@ -2,10 +2,10 @@
 "use client"
 
 import { Input } from "@/components/ui/input"
-import { Select } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Search, X } from "lucide-react"
 import { ProfileFilters } from "@/types/profile"
+import { cn } from "@/lib/utils"
 
 interface ProfileFiltersProps {
   filters: ProfileFilters
@@ -28,22 +28,16 @@ export function ProfileFiltersComponent({ filters, onFiltersChange }: ProfileFil
     onFiltersChange({ ...filters, searchTerm: '' })
   }
 
-  const hasActiveFilters = filters.searchTerm || (filters.estado && filters.estado !== 'todos')
-
-  const handleClearAll = () => {
-    onFiltersChange({ estado: 'todos', searchTerm: '' })
-  }
-
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
       {/* Search */}
-      <div className="relative">
+      <div className="relative flex-1 w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
           placeholder="Buscar por nombre..."
           value={filters.searchTerm || ''}
           onChange={handleSearchChange}
-          className="pl-9 pr-9"
+          className="pl-9 pr-9 w-full"
         />
         {filters.searchTerm && (
           <Button
@@ -57,30 +51,21 @@ export function ProfileFiltersComponent({ filters, onFiltersChange }: ProfileFil
         )}
       </div>
 
-      {/* Filters Row */}
-      <div className="flex items-center gap-2">
-        <Select
-          value={filters.estado || 'todos'}
-          onChange={handleEstadoChange}
-          className="flex-1"
-        >
-          <option value="todos">Todos los estados</option>
-          <option value="activo">Activo</option>
-          <option value="inactivo">Inactivo</option>
-          <option value="borrador">Borrador</option>
-        </Select>
-
-        {hasActiveFilters && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleClearAll}
-            className="shrink-0"
-          >
-            Limpiar filtros
-          </Button>
+      {/* Filter */}
+      <select
+        value={filters.estado || 'todos'}
+        onChange={handleEstadoChange}
+        className={cn(
+          "flex h-9 w-full sm:w-auto sm:min-w-[160px] items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors",
+          "focus-visible:outline-hidden focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+          "disabled:cursor-not-allowed disabled:opacity-50"
         )}
-      </div>
+      >
+        <option value="todos">Todos los estados</option>
+        <option value="activo">Activo</option>
+        <option value="inactivo">Inactivo</option>
+        <option value="borrador">Borrador</option>
+      </select>
     </div>
   )
 }

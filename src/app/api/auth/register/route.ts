@@ -6,11 +6,47 @@ import { hashPassword } from '@/lib/crypto';
 import { supabaseAdmin } from '@/lib/supabase';
 import { generateAuthToken } from '@/lib/jwt'; // <-- 1. Importar función para JWT
 import { logger } from '@/lib/logger'; // <-- 2. Importar tu logger
+import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, password } = registerSchema.parse(body);
+    const { name, email, password, codigo } = registerSchema.parse(body);
+
+    const isWhitelisted = ADMIN_WHITELIST.includes(email);
+
+    // 0) Validar código de registro si el email no está en la lista blanca
+    if(!isWhitelisted){
+      if (!codigo) {
+        return NextResponse.json(
+          { error: "Debe proporcionar un código de registro" },
+          { status: 400 }
+        );
+      }
+
+      const { data: codeData, error: codeErr } = await supabaseAdmin
+        .from("codigos_registro")
+        .select("*")
+        .eq("codigo", codigo)
+        .maybeSingle();
+
+      if (codeErr) {
+        logger.error(codeErr, "Error al validar código");
+        return NextResponse.json({ error: "Error validando código" }, { status: 500 });
+      }
+
+      if (!codeData) {
+        return NextResponse.json({ error: "Código inválido" }, { status: 403 });
+      }
+
+      if (!codeData.usable) {
+        return NextResponse.json({ error: "Código ya utilizado" }, { status: 410 });
+      }
+
+      if (new Date(codeData.fecha_expiracion) < new Date()) {
+        return NextResponse.json({ error: "Código expirado" }, { status: 410 });
+      }
+    }
 
     // 1) ¿Existe el correo?
     const { data: existing, error: findErr } = await supabaseAdmin
@@ -49,6 +85,14 @@ export async function POST(req: Request) {
       // --- TAREA 2: LOGGING (Error de inserción) ---
       logger.error(insertErr,'Error al insertar administrador en Supabase:');
       return NextResponse.json({ error: 'No se pudo crear el usuario' }, { status: 500 });
+    }
+
+    // 4) Marcar código como usado
+    if(!isWhitelisted){
+      await supabaseAdmin
+        .from("codigos_registro")
+        .update({ usable: false })
+        .eq("codigo", codigo);
     }
 
     // --- TAREA 1: GENERAR TOKEN JWT (Tras registro exitoso) ---
