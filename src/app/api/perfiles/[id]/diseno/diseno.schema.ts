@@ -59,6 +59,7 @@ export const backgroundSchema = z.object({
     color: z.string().optional(),
     size: z.number().optional(),
     opacity: z.number().optional(),
+    blur: z.number().optional(),
   }).optional(),
   image: z.object({
     url: z.string().optional(),
@@ -66,6 +67,7 @@ export const backgroundSchema = z.object({
     position: z.string().optional(),
     repeat: z.string().optional(),
     opacity: z.number().optional(),
+    blur: z.number().optional(),
   }).optional(),
 }).optional();
 

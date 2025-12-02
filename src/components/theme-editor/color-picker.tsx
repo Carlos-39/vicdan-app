@@ -144,7 +144,7 @@ export function ColorPicker({ colors, onChange }: ColorPickerProps) {
           label="Texto de tarjetas"
           value={colors.cardText}
           onChange={(value) => updateColor("cardText", value)}
-          description="Color del texto dentro de las tarjetas"
+          description="Color del texto dentro de las tarjetas y botones de redes sociales"
         />
       </div>
 

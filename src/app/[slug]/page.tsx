@@ -182,7 +182,7 @@ export default async function PublicProfilePageBySlug({ params }: PageProps) {
 
   return (
     <div 
-      className="min-h-screen w-full flex items-center justify-center"
+      className="min-h-screen w-full flex items-center justify-center xl:py-12"
       style={{
         ...getPageBackgroundStyle(),
         fontFamily: theme.typography.fontFamily,

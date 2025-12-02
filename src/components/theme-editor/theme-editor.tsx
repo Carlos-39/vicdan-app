@@ -418,6 +418,7 @@ export function ThemeEditor({
     themeData: ThemeConfig
   ): Promise<boolean> => {
     try {
+      console.log("Guardando tema...", themeData);
       if (status === "loading") {
         throw new Error("Sesión aún cargando...");
       }
@@ -985,6 +986,7 @@ export function ThemeEditor({
               </div>
             </CardContent>
           </Card>
+
         </div>
       </div>
 
