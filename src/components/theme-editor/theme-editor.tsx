@@ -801,7 +801,7 @@ export function ThemeEditor({
   }
 
   return (
-    <div className="container max-w-7xl mx-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+    <div className="container max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
       <Toast
         message={toast.message}
         type={toast.type}
@@ -810,98 +810,102 @@ export function ThemeEditor({
         duration={4000}
       />
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          
-          <div className="text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl font-bold">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-start gap-3">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
               Personalizar Diseño
             </h1>
-            <p className="text-muted-foreground mt-1 sm:mt-2 text-sm sm:text-base">
+            <p className="text-muted-foreground mt-1 sm:mt-2 text-xs sm:text-sm md:text-base">
               Personaliza la apariencia de tu perfil público
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
               {hasUnsavedChanges && (
-                <span className="ml-2 text-amber-600 font-medium">
+                <span className="text-xs sm:text-sm text-amber-600 font-medium">
                   • Tienes cambios sin guardar
                 </span>
               )}
               {status === "unauthenticated" && (
-                <span className="ml-2 text-red-600 font-medium">
+                <span className="text-xs sm:text-sm text-red-600 font-medium">
                   • No autenticado
                 </span>
               )}
-            </p>
+            </div>
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Button
             onClick={handleSave}
             disabled={
               !hasUnsavedChanges || isSaving || status === "unauthenticated"
             }
             size="sm"
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto flex items-center justify-center gap-2"
           >
-            <Save className="size-3 sm:size-4" />
-            <span className="ml-2">
+            <Save className="size-4 shrink-0" />
+            <span className="whitespace-nowrap">
               {isSaving ? "Guardando..." : "Guardar Cambios"}
             </span>
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
-        <div className="xl:col-span-2 space-y-4 sm:space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           <Card className="overflow-hidden gap-1">
-            <CardHeader className="">
-              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                <Palette className="size-4 sm:size-5" />
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
+                <Palette className="size-4 sm:size-5 shrink-0" />
                 Editor de Tema
               </CardTitle>
             </CardHeader>
 
-            <CardContent className="p-3 sm:p-4">
+            <CardContent className="p-3 sm:p-4 md:p-6">
               <Tabs
                 value={activeTab}
                 onValueChange={setActiveTab}
                 className="space-y-3"
               >
-                <TabsList className=" mb-4 flex flex-nowrap gap-1 w-full overflow-hidden py-4 min-h-[60px] items-center border-b">
+                <TabsList className="mb-4 flex flex-nowrap gap-0 sm:gap-1 w-full overflow-x-auto py-0 sm:py-1 min-h-[56px] sm:min-h-[60px] items-center border-b bg-transparent rounded-none scrollbar-hide">
                   <TabsTrigger
                     value="colors"
-                    className="flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm py-3 px-3 min-w-0 flex-1 whitespace-nowrap h-auto"
+                    className="flex items-center justify-center gap-0 sm:gap-2 py-3 sm:py-2 px-0 sm:px-3 min-w-0 sm:min-w-0 flex-1 sm:flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                    title="Colores"
                   >
-                    <Palette className="size-4 sm:size-4 shrink-0" />
-                    <span>Colores</span>
+                    <Palette className="size-6 sm:size-4 shrink-0" />
+                    <span className="hidden sm:inline text-xs sm:text-sm ml-0 sm:ml-1.5">Colores</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="layout"
-                    className="flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm py-3 px-3 min-w-0 flex-1 whitespace-nowrap h-auto"
+                    className="flex items-center justify-center gap-0 sm:gap-2 py-3 sm:py-2 px-0 sm:px-3 min-w-0 sm:min-w-0 flex-1 sm:flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                    title="Layout"
                   >
-                    <Layout className="size-4 sm:size-4 shrink-0" />
-                    <span>Layout</span>
+                    <Layout className="size-6 sm:size-4 shrink-0" />
+                    <span className="hidden sm:inline text-xs sm:text-sm ml-0 sm:ml-1.5">Layout</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="typography"
-                    className="flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm py-3 px-3 min-w-0 flex-1 whitespace-nowrap h-auto"
+                    className="flex items-center justify-center gap-0 sm:gap-2 py-3 sm:py-2 px-0 sm:px-3 min-w-0 sm:min-w-0 flex-1 sm:flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                    title="Tipografía"
                   >
-                    <Type className="size-4 sm:size-4 shrink-0" />
-                    <span className="hidden xs:inline">Tipografía</span>
-                    <span className="xs:hidden">Texto</span>
+                    <Type className="size-6 sm:size-4 shrink-0" />
+                    <span className="hidden sm:inline text-xs sm:text-sm ml-0 sm:ml-1.5">Tipografía</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="spacing"
-                    className="flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm py-3 px-3 min-w-0 flex-1 whitespace-nowrap h-auto"
+                    className="flex items-center justify-center gap-0 sm:gap-2 py-3 sm:py-2 px-0 sm:px-3 min-w-0 sm:min-w-0 flex-1 sm:flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                    title="Espaciado"
                   >
-                    <Settings className="size-4 sm:size-4 shrink-0" />
-                    <span className="hidden xs:inline">Espaciado</span>
-                    <span className="xs:hidden">Espacio</span>
+                    <Settings className="size-6 sm:size-4 shrink-0" />
+                    <span className="hidden sm:inline text-xs sm:text-sm ml-0 sm:ml-1.5">Espaciado</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="links"
-                    className="flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm py-3 px-3 min-w-0 flex-1 whitespace-nowrap h-auto"
+                    className="flex items-center justify-center gap-0 sm:gap-2 py-3 sm:py-2 px-0 sm:px-3 min-w-0 sm:min-w-0 flex-1 sm:flex-1 h-full rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                    title="Enlaces"
                   >
-                    <Link className="size-4 sm:size-4 shrink-0" />
-                    <span>Enlaces</span>
+                    <Link className="size-6 sm:size-4 shrink-0" />
+                    <span className="hidden sm:inline text-xs sm:text-sm ml-0 sm:ml-1.5">Enlaces</span>
                   </TabsTrigger>
                 </TabsList>
 
@@ -912,7 +916,7 @@ export function ThemeEditor({
                   />
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-xl font-semibold">Fondo Avanzado</CardTitle>
+                      <CardTitle className="text-base font-semibold">Fondo Avanzado</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <BackgroundSelector
@@ -959,17 +963,17 @@ export function ThemeEditor({
           </Card>
         </div>
 
-        <div className="xl:col-span-1">
+        <div className="lg:col-span-1">
           <Card className="overflow-hidden h-full">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                <Eye className="size-4 sm:size-5" />
+            <CardHeader className="pb-3 p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg md:text-xl">
+                <Eye className="size-4 sm:size-5 shrink-0" />
                 Vista Previa
               </CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               <div className="max-w-full overflow-auto">
-                <div className="min-h-[400px] sm:min-h-[500px] flex items-center justify-center p-3 sm:p-4">
+                <div className="min-h-[300px] sm:min-h-[400px] md:min-h-[500px] flex items-center justify-center p-3 sm:p-4 md:p-6">
                   <ThemePreview
                     theme={theme}
                     profileData={{
@@ -999,6 +1003,13 @@ export function ThemeEditor({
           border-radius: 8px;
           font-weight: 600;
           padding: 10px 24px;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
         }
       `}</style>
     </div>

@@ -108,7 +108,7 @@ export default function LoginForm() {
           </div>
         </div>
 
-        <div className={styles.forgotPassword}>
+        {/*<div className={styles.forgotPassword}>
           <button
             type="button"
             className={styles.forgot}
@@ -116,7 +116,7 @@ export default function LoginForm() {
           >
             ¿Olvidaste tu contraseña?
           </button>
-        </div>
+        </div>*/}
 
         {error && <p className={styles.error}>{error}</p>}
 

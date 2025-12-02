@@ -102,7 +102,7 @@ export function FontSelector({ typography, onChange }: FontSelectorProps) {
     <div className="space-y-6">
       {/* Selector de familia de fuentes */}
       <div>
-        <Label className="text-xl font-semibold mb-3 block">
+        <Label className="text-base font-semibold mb-3 block">
           Familia tipográfica
         </Label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-3">
@@ -156,7 +156,7 @@ export function FontSelector({ typography, onChange }: FontSelectorProps) {
 
       {/* Tamaños de fuente */}
       <div className="space-y-4">
-        <Label className="text-xl font-semibold mb-3 block">Tamaños de texto</Label>
+        <Label className="text-base font-semibold mb-3 block">Tamaños de texto</Label>
 
         <div className="flex items-center justify-between">
           <Label htmlFor="heading-font-size" className="text-sm">
