@@ -136,25 +136,22 @@ export default function DashboardPage() {
         return CheckCircle;
       case "inactivo":
         return Clock;
-      case "borrador":
-        return FileEdit;
       default:
-        return FileEdit;
+        return Clock;
     }
   };
 
-  const getActivityStatus = (estado: string): "completed" | "pending" | "draft" => {
+  const getActivityStatus = (estado: string): "completed" | "pending" => {
     switch (estado) {
       case "activo":
         return "completed";
       case "inactivo":
         return "pending";
-      case "borrador":
-        return "draft";
       default:
-        return "draft";
+        return "pending";
     }
   };
+  
 
   const getIconBgColor = (estado: string) => {
     // Usar el color morado de la aplicación para todos los estados
@@ -162,8 +159,6 @@ export default function DashboardPage() {
       case "activo":
         return "bg-gradient-to-br from-[var(--primary)] to-indigo-600 text-white shadow-lg shadow-purple-500/30";
       case "inactivo":
-        return "bg-gradient-to-br from-purple-400 to-indigo-500 text-white shadow-lg shadow-purple-500/30";
-      case "borrador":
         return "bg-gradient-to-br from-purple-400 to-indigo-500 text-white shadow-lg shadow-purple-500/30";
       default:
         return "bg-gradient-to-br from-purple-400 to-indigo-500 text-white shadow-lg shadow-purple-500/30";

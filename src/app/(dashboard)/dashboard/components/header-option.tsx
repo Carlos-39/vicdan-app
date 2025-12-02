@@ -168,7 +168,7 @@ export default function HeaderOption() {
                       </div>
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="h-4 w-4 text-green-500" />
-                        <span>Filtrar por estado (activo, inactivo, borrador)</span>
+                        <span>Filtrar por estado (activo, inactivo)</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -300,7 +300,7 @@ export default function HeaderOption() {
                     <ul className="mt-2 space-y-1 text-xs text-gray-600 list-disc list-inside">
                       <li>Actualizar información básica</li>
                       <li>Cambiar foto de perfil</li>
-                      <li>Modificar estado (activo/inactivo/borrador)</li>
+                      <li>Modificar estado (activo/inactivo)</li>
                       <li>Guardar cambios en tiempo real</li>
                     </ul>
                   </CardContent>

@@ -1,6 +1,6 @@
 // src/types/profile.ts
 
-export type ProfileStatus = 'activo' | 'inactivo' | 'borrador';
+export type ProfileStatus = 'activo' | 'inactivo';
 
 export interface Profile {
   id: string;
