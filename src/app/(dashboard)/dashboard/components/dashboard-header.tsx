@@ -18,8 +18,6 @@ export function DashboardHeader() {
     pathname?.includes("/perfiles") ||
     pathname?.includes("/perfil");
 
-  console.log(pathname, showBackButton);
-
   const handleBack = () => {
     router.back();
   };

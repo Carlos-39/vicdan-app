@@ -120,8 +120,6 @@ export default async function PublicProfilePageBySlug({ params }: PageProps) {
     }))
   };
 
-  console.log(theme);
-
   // Función para generar el background de la página
   const getPageBackgroundStyle = () => {
     const { background } = theme;

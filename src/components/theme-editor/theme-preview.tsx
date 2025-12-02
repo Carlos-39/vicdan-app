@@ -91,8 +91,6 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
   const isPersonalizar =
     pathname?.includes("/personalizar")
 
-  console.log(pathname, isPersonalizar);
-
   // Función para convertir color hex a RGB
   function hexToRgb(hex: string) {
     // Eliminar el # si está presente
@@ -142,62 +140,47 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
           opacity: background.pattern?.opacity || 0.1,
         };
 
-      case "image":
-        const opacity = background.image?.opacity || 1;
-        const blur = background.image?.blur || 0;
-        const bgColor = theme.colors.background || "#ffffff";
 
-        // Si la opacidad es menor a 1, crear un gradiente superpuesto
-        if (opacity < 1 && background.image?.url) {
+
+      case "image": {
+        const opacity = background.image?.opacity ?? 1;
+        const blur = background.image?.blur ?? 0;
+        const bgColor = theme.colors.background ?? "#ffffff";
+
+        // Si hay blur > 0, devolvemos solo backgroundColor (la capa borrosa será un DIV absoluto)
+        if (blur > 0 && background.image?.url) {
+          // Si además quieres una versión no borrosa por detrás, podrías hacer algo distinto.
           return {
-            backgroundImage: `
-            linear-gradient(
-              rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity}),
-              rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity})
-            ),
-            url('${background?.image?.url}')
-          `,
-            backgroundSize: background?.image?.size || "cover",
-            backgroundPosition: background?.image?.position || "center",
-            backgroundRepeat: background?.image?.repeat || "no-repeat",
             backgroundColor: bgColor,
           };
         }
 
-        if (blur > 0 && background.image?.url) {
+        // Si no hay blur, manejamos los demás casos (opacidad o normal)
+        if (opacity < 1 && background.image?.url) {
           return {
-            backgroundImage: `url('${background.image.url}')`,
+            backgroundImage: `
+              linear-gradient(
+                rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity}),
+                rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity})
+              ),
+              url('${background.image.url}')
+            `,
             backgroundSize: background.image?.size || "cover",
             backgroundPosition: background.image?.position || "center",
             backgroundRepeat: background.image?.repeat || "no-repeat",
             backgroundColor: bgColor,
-            filter: `blur(${blur}px)`
           };
         }
 
-        if (opacity < 1 && blur > 0 && background.image?.url) {
-          return {
-            backgroundImage: `
-            linear-gradient(
-              rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity}),
-              rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity})
-            ),
-            url('${background?.image?.url}')
-          `,
-            backgroundSize: background?.image?.size || "cover",
-            backgroundPosition: background?.image?.position || "center",
-            backgroundRepeat: background?.image?.repeat || "no-repeat",
-            backgroundColor: bgColor,
-          };
-        }
-
+        // Caso por defecto sin blur
         return {
-          backgroundImage: background.image?.url ? `url('${background.image.url}')` : 'none',
+          backgroundImage: background.image?.url ? `url('${background.image.url}')` : "none",
           backgroundSize: background.image?.size || "cover",
           backgroundPosition: background.image?.position || "center",
           backgroundRepeat: background.image?.repeat || "no-repeat",
           backgroundColor: bgColor,
         };
+      }
 
       case "color":
       default:
@@ -224,12 +207,12 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
       const r = parseInt(hex.substring(0, 2), 16);
       const g = parseInt(hex.substring(2, 4), 16);
       const b = parseInt(hex.substring(4, 6), 16);
-      
+
       // Calcular luminosidad relativa
       const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
       return luminance < 0.5; // Si la luminosidad es menor a 0.5, es oscuro
     }
-    
+
     // Si es rgb/rgba
     if (color.startsWith('rgb')) {
       const matches = color.match(/\d+/g);
@@ -241,7 +224,7 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
         return luminance < 0.5;
       }
     }
-    
+
     // Por defecto, asumir que no es oscuro
     return false;
   };
@@ -249,7 +232,7 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
   // Función para obtener el color de fondo dominante
   const getBackgroundColor = (): string => {
     const { background } = theme;
-    
+
     switch (background?.type) {
       case "color":
         return theme.colors.background || "#ffffff";
@@ -355,16 +338,19 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
     );
   };
 
+  console.log("theme.background.image", theme.background.image);
+
   return (
-    <div className={isPersonalizar ? "w-full h-auto rounded-lg" 
-                                   : "w-full xl:w-1/3 xl:rounded-lg max-w-full sm:min-h-screen xl:min-h-0    xl:h-auto "}
-    style={{
-      ...getBackgroundStyle(),
-    }}>
+    <div className={isPersonalizar ? "w-full h-auto rounded-lg"
+      : "w-full xl:w-1/3 xl:rounded-lg max-w-full sm:min-h-screen xl:min-h-0    xl:h-auto "}
+      style={{
+        ...getBackgroundStyle(),
+      }}>
       {/* Vista previa del perfil */}
       <div
         className={`rounded-lg transition-all w-full overflow-hidden scale-90 sm:scale-95 md:scale-100 ${getLayoutStyles()}`}
         style={{
+          position: "relative", // importante para los absolute children
           color: theme.colors.text,
           fontFamily: theme.typography.fontFamily,
           padding: `calc(${theme.spacing.padding} * 0.8)`,
@@ -374,157 +360,206 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
           flexDirection: "column",
         }}
       >
-        {/* Avatar */}
-        {theme.layout.showAvatar && (
-          <div
-            className="mb-4"
-            style={{
-              display: "flex",
-              justifyContent: getFlexJustification(),
-            }}
-          >
-            <Avatar
-              className="size-20 border-2"
-              style={{
-                borderColor: theme.colors.primary,
-                backgroundColor: theme.colors.secondary,
-              }}
-            >
-              {displayData.logo_url && (
-                <AvatarImage
-                  src={displayData.logo_url}
-                  alt={`Avatar de ${displayData.nombre}`}
-                  className="object-cover"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                  }}
-                />
-              )}
-              <AvatarFallback
-                className="text-lg font-semibold"
-                style={{
-                  backgroundColor: theme.colors.primary,
-                  color: theme.colors.background,
-                }}
-              >
-                {getInitials(displayData.nombre)}
-              </AvatarFallback>
-            </Avatar>
-          </div>
-        )}
 
-        {/* Información principal */}
-        <div
-          className="space-y-3"
-          style={{
-            textAlign: getTextAlignment() as any,
-            lineHeight: theme.spacing.margin,
-          }}
-        >
-          <h1
-            className="font-bold"
-            style={{
-              fontSize: theme.typography.fontSize.heading,
-              color: theme.colors.secondary,
-              marginBottom: `calc(${theme.spacing.margin} / 2)`,
-            }}
-          >
-            {displayData.nombre}
-          </h1>
+        {/* CAPA BORROSA (solo si hay imagen y blur>0) */}
+        {theme.background?.type === "image" && theme.background.image?.url && (theme.background.image?.blur ?? 0) > 0 && (() => {
+          const blur = theme.background.image.blur; // 0..1
+          const maxBlurPx = 24; // ajuste: 24px cuando blur === 1. Cámbialo si quieres más/menos
+          const blurPx = Math.round(blur * maxBlurPx * 100) / 100;
+          const scale = 1 + Math.min(0.12, blur * 0.12); // escala para ocultar bordes (hasta 1.12)
 
-          {displayData.descripcion && (
-            <p
-              className="opacity-80"
-              style={{
-                fontSize: theme.typography.fontSize.base,
-                color: theme.colors.text,
-                lineHeight: theme.spacing.margin,
-                margin: 0,
-              }}
-            >
-              {displayData.descripcion}
-            </p>
-          )}
-        </div>
+          // manejar opacidad si la imagen tiene opacity < 1
+          const opacity = theme.background.image.opacity ?? 1;
+          const bgColor = theme.colors.background ?? "#ffffff";
+          const overlayGradient = opacity < 1
+            ? `linear-gradient(rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity}), rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity})), `
+            : "";
 
-        {/* Iconos sociales - ARRIBA de los enlaces */}
-        {(theme.layout.socialIconsPosition === "above-links" || theme.layout.socialIconsPosition === "both") && (
-          <SocialIconsSection position="above" />
-        )}
-
-        {/* Enlaces principales */}
-        <div
-          className=""
-          style={{
-            textAlign: getTextAlignment() as any,
-            display: "flex",
-            flexDirection: "column",
-            gap: theme.spacing.gap
-          }}
-        >
-          {displayData.links
-            ?.filter((link) => link.isActive)
-            .map((link) => (
-              <Button
-                key={link.id}
-                className="transition-all hover:scale-105 py-8"
-                style={{
-                  backgroundColor: theme.colors.card,
-                  color: theme.colors.cardText,
-                  border: "none",
-                  fontSize: theme.typography.fontSize.cardText,
-                  justifyContent: getFlexJustification(),
-                  textAlign: getTextAlignment() as any,
-                }}
-                asChild
-              >
-                <a href={link.url} target="_blank" rel="noopener noreferrer">
-                  <span
-                    className="flex-1 font-medium"
-                    style={{
-                      textAlign: getTextAlignment() as any,
-                    }}
-                  >
-                    {link.name}
-                  </span>
-                </a>
-              </Button>
-            ))}
-        </div>
-
-        {/* Iconos sociales - DEBAJO de los enlaces */}
-        {(theme.layout.socialIconsPosition === "below-links" || theme.layout.socialIconsPosition === "both") && (
-          <SocialIconsSection position="below" />
-        )}
-
-        {/* Marca de agua "Powered by VicDan" - Solo en vista pública */}
-        {!isPersonalizar && (() => {
-          const bgColor = getBackgroundColor();
-          const isDark = isDarkColor(bgColor);
-          const textColor = isDark ? "#ffffff" : "#000000";
-          
           return (
             <div
-              className="mt-8 pt-6"
+              aria-hidden
               style={{
-                textAlign: "center",
+                position: "absolute",
+                inset: 0,
+                zIndex: 0,
+                pointerEvents: "none",
+                backgroundImage: `${overlayGradient} url('${theme.background.image.url}')`,
+                backgroundSize: theme.background.image.size || "cover",
+                backgroundPosition: theme.background.image.position || "center",
+                backgroundRepeat: theme.background.image.repeat || "no-repeat",
+                filter: `blur(${blurPx}px)`,
+                transform: `scale(${scale})`,
+                // smoothing/performance hints
+                willChange: "filter, transform",
               }}
-            >
-              <p
-                className="text-base sm:text-lg font-bold"
-                style={{
-                  color: textColor,
-                  fontSize: "12px",
-                  letterSpacing: "1px",
-                  opacity: 1,
-                  textShadow: isDark ? `0 1px 2px rgba(0,0,0,0.3)` : `0 1px 2px rgba(255,255,255,0.5)`,
-                }}
-              >
-                Powered by <span style={{ color: textColor, fontWeight: 800 }}>VicDan</span>
-              </p>
-            </div>
+            />
           );
         })()}
+
+
+        <div className={`rounded-lg transition-all w-full overflow-hidden scale-90 sm:scale-95 md:scale-100 ${getLayoutStyles()}`}
+        style={{
+          position: "relative", zIndex: 1, width: "100%",
+          color: theme.colors.text,
+          fontFamily: theme.typography.fontFamily,
+          padding: `calc(${theme.spacing.padding} * 0.8)`,
+          gap: theme.spacing.gap,
+          margin: "0 auto",
+          display: "flex",
+          flexDirection: "column",
+        }}>
+          {/* Avatar */}
+          {theme.layout.showAvatar && (
+            <div
+              className="mb-4"
+              style={{
+                display: "flex",
+                justifyContent: getFlexJustification(),
+              }}
+            >
+              <Avatar
+                className="size-20 border-2"
+                style={{
+                  borderColor: theme.colors.primary,
+                  backgroundColor: theme.colors.secondary,
+                }}
+              >
+                {displayData.logo_url && (
+                  <AvatarImage
+                    src={displayData.logo_url}
+                    alt={`Avatar de ${displayData.nombre}`}
+                    className="object-cover"
+                    onError={(e) => {
+                      e.currentTarget.style.display = "none";
+                    }}
+                  />
+                )}
+                <AvatarFallback
+                  className="text-lg font-semibold"
+                  style={{
+                    backgroundColor: theme.colors.primary,
+                    color: theme.colors.background,
+                  }}
+                >
+                  {getInitials(displayData.nombre)}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+          )}
+
+          {/* Información principal */}
+          <div
+            className="space-y-3"
+            style={{
+              textAlign: getTextAlignment() as any,
+              lineHeight: theme.spacing.margin,
+            }}
+          >
+            <h1
+              className="font-bold"
+              style={{
+                fontSize: theme.typography.fontSize.heading,
+                color: theme.colors.secondary,
+                marginBottom: `calc(${theme.spacing.margin} / 2)`,
+              }}
+            >
+              {displayData.nombre}
+            </h1>
+
+            {displayData.descripcion && (
+              <p
+                className="opacity-80"
+                style={{
+                  fontSize: theme.typography.fontSize.base,
+                  color: theme.colors.text,
+                  lineHeight: theme.spacing.margin,
+                  margin: 0,
+                }}
+              >
+                {displayData.descripcion}
+              </p>
+            )}
+          </div>
+
+          {/* Iconos sociales - ARRIBA de los enlaces */}
+          {(theme.layout.socialIconsPosition === "above-links" || theme.layout.socialIconsPosition === "both") && (
+            <SocialIconsSection position="above" />
+          )}
+
+          {/* Enlaces principales */}
+          <div
+            className=""
+            style={{
+              textAlign: getTextAlignment() as any,
+              display: "flex",
+              flexDirection: "column",
+              gap: theme.spacing.gap
+            }}
+          >
+            {displayData.links
+              ?.filter((link) => link.isActive)
+              .map((link) => (
+                <Button
+                  key={link.id}
+                  className="transition-all hover:scale-105 py-8"
+                  style={{
+                    backgroundColor: theme.colors.card,
+                    color: theme.colors.cardText,
+                    border: "none",
+                    fontSize: theme.typography.fontSize.cardText,
+                    justifyContent: getFlexJustification(),
+                    textAlign: getTextAlignment() as any,
+                  }}
+                  asChild
+                >
+                  <a href={link.url} target="_blank" rel="noopener noreferrer">
+                    <span
+                      className="flex-1 font-medium"
+                      style={{
+                        textAlign: getTextAlignment() as any,
+                      }}
+                    >
+                      {link.name}
+                    </span>
+                  </a>
+                </Button>
+              ))}
+          </div>
+
+          {/* Iconos sociales - DEBAJO de los enlaces */}
+          {(theme.layout.socialIconsPosition === "below-links" || theme.layout.socialIconsPosition === "both") && (
+            <SocialIconsSection position="below" />
+          )}
+
+          {/* Marca de agua "Powered by VicDan" - Solo en vista pública */}
+          {!isPersonalizar && (() => {
+            const bgColor = getBackgroundColor();
+            const isDark = isDarkColor(bgColor);
+            const textColor = isDark ? "#ffffff" : "#000000";
+
+            return (
+              <div
+                className="mt-8 pt-6"
+                style={{
+                  textAlign: "center",
+                }}
+              >
+                <p
+                  className="text-base sm:text-lg font-bold"
+                  style={{
+                    color: textColor,
+                    fontSize: "12px",
+                    letterSpacing: "1px",
+                    opacity: 1,
+                    textShadow: isDark ? `0 1px 2px rgba(0,0,0,0.3)` : `0 1px 2px rgba(255,255,255,0.5)`,
+                  }}
+                >
+                  Powered by <span style={{ color: textColor, fontWeight: 800 }}>VicDan</span>
+                </p>
+              </div>
+            );
+          })()}
+        </div>
       </div>
     </div>
   );
