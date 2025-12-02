@@ -220,8 +220,8 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
         {/* Título */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Editar Perfil</CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <CardTitle className="text-xl sm:text-2xl">Editar Perfil</CardTitle>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Modifica la información de tu perfil
             </p>
           </CardHeader>

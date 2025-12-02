@@ -29,15 +29,15 @@ export function ProfileFiltersComponent({ filters, onFiltersChange }: ProfileFil
   }
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
       {/* Search */}
-      <div className="relative flex-1">
+      <div className="relative flex-1 w-full">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
         <Input
           placeholder="Buscar por nombre..."
           value={filters.searchTerm || ''}
           onChange={handleSearchChange}
-          className="pl-9 pr-9"
+          className="pl-9 pr-9 w-full"
         />
         {filters.searchTerm && (
           <Button
@@ -56,7 +56,7 @@ export function ProfileFiltersComponent({ filters, onFiltersChange }: ProfileFil
         value={filters.estado || 'todos'}
         onChange={handleEstadoChange}
         className={cn(
-          "flex h-9 w-auto min-w-[160px] items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors",
+          "flex h-9 w-full sm:w-auto sm:min-w-[160px] items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors",
           "focus-visible:outline-hidden focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
           "disabled:cursor-not-allowed disabled:opacity-50"
         )}

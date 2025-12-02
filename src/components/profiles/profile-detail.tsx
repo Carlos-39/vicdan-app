@@ -186,9 +186,9 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
       {/* Header con botones de acción */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:ml-auto">
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto sm:ml-auto">
           {/* Botones siempre visibles */}
-          <Button variant="outline" size="sm" onClick={handlePreviewDesign}>
+          <Button variant="outline" size="sm" onClick={handlePreviewDesign} className="w-full sm:w-auto">
             <Eye className="size-4" />
             <span className="hidden sm:inline ml-2">Vista previa</span>
           </Button>
@@ -196,6 +196,7 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
             variant="outline"
             size="sm"
             onClick={() => router.push(`/dashboard/perfiles/${profile.id}/personalizar`)}
+            className="w-full sm:w-auto"
           >
             <Palette className="size-4" />
             <span className="hidden sm:inline ml-2">Personalizar</span>
@@ -207,6 +208,7 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
               onEdit ||
               (() => router.push(`/dashboard/perfiles/${profile.id}/editar`))
             }
+            className="w-full sm:w-auto"
           >
             <Edit className="size-4" />
             <span className="hidden sm:inline ml-2">Editar</span>
@@ -218,6 +220,7 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
               size="sm"
               onClick={handlePublish}
               disabled={!isComplete || isPublishing}
+              className="w-full sm:w-auto"
             >
               {isPublishing ? (
                 <Loader2 className="size-4 animate-spin" />
@@ -230,7 +233,7 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
             <Button
               size="sm"
               onClick={handleOpenShareModal}
-              className="gap-2"
+              className="gap-2 w-full sm:w-auto"
             >
               <Share2 className="size-4" />
               Compartir
@@ -242,16 +245,16 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
       {/* Card Principal - Información del perfil */}
       <Card>
         <CardHeader className="border-b">
-          <div className="flex items-center gap-4">
-            <Avatar className="size-20">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+            <Avatar className="size-16 sm:size-20 flex-shrink-0">
               <AvatarImage src={profile.logo_url || undefined} alt={profile.nombre} />
-              <AvatarFallback className="bg-primary/10 text-primary text-2xl">
+              <AvatarFallback className="bg-primary/10 text-primary text-xl sm:text-2xl">
                 {getInitials(profile.nombre)}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1">
-              <CardTitle className="text-2xl">{profile.nombre}</CardTitle>
-              <div className="flex items-center gap-2 mt-2">
+            <div className="flex-1 w-full text-center sm:text-left">
+              <CardTitle className="text-xl sm:text-2xl">{profile.nombre}</CardTitle>
+              <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 mt-2">
                 <Badge variant={getStatusVariant(profile.estado)} className="gap-1">
                   {getStatusIcon(profile.estado)}
                   {getStatusLabel(profile.estado)}
@@ -267,7 +270,7 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
         </CardHeader>
 
         <CardContent className="pt-6">
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
             {/* Información de Contacto */}
             <div className="space-y-4">
               

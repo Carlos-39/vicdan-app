@@ -32,10 +32,7 @@ export async function GET(req: Request) {
       .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, fechas')
       .eq('eliminado', false);
     
-    // Permitir a los administradores ver todos los perfiles
-    if (!ADMIN_WHITELIST.includes(adminEmail)) {
-      query = query.eq('administrador_id', adminId);
-    }
+    // Todos los administradores pueden ver todos los perfiles
 
     if (estado && estado.trim()) {
       query = query.eq('estado', estado.trim());

@@ -7,9 +7,11 @@ import TextInput from "./components/TextInput";
 import PasswordStrengthBar from "./components/PasswordStrengthBar";
 import { usePasswordStrength } from "./hooks/usePasswordStrength";
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, Key } from "lucide-react";
 import styles from "./RegisterAdmin.module.css";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const schema = yup.object({
   name: yup.string().required("El nombre es obligatorio"),
@@ -29,11 +31,17 @@ const schema = yup.object({
     .string()
     .oneOf([yup.ref("password")], "Las contraseñas no coinciden")
     .required("Confirma tu contraseña"),
+  codigo: yup
+    .string()
+    .required("El código de registro es obligatorio")
+    .min(1, "El código no puede estar vacío"),
 });
 
 type FormData = yup.InferType<typeof schema>;
 
 export default function RegisterAdminPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
   const [success, setSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
@@ -43,6 +51,7 @@ export default function RegisterAdminPage() {
     register,
     handleSubmit,
     watch,
+    reset,
     formState: { errors },
   } = useForm<FormData>({
     resolver: yupResolver(schema),
@@ -53,6 +62,7 @@ export default function RegisterAdminPage() {
   const confirmPassword = watch("confirmPassword", "");
   const email = watch("email", "");
   const name = watch("name", "");
+  const codigo = watch("codigo", "");
 
   const { strength, label, color } = usePasswordStrength(password);
 
@@ -67,9 +77,10 @@ export default function RegisterAdminPage() {
       validEmail &&
       password.length >= 8 &&
       confirmPassword === password &&
-      strength > 0;
+      strength > 0 &&
+      codigo.trim() !== "";
     setIsFormValid(isReady);
-  }, [name, email, password, confirmPassword, strength]);
+  }, [name, email, password, confirmPassword, strength, codigo]);
 
   const [error, setError] = useState<string>("");
 
@@ -86,6 +97,7 @@ export default function RegisterAdminPage() {
           name: data.name,
           email: data.email,
           password: data.password,
+          codigo: data.codigo,
         }),
       });
 
@@ -96,11 +108,22 @@ export default function RegisterAdminPage() {
         return;
       }
 
-      setSuccess(true);
-      // Redirigir al login después de un registro exitoso
-      setTimeout(() => {
+      // Si hay una sesión activa (admin registrando otro usuario), no redirigir
+      // Solo redirigir al login si no hay sesión activa
+      if (session?.user) {
+        // Admin registrando otro usuario - mostrar éxito y limpiar formulario
+        setSuccess(true);
+        setTimeout(() => {
+          setSuccess(false);
+          reset(); // Resetear el formulario usando react-hook-form
+        }, 3000);
+      } else {
+        // Usuario nuevo registrándose - redirigir al login inmediatamente
+        setSuccess(true);
+        // Redirigir inmediatamente - usar window.location para forzar navegación completa
+        // No usar setTimeout para evitar que el layout intercepte
         window.location.href = "/login";
-      }, 2000);
+      }
     } catch (error: any) { //eslint-disable-line @typescript-eslint/no-explicit-any
       console.error("Error:", error);
       alert(error.message || "Error al registrar el administrador");
@@ -165,7 +188,10 @@ export default function RegisterAdminPage() {
 
         {success && (
           <div className={styles.successMessage}>
-            ¡Registro exitoso! Redirigiendo al login...
+            {session?.user 
+              ? "¡Registro exitoso! El nuevo usuario ha sido creado."
+              : "¡Registro exitoso! Redirigiendo al login..."
+            }
           </div>
         )}
 
@@ -202,6 +228,23 @@ export default function RegisterAdminPage() {
               />
             </div>
             {errors.email && <p className={styles.errorText}>{errors.email.message}</p>}
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label}>Código de registro</label>
+            <div className={styles.inputWrapper}>
+              <Key className={styles.inputIcon} size={20} />
+              <input
+                type="text"
+                className={styles.input}
+                placeholder="Ingresa el código de registro"
+                {...register("codigo")}
+              />
+            </div>
+            {errors.codigo && <p className={styles.errorText}>{errors.codigo.message}</p>}
+            <p className={styles.passwordHint}>
+              Necesitas un código válido proporcionado por un administrador para registrarte.
+            </p>
           </div>
 
           {/* Contraseña */}
@@ -268,8 +311,6 @@ export default function RegisterAdminPage() {
           >
             Registrar
           </button>
-
-          {success && <p className={styles.success}>¡Registro exitoso!</p>}
         </form>
         </div>
       </div>

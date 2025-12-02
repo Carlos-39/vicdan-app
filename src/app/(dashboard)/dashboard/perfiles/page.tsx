@@ -278,17 +278,17 @@ export default function ProfilesPage() {
       {/* Header */}
       <header className="sticky top-0 z-10 bg-background border-b">
         <div className="px-4 py-4 max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-2xl font-bold">Perfiles</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-xl sm:text-2xl font-bold">Perfiles</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {total} perfil{total !== 1 ? 'es' : ''} en total
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              <Button onClick={() => router.push('/create-profile')}>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Button onClick={() => router.push('/create-profile')} className="w-full sm:w-auto">
                 <Plus className="size-4" />
-                Nuevo perfil
+                <span className="ml-2">Nuevo perfil</span>
               </Button>
             </div>
           </div>
@@ -439,7 +439,7 @@ export default function ProfilesPage() {
         {/* Profiles Grid */}
         {!loading && !error && profiles.length > 0 && (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
               {profiles.map((profile) => (
                 <ProfileCard
                   key={profile.id}

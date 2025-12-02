@@ -30,9 +30,7 @@ export async function GET(
       .eq('eliminado', false)
       .eq('id', perfilId);
     
-    if (!ADMIN_WHITELIST.includes(adminEmail)) {
-      query = query.eq('administrador_id', adminId);
-    }
+    // Todos los administradores pueden ver todos los perfiles
     
     const { data, error } = await query.maybeSingle();
 
@@ -69,17 +67,14 @@ export async function PUT(
     const adminId = claims.id;
     const adminEmail = claims.email;
 
-    // Verificar ownership
+    // Verificar que el perfil existe
     let perfilQuery = supabaseAdmin
       .from('perfiles')
       .select('administrador_id, logo_url')
       .eq('eliminado', false)
       .eq('id', perfilId);
 
-    // Verificar propiedad solo si no son los Super Administradores 
-    if (!ADMIN_WHITELIST.includes(adminEmail)) {
-      perfilQuery = perfilQuery.eq('administrador_id', adminId);
-    }
+    // Todos los administradores pueden editar todos los perfiles
 
     const { data: currentProfile, error: fetchError } = await perfilQuery.maybeSingle();
 

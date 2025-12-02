@@ -132,14 +132,14 @@ export function NewProfileForm() {
       <form
         ref={formRef}
         onSubmit={handleSubmit(onSubmit)}
-        className="bg-white shadow-lg rounded-2xl p-6 md:p-8 space-y-6 border border-[var(--primary)]/20"
+        className="bg-white shadow-lg rounded-2xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 border border-[var(--primary)]/20"
       >
         {/* Título */}
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl md:text-3xl font-bold text-[var(--primary)]">
+        <div className="mb-6 sm:mb-8 text-center">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[var(--primary)]">
             Crear Nuevo Perfil
           </h1>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-sm sm:text-base text-muted-foreground mt-2">
             Ingresa los datos básicos para crear tu perfil
           </p>
         </div>
@@ -214,8 +214,8 @@ export function NewProfileForm() {
         )}
 
         {/* Sección: Información Básica */}
-        <div className="bg-muted/30 p-6 rounded-lg border border-[var(--primary)]/15">
-          <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+        <div className="bg-muted/30 p-4 sm:p-6 rounded-lg border border-[var(--primary)]/15">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
             <span className="text-destructive">*</span> Información Básica
           </h2>
 
@@ -267,8 +267,8 @@ export function NewProfileForm() {
         </div>
 
         {/* Sección: Foto de Perfil */}
-        <div className="bg-muted/30 p-6 rounded-lg border border-[var(--primary)]/15">
-          <h2 className="text-lg font-semibold text-foreground mb-4">
+        <div className="bg-muted/30 p-4 sm:p-6 rounded-lg border border-[var(--primary)]/15">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">
             Foto de Perfil
           </h2>
 
@@ -326,8 +326,8 @@ export function NewProfileForm() {
         </div>
 
         {/* Sección: Descripción (Opcional) */}
-        <div className="bg-muted/30 p-6 rounded-lg border border-[var(--primary)]/15">
-          <h2 className="text-lg font-semibold text-foreground mb-4">
+        <div className="bg-muted/30 p-4 sm:p-6 rounded-lg border border-[var(--primary)]/15">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">
             Información Adicional
           </h2>
 

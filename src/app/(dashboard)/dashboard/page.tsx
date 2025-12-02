@@ -10,6 +10,9 @@ import {
   FileEdit,
   Clock,
   Users,
+  Key,
+  Copy,
+  Check,
 } from "lucide-react";
 import { DashboardHeader } from "./components/dashboard-header";
 import { ProcessCard } from "./components/process-card";
@@ -41,6 +44,10 @@ export default function DashboardPage() {
   });
   const [loading, setLoading] = useState(true);
   const [metricsLoading, setMetricsLoading] = useState(true);
+  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const [codeError, setCodeError] = useState<string | null>(null);
 
   const getAuthToken = useCallback(async () => {
     return (session as any)?.accessToken;
@@ -163,11 +170,59 @@ export default function DashboardPage() {
     }
   };
 
+  const handleGenerateCode = useCallback(async () => {
+    try {
+      setIsGenerating(true);
+      setCodeError(null);
+      const token = await getAuthToken();
+      if (!token) {
+        setCodeError("No estás autenticado");
+        return;
+      }
+
+      const response = await fetch("/api/auth/codigo", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        setCodeError(result.error || "Error al generar el código");
+        return;
+      }
+
+      setGeneratedCode(result.codigo);
+      setIsCopied(false);
+    } catch (error) {
+      console.error("Error generating code:", error);
+      setCodeError("Error inesperado al generar el código");
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [getAuthToken]);
+
+  const handleCopyCode = useCallback(async () => {
+    if (!generatedCode) return;
+
+    try {
+      await navigator.clipboard.writeText(generatedCode);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (error) {
+      console.error("Error copying to clipboard:", error);
+      setCodeError("No se pudo copiar al portapapeles");
+    }
+  }, [generatedCode]);
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <DashboardHeader />
 
-      <main className="px-4 py-6 max-w-4xl mx-auto space-y-6">
+      <main className="px-3 sm:px-4 py-4 sm:py-6 max-w-4xl mx-auto space-y-4 sm:space-y-6">
         {/* Métricas */}
         <section className="grid grid-cols-1 gap-4">
           <Card 
@@ -200,12 +255,106 @@ export default function DashboardPage() {
           </Card>
         </section>
 
+        {/* Generar Código de Registro */}
+        <section>
+          <h2 className="text-foreground font-semibold text-base sm:text-lg mb-4">
+            Códigos de Registro
+          </h2>
+          <Card className="p-4 sm:p-5 border shadow-sm bg-white">
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-2">
+                <div 
+                  className="p-2 rounded-lg flex-shrink-0"
+                  style={{
+                    backgroundColor: "rgba(135, 122, 247, 0.1)",
+                  }}
+                >
+                  <Key className="h-5 w-5" style={{ color: "#877af7" }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-foreground font-medium text-sm sm:text-base">Generar código de registro</h3>
+                  <p className="text-muted-foreground text-xs sm:text-sm">
+                    Crea un código para permitir el registro de nuevos usuarios
+                  </p>
+                </div>
+              </div>
+
+              {codeError && (
+                <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+                  <p className="text-red-600 text-sm">{codeError}</p>
+                </div>
+              )}
+
+              {generatedCode && (
+                <div className="p-3 sm:p-4 rounded-lg bg-gray-50 border border-gray-200">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground mb-1">Código generado:</p>
+                      <p className="font-mono text-xs sm:text-sm font-semibold text-foreground break-all">
+                        {generatedCode}
+                      </p>
+                    </div>
+                    <Button
+                      onClick={handleCopyCode}
+                      variant="outline"
+                      size="sm"
+                      className="flex-shrink-0 w-full sm:w-auto"
+                      style={{
+                        borderColor: "#877af7",
+                        color: "#877af7",
+                      }}
+                    >
+                      {isCopied ? (
+                        <>
+                          <Check className="h-4 w-4 mr-2" />
+                          Copiado
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-4 w-4 mr-2" />
+                          Copiar
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <Button
+                onClick={handleGenerateCode}
+                disabled={isGenerating}
+                className="w-full text-sm sm:text-base"
+                style={{
+                  backgroundColor: "#877af7",
+                  color: "#ffffff",
+                }}
+              >
+                {isGenerating ? (
+                  <>
+                    <div 
+                      className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2 inline-block"
+                    />
+                    <span className="hidden sm:inline">Generando...</span>
+                    <span className="sm:hidden">Generando</span>
+                  </>
+                ) : (
+                  <>
+                    <Key className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Generar nuevo código</span>
+                    <span className="sm:hidden">Generar código</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </Card>
+        </section>
+
         {/* Procesos Principales */}
         <section>
-          <h2 className="text-foreground font-semibold text-lg mb-4">
+          <h2 className="text-foreground font-semibold text-base sm:text-lg mb-3 sm:mb-4">
             Procesos Principales
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <ProcessCard
               title="Registro Cliente"
               description="Crear nuevo perfil"
@@ -224,8 +373,8 @@ export default function DashboardPage() {
 
         {/* Actividad Reciente */}
         <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-foreground font-semibold text-lg">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-foreground font-semibold text-base sm:text-lg">
               Actividad Reciente
             </h2>
             <Button
