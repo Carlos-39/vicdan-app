@@ -210,9 +210,8 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
               href={socialIcon.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-3 rounded-full transition-all hover:scale-110 hover:shadow-lg active:scale-95"
+              className="p-3  bg-transparent transition-all hover:scale-110 hover:shadow-lg active:scale-95"
               style={{
-                backgroundColor: theme.colors.primary, // Mismo color que las tarjetas
                 color: theme.colors.cardText, // Mismo color del texto de las tarjetas
               }}
               title={`Visitar ${platformName}`}

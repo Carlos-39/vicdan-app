@@ -458,12 +458,12 @@ export function LinksManager({
                 >
                   {/* Icono de la plataforma */}
                   <div className="flex items-center justify-center w-10">
-                    <IconComponent className="size-6 text-gray-600" />
+                    <IconComponent className="size-12 text-gray-600" />
                   </div>
 
                   {/* Información de la plataforma */}
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm text-gray-900">
+                    <div className="font-medium text-sm text-gray-900 mb-2">
                       {platformConfig.name}
                     </div>
                     <Input
@@ -471,7 +471,7 @@ export function LinksManager({
                       onChange={(e) =>
                         updateSocialIcon(socialIcon.id, { url: e.target.value })
                       }
-                      className="border-none p-0 h-6 text-sm text-gray-500 bg-transparent"
+                      className="border-none p-4 h-6 text-sm text-gray-500 bg-transparent"
                       placeholder={platformConfig.placeholder}
                       onBlur={(e) => {
                         let url = e.target.value.trim();
@@ -497,6 +497,8 @@ export function LinksManager({
                       }}
                     />
                   </div>
+
+                  
 
                   {/* Switch activo/desactivo */}
                   <div className="flex items-center gap-2">
