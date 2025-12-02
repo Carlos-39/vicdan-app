@@ -20,6 +20,7 @@ import {
   Globe,
   ExternalLink,
   Share2,
+  Link2,
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Card, CardContent } from "@/components/ui/card";
@@ -218,6 +219,7 @@ export function LinksManager({
           }`}
           onClick={() => setActiveSection("links")}
         >
+          <Link2 className="size-4 inline mr-2" />
           Enlaces Principales
         </button>
         <button
@@ -295,20 +297,26 @@ export function LinksManager({
                           </div>
 
                           {/* Contenido del enlace */}
-                          <div className="flex-1 space-y-1">
+                          <div className="flex-1 space-y-3">
                             <Input
                               value={link.name}
+                              placeholder="Nombre"
+
+                              onBlur={(e) => {
+                                updateLink(link.id, { name: e.target.value });
+                              }}
                               onChange={(e) =>
                                 updateLink(link.id, { name: e.target.value })
                               }
-                              className="border-none p-0 h-6 font-medium"
+                              
+                              className="border-none p-4 h-6 font-medium"
                             />
                             <Input
                               value={link.url}
                               onChange={(e) =>
                                 updateLink(link.id, { url: e.target.value })
                               }
-                              className="border-none p-0 h-6 text-sm text-gray-500"
+                              className="border-none p-4 h-6 text-sm  "
                               onBlur={(e) => {
                                 let url = e.target.value.trim();
                                 if (
@@ -326,7 +334,7 @@ export function LinksManager({
 
                           {/* Switch activo/desactivo */}
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs  ">
                               Activo
                             </span>
                             <Switch
@@ -375,7 +383,7 @@ export function LinksManager({
             <Label className="text-sm font-medium mb-2 block">
               Posición de los Iconos
             </Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-2 ">
               <Card
                 className={`cursor-pointer transition-all ${
                   theme?.layout?.socialIconsPosition === "above-links"
@@ -385,8 +393,8 @@ export function LinksManager({
                 onClick={() => updateSocialIconsPosition("above-links")}
               >
                 <CardContent className="p-3 text-center">
-                  <div className="text-xs font-medium">Encima</div>
-                  <div className="text-[10px] text-muted-foreground mt-1">
+                  <div className="text-lg font-medium">Encima</div>
+                  <div className="text-md text-muted-foreground mt-1">
                     Arriba de enlaces
                   </div>
                 </CardContent>
@@ -400,8 +408,8 @@ export function LinksManager({
                 onClick={() => updateSocialIconsPosition("below-links")}
               >
                 <CardContent className="p-3 text-center">
-                  <div className="text-xs font-medium">Debajo</div>
-                  <div className="text-[10px] text-muted-foreground mt-1">
+                  <div className="text-lg font-medium">Debajo</div>
+                  <div className="text-md text-muted-foreground mt-1">
                     Abajo de enlaces
                   </div>
                 </CardContent>
@@ -415,8 +423,8 @@ export function LinksManager({
                 onClick={() => updateSocialIconsPosition("both")}
               >
                 <CardContent className="p-3 text-center">
-                  <div className="text-xs font-medium">Ambos</div>
-                  <div className="text-[10px] text-muted-foreground mt-1">
+                  <div className="text-lg font-medium">Ambos</div>
+                  <div className="text-md text-muted-foreground mt-1">
                     Arriba y abajo
                   </div>
                 </CardContent>
@@ -471,7 +479,7 @@ export function LinksManager({
                       onChange={(e) =>
                         updateSocialIcon(socialIcon.id, { url: e.target.value })
                       }
-                      className="border-none p-4 h-6 text-sm text-gray-500 bg-transparent"
+                      className="border-none p-4 h-6 text-sm  "
                       placeholder={platformConfig.placeholder}
                       onBlur={(e) => {
                         let url = e.target.value.trim();

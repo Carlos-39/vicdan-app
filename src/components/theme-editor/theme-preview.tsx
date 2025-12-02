@@ -243,9 +243,10 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
 
     return (
       <div
-        className={`flex justify-center gap-4 flex-wrap ${
-          position === "above" ? "mb-4" : "mt-4"
-        }`}
+        className="flex justify-center gap-4 flex-wrap"
+        style={{
+          gap: theme.spacing.gap,
+        }}
       >
         {activeIcons.map((socialIcon) => {
           const IconComponent = SOCIAL_ICONS[socialIcon.platform] || ExternalLink;
@@ -257,7 +258,7 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
               href={socialIcon.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-3  bg-transparent transition-all hover:scale-110 active:scale-95"
+              className="transition-all duration-200 hover:scale-110 active:scale-95"
               style={{
                 color: theme.colors.cardText, // Mismo color del texto de las tarjetas
               }}
@@ -271,7 +272,7 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
                 }
               }}
             >
-              <IconComponent className="size-6" />
+              <IconComponent className="size-8 xl:size-8" />
             </a>
           );
         })}
@@ -378,12 +379,12 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
 
         {/* Enlaces principales */}
         <div
-          className="mt-4"
+          className=""
           style={{
             textAlign: getTextAlignment() as any,
             display: "flex",
             flexDirection: "column",
-            gap: theme.spacing.gap,
+            gap: theme.spacing.gap
           }}
         >
           {displayData.links
@@ -391,7 +392,7 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
             .map((link) => (
               <Button
                 key={link.id}
-                className="gap-3 py-4 px-4 transition-all hover:scale-105"
+                className="transition-all hover:scale-105 py-8"
                 style={{
                   backgroundColor: theme.colors.card,
                   color: theme.colors.cardText,
@@ -411,13 +412,6 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
                   >
                     {link.name}
                   </span>
-                  <ExternalLink
-                    className="shrink-0"
-                    style={{
-                      width: theme.typography.fontSize.cardText,
-                      height: theme.typography.fontSize.cardText,
-                    }}
-                  />
                 </a>
               </Button>
             ))}
