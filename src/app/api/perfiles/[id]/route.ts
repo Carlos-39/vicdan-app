@@ -27,6 +27,7 @@ export async function GET(
     let query = supabaseAdmin
       .from('perfiles')
       .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, diseno, slug, fecha_publicacion, qr_url, fechas')
+      .eq('eliminado', false)
       .eq('id', perfilId);
     
     if (!ADMIN_WHITELIST.includes(adminEmail)) {
@@ -72,6 +73,7 @@ export async function PUT(
     let perfilQuery = supabaseAdmin
       .from('perfiles')
       .select('administrador_id, logo_url')
+      .eq('eliminado', false)
       .eq('id', perfilId);
 
     // Verificar propiedad solo si no son los Super Administradores 
@@ -173,11 +175,11 @@ export async function PUT(
 
     // Actualizar fechas
     updates.fechas = new Date().toISOString();
-
     // Actualizar en la base de datos
     let updateQuery = supabaseAdmin
       .from('perfiles')
       .update(updates)
+      .eq('eliminado', false)
       .eq('id', perfilId);
 
     // Verificar propiedad solo si no son los Super Administradores 
@@ -231,11 +233,11 @@ export async function DELETE(
     
     // Log para depuración (ahora perfilId tendrá el valor correcto)
     console.log(`Intentando eliminar perfil ID: ${perfilId} por Admin ID: ${claims.id}`);
-
     // 2. Eliminación
     const { error: deleteError } = await supabaseAdmin
       .from('perfiles') 
       .delete()
+      .eq('eliminado', false)
       .eq('id', perfilId);
 
     if (deleteError) {

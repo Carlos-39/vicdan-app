@@ -102,6 +102,7 @@ export async function POST(
     const { data: perfil, error: perfilError } = await supabaseAdmin
       .from("perfiles")
       .select("id")
+      .eq("eliminado", false)
       .eq("id", perfilId)
       .maybeSingle();
 

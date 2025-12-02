@@ -29,7 +29,8 @@ export async function GET(req: Request) {
 
     let query = supabaseAdmin
       .from('perfiles')
-      .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, fechas');
+      .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, fechas')
+      .eq('eliminado', false);
     
     // Permitir a los administradores ver todos los perfiles
     if (!ADMIN_WHITELIST.includes(adminEmail)) {

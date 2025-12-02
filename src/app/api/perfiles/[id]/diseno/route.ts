@@ -44,6 +44,7 @@ export async function GET(
     const { data: perfil, error: fetchError } = await supabaseAdmin
       .from("perfiles")
       .select("diseno, administrador_id")
+      .eq("eliminado", false)
       .eq("id", perfilId)
       .single();
 
@@ -73,9 +74,21 @@ export async function GET(
       }
     }
 
+    // ✅ CORRECCIÓN: Asegurar que diseno es un objeto con socialIcons
+    let disenoData = perfil.diseno;
+    
+    // Si diseno es string, parsearlo
+    if (typeof disenoData === 'string') {
+      try {
+        disenoData = JSON.parse(disenoData);
+      } catch (e) {
+        disenoData = null;
+      }
+    }
+
     return NextResponse.json(
       {
-        diseno: perfil.diseno,
+        diseno: disenoData,
         existe: !!perfil.diseno,
       },
       { status: 200 }
@@ -123,12 +136,20 @@ export async function PUT(
 
     // 3. Validar los datos de entrada
     const body = await req.json();
+    
+    // ✅ CORRECCIÓN: Validar que incluya socialIcons
     const disenoData = disenoSchema.parse(body);
+
+    console.log('📦 Guardando diseño con socialIcons:', {
+      socialIconsCount: disenoData.socialIcons?.length || 0,
+      socialIcons: disenoData.socialIcons
+    });
 
     // 4. Actualizar diseño en la BD
     const { data: perfilActualizado, error: updateError } = await supabaseAdmin
       .from("perfiles")
       .update({ diseno: disenoData })
+      .eq("eliminado", false)
       .eq("id", perfilId)
       .select("id, diseno")
       .single();
@@ -149,10 +170,13 @@ export async function PUT(
       );
     }
 
+    console.log('✅ Diseño guardado exitosamente');
+
     return NextResponse.json(perfilActualizado.diseno, { status: 200 });
   } catch (error: any) {
     // Manejar errores de validación Zod
     if (error?.issues) {
+      console.error('❌ Error de validación Zod:', error.issues);
       return NextResponse.json(
         {
           error: "Datos de diseño inválidos",

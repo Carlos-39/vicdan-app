@@ -82,6 +82,7 @@ export interface ThemeConfig {
     textAlignment?: "left" | "center" | "right" | "justify";
     socialIconsPosition: "above-links" | "below-links" | "both";
   };
+  socialIcons?: SocialIcon[];
 }
 
 const defaultTheme: ThemeConfig = {
@@ -162,10 +163,14 @@ export function ThemeEditor({
     ...defaultTheme,
     ...initialTheme,
   });
+  const [socialIcons, setSocialIcons] = useState<SocialIcon[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState("colors");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [toast, setToast] = useState<{
     isVisible: boolean;
@@ -233,6 +238,15 @@ export function ThemeEditor({
             layout: { ...defaultTheme.layout, ...existingTheme.layout },
           };
 
+          // Cargar socialIcons si existen
+          if (existingTheme.socialIcons) {
+            setSocialIcons(existingTheme.socialIcons);
+            setLocalProfileData((prev) => ({
+              ...prev,
+              socialIcons: existingTheme.socialIcons,
+            }));
+          }
+
           return mergedTheme;
         }
       }
@@ -241,6 +255,16 @@ export function ThemeEditor({
       return null;
     }
   };
+
+  useEffect(() => {
+    if (initialTheme) {
+      setTheme(initialTheme as ThemeConfig);
+      // Cargar socialIcons si existen en el diseño guardado
+      if ((initialTheme as any).socialIcons) {
+        setSocialIcons((initialTheme as any).socialIcons);
+      }
+    }
+  }, [initialTheme]);
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -658,8 +682,9 @@ export function ThemeEditor({
     router.back();
   };
 
-  const handleSocialIconsChange = (socialIcons: SocialIcon[]) => {
-    const updatedData = { ...localProfileData, socialIcons };
+  const handleSocialIconsChange = (updatedSocialIcons: SocialIcon[]) => {
+    setSocialIcons(updatedSocialIcons);
+    const updatedData = { ...localProfileData, socialIcons: updatedSocialIcons };
     setLocalProfileData(updatedData);
     setHasUnsavedChanges(true);
     onProfileUpdate?.(updatedData);
@@ -687,61 +712,58 @@ export function ThemeEditor({
 
   // FUNCIÓN handleSave FALTANTE - LA AGREGAMOS
   const handleSave = async () => {
-    if (status === "unauthenticated" || !session?.accessToken) {
-      Swal.fire({
-        title: "Error de autenticación",
-        text: "No se pudo verificar tu sesión. Por favor, recarga la página e inicia sesión nuevamente.",
-        icon: "error",
-        confirmButtonText: "Entendido",
-      });
-      return;
-    }
+    if (isSaving) return;
 
     setIsSaving(true);
+    setSaving(true);
+    setError(null);
 
     try {
-      Swal.fire({
-        title: "Guardando cambios...",
-        text: "Por favor espera mientras guardamos tu configuración",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-
-      const saveOperations = [];
-
-      saveOperations.push(saveThemeToBackend(theme));
-      saveOperations.push(saveProfileToBackend(localProfileData));
-
-      if (localProfileData.links && localProfileData.links.length > 0) {
-        saveOperations.push(saveLinksToBackend(localProfileData.links));
+      if (status === "unauthenticated" || !session?.accessToken) {
+        throw new Error("No hay sesión activa - Por favor inicia sesión");
       }
 
-      await Promise.all(saveOperations);
+      // 1. Guardar el tema con socialIcons incluidos
+      const themeToSave = {
+        ...theme,
+        socialIcons: socialIcons, 
+      };
 
-      setHasUnsavedChanges(false);
+      const themeSuccess = await saveThemeToBackend(themeToSave as ThemeConfig);
+      if (!themeSuccess) {
+        throw new Error("Error al guardar el tema");
+      }
+
+      // 2. Guardar los enlaces
+      const linksSuccess = await saveLinksToBackend(localProfileData.links || []);
+      if (!linksSuccess) {
+        throw new Error("Error al guardar los enlaces");
+      }
+
+      // 3. Guardar datos del perfil
+      const profileSuccess = await saveProfileToBackend(localProfileData);
+      if (!profileSuccess) {
+        throw new Error("Error al guardar el perfil");
+      }
+
+      // Éxito total
       clearTempStorage();
+      setHasUnsavedChanges(false);
+      showToast("✅ Todos los cambios guardados correctamente", "success");
 
-      Swal.close();
-      showToast("Cambios guardados exitosamente", "success");
+      if (onSave) {
+        onSave(themeToSave as ThemeConfig);
+      }
 
-      onSave?.(theme);
-      onProfileUpdate?.(localProfileData);
-    } catch (error) {
-      Swal.close();
-
-      await Swal.fire({
-        title: "Error al guardar",
-        text: "Ha ocurrido un error al intentar guardar los cambios en el servidor. Por favor, intenta nuevamente.",
-        icon: "error",
-        confirmButtonText: "Entendido",
-        confirmButtonColor: "#877af7",
-      });
-
-      showToast("Error al guardar los cambios", "error");
+      setSuccessMessage("Diseño guardado correctamente");
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (error: any) {
+      console.error("Error completo al guardar:", error);
+      setError(error.message || "Error al guardar los cambios");
+      showToast(`❌ ${error.message || "Error al guardar"}`, "error");
     } finally {
       setIsSaving(false);
+      setSaving(false);
     }
   };
 

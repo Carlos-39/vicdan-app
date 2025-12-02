@@ -30,6 +30,7 @@ export async function GET(_req: Request, ctx: ParamsCtx) {
           'fechas'
         ].join(',')
       )
+      .eq('eliminado', false)
       .eq('slug', slug)
       .eq('estado', 'publicado')
       .maybeSingle();

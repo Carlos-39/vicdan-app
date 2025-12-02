@@ -427,7 +427,7 @@ export default function ProfilesPage() {
                   : 'Comienza creando tu primer perfil'}
               </p>
               {!filters.searchTerm && (!filters.estado || filters.estado === 'todos') && (
-                <Button onClick={() => router.push('/dashboard/perfiles/nuevo')} className="mt-4">
+                <Button onClick={() => router.push('/create-profile')} className="mt-4">
                   <Plus className="size-4" />
                   Crear perfil
                 </Button>

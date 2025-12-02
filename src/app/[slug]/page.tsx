@@ -17,6 +17,9 @@ const defaultTheme: ThemeConfig = {
     card: "#877af7",
     cardText: "#ffffff",
   },
+  background: {
+    type: "color",
+  },
   typography: {
     fontFamily: "Inter, sans-serif",
     fontSize: {
@@ -34,6 +37,7 @@ const defaultTheme: ThemeConfig = {
     type: "centered",
     showAvatar: true,
     showSocialLinks: true,
+    socialIconsPosition: "above-links",
   },
 };
 
@@ -107,6 +111,7 @@ export default async function PublicProfilePageBySlug({ params }: PageProps) {
     correo: profile.correo,
     logo_url: profile.logo_url,
     descripcion: profile.descripcion,
+    socialIcons: (theme as any).socialIcons || [], // ← Incluir socialIcons del diseño
     links: links.map(link => ({
       id: link.id,
       name: link.nombre_tarjeta,
