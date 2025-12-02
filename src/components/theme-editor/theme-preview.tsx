@@ -188,6 +188,55 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
       .slice(0, 2);
   };
 
+  // Función para determinar si un color es oscuro o claro
+  const isDarkColor = (color: string): boolean => {
+    // Si es un color hex
+    if (color.startsWith('#')) {
+      const hex = color.replace('#', '');
+      const r = parseInt(hex.substring(0, 2), 16);
+      const g = parseInt(hex.substring(2, 4), 16);
+      const b = parseInt(hex.substring(4, 6), 16);
+      
+      // Calcular luminosidad relativa
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      return luminance < 0.5; // Si la luminosidad es menor a 0.5, es oscuro
+    }
+    
+    // Si es rgb/rgba
+    if (color.startsWith('rgb')) {
+      const matches = color.match(/\d+/g);
+      if (matches && matches.length >= 3) {
+        const r = parseInt(matches[0]);
+        const g = parseInt(matches[1]);
+        const b = parseInt(matches[2]);
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance < 0.5;
+      }
+    }
+    
+    // Por defecto, asumir que no es oscuro
+    return false;
+  };
+
+  // Función para obtener el color de fondo dominante
+  const getBackgroundColor = (): string => {
+    const { background } = theme;
+    
+    switch (background?.type) {
+      case "color":
+        return theme.colors.background || "#ffffff";
+      case "gradient":
+        // Usar el primer color del gradiente
+        return background.gradient?.colors?.[0] || theme.colors.background || "#ffffff";
+      case "pattern":
+        return theme.colors.background || "#ffffff";
+      case "image":
+        return theme.colors.background || "#ffffff";
+      default:
+        return theme.colors.background || "#ffffff";
+    }
+  };
+
   const getLayoutStyles = () => {
     switch (theme.layout.type) {
       case "centered":
@@ -419,6 +468,35 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
         {(theme.layout.socialIconsPosition === "below-links" || theme.layout.socialIconsPosition === "both") && (
           <SocialIconsSection position="below" />
         )}
+
+        {/* Marca de agua "Powered by VicDan" - Solo en vista pública */}
+        {!isPersonalizar && (() => {
+          const bgColor = getBackgroundColor();
+          const isDark = isDarkColor(bgColor);
+          const textColor = isDark ? "#ffffff" : "#000000";
+          
+          return (
+            <div
+              className="mt-8 pt-6"
+              style={{
+                textAlign: "center",
+              }}
+            >
+              <p
+                className="text-base sm:text-lg font-bold"
+                style={{
+                  color: textColor,
+                  fontSize: "12px",
+                  letterSpacing: "1px",
+                  opacity: 1,
+                  textShadow: isDark ? `0 1px 2px rgba(0,0,0,0.3)` : `0 1px 2px rgba(255,255,255,0.5)`,
+                }}
+              >
+                Powered by <span style={{ color: textColor, fontWeight: 800 }}>VicDan</span>
+              </p>
+            </div>
+          );
+        })()}
       </div>
     </div>
   );

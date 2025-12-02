@@ -255,8 +255,85 @@ export default function DashboardPage() {
           </Card>
         </section>
 
-        {/* Generar Código de Registro */}
+       
+
+        {/* Procesos Principales */}
         <section>
+          <h2 className="text-foreground font-semibold text-base sm:text-lg mb-3 sm:mb-4">
+            Procesos Principales
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <ProcessCard
+              title="Registro Cliente"
+              description="Crear nuevo perfil"
+              icon={UserPlus}
+              variant="primary"
+              onClick={() => router.push("/create-profile")}
+            />
+            <ProcessCard
+              title="Gestión Perfiles"
+              description="Crear, editar, eliminar"
+              icon={ClipboardList}
+              onClick={() => router.push("/dashboard/perfiles")}
+            />
+          </div>
+        </section>
+
+        {/* Actividad Reciente */}
+        <section>
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-foreground font-semibold text-base sm:text-lg">
+              Actividad Reciente
+            </h2>
+            <Button
+              variant="link"
+              className="text-primary text-sm font-medium p-0 h-auto"
+              style={{
+                color: "#877af7",
+              }}
+              onClick={() => router.push("/dashboard/perfiles")}
+            >
+              Ver todo
+            </Button>
+          </div>
+          <Card className="p-4 space-y-3 border shadow-sm bg-white">
+            {loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div 
+                  className="animate-spin rounded-full h-6 w-6 border-b-2"
+                  style={{
+                    borderColor: "#877af7",
+                  }}
+                />
+              </div>
+            ) : recentProfiles.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                No hay actividad reciente
+              </div>
+            ) : (
+              recentProfiles.map((profile) => {
+                const Icon = getActivityIcon(profile.estado);
+                return (
+                  <ActivityItem
+                    key={profile.id}
+                    icon={Icon}
+                    iconBgColor={getIconBgColor(profile.estado)}
+                    title="Perfil"
+                    subtitle={profile.nombre}
+                    timestamp={formatTimeAgo(profile.fechas)}
+                    status={getActivityStatus(profile.estado)}
+                    email={profile.correo}
+                    logoUrl={profile.logo_url}
+                    onClick={() => router.push(`/dashboard/perfiles/${profile.id}`)}
+                  />
+                );
+              })
+            )}
+          </Card>
+        </section>
+
+         {/* Generar Código de Registro */}
+         <section>
           <h2 className="text-foreground font-semibold text-base sm:text-lg mb-4">
             Códigos de Registro
           </h2>
@@ -348,81 +425,7 @@ export default function DashboardPage() {
             </div>
           </Card>
         </section>
-
-        {/* Procesos Principales */}
-        <section>
-          <h2 className="text-foreground font-semibold text-base sm:text-lg mb-3 sm:mb-4">
-            Procesos Principales
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            <ProcessCard
-              title="Registro Cliente"
-              description="Crear nuevo perfil"
-              icon={UserPlus}
-              variant="primary"
-              onClick={() => router.push("/create-profile")}
-            />
-            <ProcessCard
-              title="Gestión Perfiles"
-              description="Crear, editar, eliminar"
-              icon={ClipboardList}
-              onClick={() => router.push("/dashboard/perfiles")}
-            />
-          </div>
-        </section>
-
-        {/* Actividad Reciente */}
-        <section>
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="text-foreground font-semibold text-base sm:text-lg">
-              Actividad Reciente
-            </h2>
-            <Button
-              variant="link"
-              className="text-primary text-sm font-medium p-0 h-auto"
-              style={{
-                color: "#877af7",
-              }}
-              onClick={() => router.push("/dashboard/perfiles")}
-            >
-              Ver todo
-            </Button>
-          </div>
-          <Card className="p-4 space-y-3 border shadow-sm bg-white">
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div 
-                  className="animate-spin rounded-full h-6 w-6 border-b-2"
-                  style={{
-                    borderColor: "#877af7",
-                  }}
-                />
-              </div>
-            ) : recentProfiles.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                No hay actividad reciente
-              </div>
-            ) : (
-              recentProfiles.map((profile) => {
-                const Icon = getActivityIcon(profile.estado);
-                return (
-                  <ActivityItem
-                    key={profile.id}
-                    icon={Icon}
-                    iconBgColor={getIconBgColor(profile.estado)}
-                    title="Perfil"
-                    subtitle={profile.nombre}
-                    timestamp={formatTimeAgo(profile.fechas)}
-                    status={getActivityStatus(profile.estado)}
-                    email={profile.correo}
-                    logoUrl={profile.logo_url}
-                    onClick={() => router.push(`/dashboard/perfiles/${profile.id}`)}
-                  />
-                );
-              })
-            )}
-          </Card>
-        </section>
+        
       </main>
 
       <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
