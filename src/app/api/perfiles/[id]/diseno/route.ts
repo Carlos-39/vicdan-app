@@ -136,9 +136,13 @@ export async function PUT(
 
     // 3. Validar los datos de entrada
     const body = await req.json();
+
+    console.log('📦 Datos de entrada:', body);
     
     // ✅ CORRECCIÓN: Validar que incluya socialIcons
     const disenoData = disenoSchema.parse(body);
+
+    console.log('📦 Datos validados:', disenoData);
 
     console.log('📦 Guardando diseño con socialIcons:', {
       socialIconsCount: disenoData.socialIcons?.length || 0,

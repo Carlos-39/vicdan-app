@@ -418,6 +418,7 @@ export function ThemeEditor({
     themeData: ThemeConfig
   ): Promise<boolean> => {
     try {
+      console.log("Guardando tema...", themeData);
       if (status === "loading") {
         throw new Error("Sesión aún cargando...");
       }
@@ -801,7 +802,7 @@ export function ThemeEditor({
   }
 
   return (
-    <div className="container max-w-7xl mx-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+    <div className="container max-w-12xl mx-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
       <Toast
         message={toast.message}
         type={toast.type}
@@ -849,8 +850,8 @@ export function ThemeEditor({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
-        <div className="xl:col-span-2 space-y-4 sm:space-y-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+        <div className="xl:col-span-1 space-y-4 sm:space-y-6">
           <Card className="overflow-hidden gap-1">
             <CardHeader className="">
               <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
@@ -967,8 +968,9 @@ export function ThemeEditor({
                 Vista Previa
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="max-w-full overflow-auto">
+
+            <CardContent className="">
+              <div className="max-w-full overflow-hidden rounded-lg">
                 <div className="min-h-[400px] sm:min-h-[500px] flex items-center justify-center p-3 sm:p-4">
                   <ThemePreview
                     theme={theme}
@@ -981,6 +983,7 @@ export function ThemeEditor({
               </div>
             </CardContent>
           </Card>
+
         </div>
       </div>
 
