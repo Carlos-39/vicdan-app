@@ -506,17 +506,27 @@ export function ThemeEditor({
           existingLinks.some((existingLink) => existingLink.id === link.id)
       );
 
-      const deletePromises = linksToDelete.map((linkToDelete) =>
-        fetch(`/api/perfiles/${profileId}/tarjetas/${linkToDelete.id}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-        })
-      );
+      const deletePromises = linksToDelete.map(async (linkToDelete) => {
+        const response = await fetch(
+          `/api/perfiles/${profileId}/tarjetas/${linkToDelete.id}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          }
+        );
 
-      const createPromises = linksToCreate.map((link) =>
-        fetch(`/api/perfiles/${profileId}/tarjetas`, {
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: "Error desconocido" }));
+          throw new Error(`Error eliminando tarjeta: ${errorData.error || response.statusText}`);
+        }
+
+        return response;
+      });
+
+      const createPromises = linksToCreate.map(async (link) => {
+        const response = await fetch(`/api/perfiles/${profileId}/tarjetas`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -526,8 +536,15 @@ export function ThemeEditor({
             nombre_tarjeta: link.name,
             link: link.url,
           }),
-        })
-      );
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: "Error desconocido" }));
+          throw new Error(`Error creando tarjeta: ${errorData.error || response.statusText}`);
+        }
+
+        return response;
+      });
 
       const updatePromises = linksToUpdate.map(async (link) => {
         const response = await fetch(
@@ -546,8 +563,8 @@ export function ThemeEditor({
         );
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`Error actualizando tarjeta: ${errorData.error}`);
+          const errorData = await response.json().catch(() => ({ error: "Error desconocido" }));
+          throw new Error(`Error actualizando tarjeta: ${errorData.error || response.statusText}`);
         }
 
         return response;
@@ -561,7 +578,9 @@ export function ThemeEditor({
 
       return true;
     } catch (error) {
-      throw new Error("Error al guardar los enlaces");
+      console.error("Error detallado al guardar enlaces:", error);
+      const errorMessage = error instanceof Error ? error.message : "Error al guardar los enlaces";
+      throw new Error(errorMessage);
     }
   };
 

@@ -29,11 +29,11 @@ const gradientDirections = [
 ];
 
 export function BackgroundSelector({ background, onChange }: BackgroundSelectorProps) {
-  const [activeTab, setActiveTab] = useState(background.type || 'color');
+  const [activeTab, setActiveTab] = useState(background?.type || 'color');
 
   const updateBackground = (updates: any) => {
     onChange({
-      ...background,
+      ...(background || {}),
       ...updates
     });
   };
@@ -48,20 +48,20 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
         colors: ['#877af7', '#3b82f6'],
         direction: 'to right',
         type: 'linear'
-      } : background.gradient,
+      } : background?.gradient,
       pattern: type === 'pattern' ? {
         type: 'dots',
         color: '#877af7',
         size: 50,
         opacity: 0.1
-      } : background.pattern,
+      } : background?.pattern,
       image: type === 'image' ? {
         url: '',
         size: 'cover',
         position: 'center',
         repeat: 'no-repeat',
         opacity: 1
-      } : background.image
+      } : background?.image
     };
 
     onChange(defaultValues);
@@ -93,8 +93,8 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
                 value={background.gradient?.colors?.[0] || '#877af7'}
                 onChange={(e) => updateBackground({
                   gradient: {
-                    ...background.gradient,
-                    colors: [e.target.value, background.gradient?.colors?.[1] || '#3b82f6']
+                    ...(background?.gradient || {}),
+                    colors: [e.target.value, background?.gradient?.colors?.[1] || '#3b82f6']
                   }
                 })}
                 className="w-full h-10 rounded border cursor-pointer"
@@ -107,8 +107,8 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
                 value={background.gradient?.colors?.[1] || '#3b82f6'}
                 onChange={(e) => updateBackground({
                   gradient: {
-                    ...background.gradient,
-                    colors: [background.gradient?.colors?.[0] || '#877af7', e.target.value]
+                    ...(background?.gradient || {}),
+                    colors: [background?.gradient?.colors?.[0] || '#877af7', e.target.value]
                   }
                 })}
                 className="w-full h-10 rounded border cursor-pointer"
@@ -122,7 +122,7 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
               value={background.gradient?.direction || 'to right'}
               onChange={(e) => updateBackground({
                 gradient: {
-                  ...background.gradient,
+                  ...(background?.gradient || {}),
                   direction: e.target.value
                 }
               })}
@@ -163,7 +163,7 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
                     reader.onload = (event) => {
                       updateBackground({
                         image: {
-                          ...background.image,
+                          ...(background?.image || {}),
                           url: event.target?.result as string
                         }
                       });
