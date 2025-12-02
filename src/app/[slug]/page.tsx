@@ -123,6 +123,7 @@ export default async function PublicProfilePageBySlug({ params }: PageProps) {
   // Función para generar el background de la página
   const getPageBackgroundStyle = () => {
     const { background } = theme;
+    const baseColor = theme.colors.background;
 
     switch (background?.type) {
       case "gradient":
@@ -161,7 +162,6 @@ export default async function PublicProfilePageBySlug({ params }: PageProps) {
 
       case "color":
         // Si es color sólido, generar gradiente basado en ese color
-        const baseColor = theme.colors.background;
         return {
           background: `linear-gradient(135deg, ${baseColor}, ${theme.colors.primary}70)`,
         };
@@ -169,7 +169,7 @@ export default async function PublicProfilePageBySlug({ params }: PageProps) {
       case "image":
         // Si es imagen, usar gradiente del color primario
         return {
-          background: `linear-gradient(135deg, ${theme.colors.primary}, ${theme.colors.card})`,
+          background: `linear-gradient(135deg, ${baseColor}, ${theme.colors.primary}70)`,
         };
 
       default:
