@@ -46,6 +46,7 @@ export async function PUT(
     const { data: perfil, error: perfilError } = await supabaseAdmin
       .from("perfiles")
       .select("administrador_id")
+      .eq("eliminado", false)
       .eq("id", perfilId)
       .single();
 
@@ -166,6 +167,7 @@ export async function DELETE(
     const { data: perfil, error: perfilError } = await supabaseAdmin
       .from("perfiles")
       .select("administrador_id")
+      .eq("eliminado", false)
       .eq("id", perfilId)
       .single();
 

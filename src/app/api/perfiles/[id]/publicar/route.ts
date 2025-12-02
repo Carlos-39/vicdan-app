@@ -37,6 +37,7 @@ export async function POST(req: Request, ctx: ParamsCtx) {
     const { data: existing, error: findErr } = await supabaseAdmin
       .from('perfiles')
       .select('id, administrador_id, estado, slug, nombre, logo_url, correo, descripcion, diseno, qr_url')
+      .eq('eliminado', false)
       .eq('id', perfilId)
       .maybeSingle();
 
@@ -124,6 +125,7 @@ export async function POST(req: Request, ctx: ParamsCtx) {
         fecha_publicacion: new Date().toISOString(),
         qr_url: qrPublicUrl,
       })
+      .eq('eliminado', false)
       .eq('id', perfilId)
       .eq('administrador_id', adminId)
       .select('id, slug, estado, fecha_publicacion, qr_url')

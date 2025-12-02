@@ -102,7 +102,7 @@ export function FontSelector({ typography, onChange }: FontSelectorProps) {
     <div className="space-y-6">
       {/* Selector de familia de fuentes */}
       <div>
-        <Label className="text-sm font-medium mb-3 block">
+        <Label className="text-xl font-semibold mb-3 block">
           Familia tipográfica
         </Label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-3">
@@ -120,7 +120,7 @@ export function FontSelector({ typography, onChange }: FontSelectorProps) {
                   updateTypography("fontFamily", `${font.name}, sans-serif`)
                 }
               >
-                <CardContent className="p-3 lg:p-4">
+                <CardContent className="py-2">
                   {/* ✅ Misma estructura que el layout selector */}
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -156,22 +156,23 @@ export function FontSelector({ typography, onChange }: FontSelectorProps) {
 
       {/* Tamaños de fuente */}
       <div className="space-y-4">
-        <Label className="text-sm font-medium">Tamaños de texto</Label>
+        <Label className="text-xl font-semibold mb-3 block">Tamaños de texto</Label>
 
         <div className="flex items-center justify-between">
           <Label htmlFor="heading-font-size" className="text-sm">
             Títulos
           </Label>
+
           <Select
             value={typography.fontSize.heading}
             onValueChange={(value) => updateFontSize("heading", value)}
           >
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {fontSizeOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
+                <SelectItem key={option.value} value={option.value} className="truncate">
                   {option.label} ({option.value})
                 </SelectItem>
               ))}
@@ -187,12 +188,12 @@ export function FontSelector({ typography, onChange }: FontSelectorProps) {
             value={typography.fontSize.base}
             onValueChange={(value) => updateFontSize("base", value)}
           >
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {fontSizeOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
+                <SelectItem key={option.value} value={option.value} className="truncate">
                   {option.label} ({option.value})
                 </SelectItem>
               ))}
@@ -208,12 +209,12 @@ export function FontSelector({ typography, onChange }: FontSelectorProps) {
             value={typography.fontSize.cardText}
             onValueChange={(value) => updateFontSize("cardText", value)}
           >
-            <SelectTrigger className="w-32">
+            <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {cardTextSizeOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
+                <SelectItem key={option.value} value={option.value} className="truncate">
                   {option.label} ({option.value})
                 </SelectItem>
               ))}
@@ -222,63 +223,7 @@ export function FontSelector({ typography, onChange }: FontSelectorProps) {
         </div>
       </div>
 
-      {/* Vista previa de tipografía */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm">
-            Previsualización tipográfica
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div
-            className="space-y-2 p-4 rounded-lg border"
-            style={{
-              fontFamily: typography.fontFamily,
-              backgroundColor: "var(--background)",
-              color: "var(--text)",
-            }}
-          >
-            <h1
-              style={{
-                fontSize: typography.fontSize.heading,
-                fontWeight: "bold",
-                margin: 0,
-              }}
-            >
-              Título principal
-            </h1>
-            <p
-              style={{
-                fontSize: typography.fontSize.base,
-                margin: 0,
-                lineHeight: "1.5",
-              }}
-            >
-              Este es un texto de ejemplo que muestra cómo se verá el contenido
-              con la tipografía seleccionada.
-            </p>
 
-            {/* Preview de texto de tarjetas */}
-            <div
-              className="mt-4 p-3 rounded-lg"
-              style={{
-                backgroundColor: "#877af7",
-                color: "#ffffff",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: typography.fontSize.cardText,
-                  fontWeight: "600",
-                  textAlign: "center",
-                }}
-              >
-                Así se verá el texto en tus tarjetas
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

@@ -185,20 +185,10 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
     <div className="space-y-6">
       {/* Header con botones de acción */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        {showBackButton && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => router.back()}
-            className="self-start"
-          >
-            <ArrowLeft className="size-4" />
-            Volver
-          </Button>
-        )}
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto sm:ml-auto">
+        
+        <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 w-full sm:w-auto sm:ml-auto">
           {/* Botones siempre visibles */}
-          <Button variant="outline" size="sm" onClick={handlePreviewDesign}>
+          <Button variant="outline" size="sm" onClick={handlePreviewDesign} className="w-full sm:w-auto">
             <Eye className="size-4" />
             <span className="hidden sm:inline ml-2">Vista previa</span>
           </Button>
@@ -206,6 +196,7 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
             variant="outline"
             size="sm"
             onClick={() => router.push(`/dashboard/perfiles/${profile.id}/personalizar`)}
+            className="w-full sm:w-auto"
           >
             <Palette className="size-4" />
             <span className="hidden sm:inline ml-2">Personalizar</span>
@@ -217,6 +208,7 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
               onEdit ||
               (() => router.push(`/dashboard/perfiles/${profile.id}/editar`))
             }
+            className="w-full sm:w-auto"
           >
             <Edit className="size-4" />
             <span className="hidden sm:inline ml-2">Editar</span>
@@ -228,6 +220,7 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
               size="sm"
               onClick={handlePublish}
               disabled={!isComplete || isPublishing}
+              className="w-full sm:w-auto"
             >
               {isPublishing ? (
                 <Loader2 className="size-4 animate-spin" />
@@ -240,7 +233,7 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
             <Button
               size="sm"
               onClick={handleOpenShareModal}
-              className="gap-2"
+              className="gap-2 w-full sm:w-auto"
             >
               <Share2 className="size-4" />
               Compartir
@@ -252,16 +245,16 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
       {/* Card Principal - Información del perfil */}
       <Card>
         <CardHeader className="border-b">
-          <div className="flex items-center gap-4">
-            <Avatar className="size-20">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+            <Avatar className="size-16 sm:size-20 flex-shrink-0">
               <AvatarImage src={profile.logo_url || undefined} alt={profile.nombre} />
-              <AvatarFallback className="bg-primary/10 text-primary text-2xl">
+              <AvatarFallback className="bg-primary/10 text-primary text-xl sm:text-2xl">
                 {getInitials(profile.nombre)}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1">
-              <CardTitle className="text-2xl">{profile.nombre}</CardTitle>
-              <div className="flex items-center gap-2 mt-2">
+            <div className="flex-1 w-full text-center sm:text-left">
+              <CardTitle className="text-xl sm:text-2xl">{profile.nombre}</CardTitle>
+              <div className="flex flex-col sm:flex-row items-center sm:items-center gap-2 mt-2">
                 <Badge variant={getStatusVariant(profile.estado)} className="gap-1">
                   {getStatusIcon(profile.estado)}
                   {getStatusLabel(profile.estado)}
@@ -277,12 +270,9 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
         </CardHeader>
 
         <CardContent className="pt-6">
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
             {/* Información de Contacto */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                Información de Contacto
-              </h3>
               
               {profile.correo ? (
                 <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
@@ -322,10 +312,6 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
 
             {/* Información del Sistema */}
             <div className="space-y-4">
-              <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
-                Información del Sistema
-              </h3>
-
               {profile.administrador && (
                 <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
                   <User className="size-5 text-muted-foreground shrink-0 mt-0.5" />
@@ -405,30 +391,7 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
         />
       )}
 
-      {/* Card de ID (útil para debugging/admin) */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Información Técnica</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between py-2 border-b">
-              <span className="text-sm text-muted-foreground">ID del Perfil</span>
-              <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
-                {profile.id}
-              </code>
-            </div>
-            {profile.administrador_id && (
-              <div className="flex items-center justify-between py-2">
-                <span className="text-sm text-muted-foreground">ID del Administrador</span>
-                <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
-                  {profile.administrador_id}
-                </code>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      
     </div>
   )
 }

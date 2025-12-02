@@ -57,28 +57,28 @@ export function ProfileCard({ profile, onView, onEdit }: ProfileCardProps) {
   };
 
   return (
-    <Card className="p-4 hover:shadow-md transition-shadow group">
-      <div className="flex gap-3">
+    <Card className="p-3 sm:p-4 hover:shadow-md transition-shadow group">
+      <div className="flex flex-col sm:flex-row gap-3">
         {/* Avatar */}
-        <Avatar className="size-20 shrink-0 items-center justify-center bg-primary/10 mx-auto my-auto">
+        <Avatar className="size-16 sm:size-20 shrink-0 items-center justify-center bg-primary/10 mx-auto sm:mx-0 my-auto">
           <AvatarImage
             src={profile.logo_url || undefined}
             alt={profile.nombre}
           />
-          <AvatarFallback className="bg-primary/10 text-primary">
+          <AvatarFallback className="bg-primary/10 text-primary text-base sm:text-lg">
             {getInitials(profile.nombre)}
           </AvatarFallback>
         </Avatar>
 
         {/* Content */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 w-full">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-sm truncate">
+              <h3 className="font-semibold text-sm sm:text-base truncate">
                 {profile.nombre}
               </h3>
               {profile.correo && (
-                <p className="text-xs text-muted-foreground truncate">
+                <p className="text-xs text-muted-foreground truncate mt-1">
                   {profile.correo}
                 </p>
               )}
@@ -93,15 +93,15 @@ export function ProfileCard({ profile, onView, onEdit }: ProfileCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handlePreview}>
+                <DropdownMenuItem onClick={handlePreview} className="cursor-pointer">
                   <ExternalLink className="size-4" />
                   Vista completa
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onView(profile)}>
+                <DropdownMenuItem onClick={() => onView(profile)} className="cursor-pointer">
                   <Eye className="size-4" />
                   Vista rápida
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onEdit(profile)}>
+                <DropdownMenuItem onClick={() => onEdit(profile)} className="cursor-pointer">
                   <Edit className="size-4" />
                   Editar
                 </DropdownMenuItem>
@@ -117,7 +117,7 @@ export function ProfileCard({ profile, onView, onEdit }: ProfileCardProps) {
           </div>
 
           {/* Status and Date */}
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex flex-wrap items-center gap-2 mt-2">
             <Badge
               variant={getStatusVariant(profile.estado)}
               className="text-xs"
@@ -130,11 +130,11 @@ export function ProfileCard({ profile, onView, onEdit }: ProfileCardProps) {
           </div>
 
           {/* Quick Preview Button - Visible al hacer hover */}
-          <div className="mt-2 group-hover:opacity-100 transition-opacity">
+          <div className="mt-2 sm:group-hover:opacity-100 opacity-100 sm:opacity-0 transition-opacity">
             <Button
               variant="outline"
               size="sm"
-              className="w-full text-xs h-7 cursor-pointer"
+              className="w-full text-xs h-7 sm:h-8"
               onClick={handlePreview}
             >
               <ExternalLink className="size-3" />

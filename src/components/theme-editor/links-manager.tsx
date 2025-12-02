@@ -20,6 +20,7 @@ import {
   Globe,
   ExternalLink,
   Share2,
+  Link2,
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Card, CardContent } from "@/components/ui/card";
@@ -218,7 +219,8 @@ export function LinksManager({
           }`}
           onClick={() => setActiveSection("links")}
         >
-          Enlaces Principales
+          <Link2 className="size-4 inline mr-2" />
+          <span className="text-lg font-semibold cursor-pointer">Enlaces Principales</span>
         </button>
         <button
           className={`flex-1 py-2 px-4 text-sm font-medium ${
@@ -229,7 +231,7 @@ export function LinksManager({
           onClick={() => setActiveSection("social")}
         >
           <Share2 className="size-4 inline mr-2" />
-          Iconos Sociales
+          <span className="text-lg font-semibold cursor-pointer">Iconos Sociales</span>
         </button>
       </div>
 
@@ -260,7 +262,7 @@ export function LinksManager({
                 }
               }}
             />
-            <Button onClick={addLink} className="sm:w-auto">
+            <Button onClick={addLink} className="w-full sm:w-auto sm:flex-shrink-0">
               <Plus className="size-4" />
             </Button>
           </div>
@@ -284,31 +286,35 @@ export function LinksManager({
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
-                          className="flex items-center gap-3 p-3 border rounded-lg bg-white"
+                          className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-3 border rounded-lg bg-white"
                         >
                           {/* Handle para arrastrar */}
                           <div
                             {...provided.dragHandleProps}
-                            className="cursor-grab"
+                            className="cursor-grab flex-shrink-0 self-center"
                           >
-                            <GripVertical className="size-4 text-gray-400" />
+                            <GripVertical className="size-4 sm:size-5 text-gray-400" />
                           </div>
 
                           {/* Contenido del enlace */}
-                          <div className="flex-1 space-y-1">
+                          <div className="flex-1 w-full sm:w-auto space-y-2 sm:space-y-3 min-w-0">
                             <Input
                               value={link.name}
+                              placeholder="Nombre"
+                              onBlur={(e) => {
+                                updateLink(link.id, { name: e.target.value });
+                              }}
                               onChange={(e) =>
                                 updateLink(link.id, { name: e.target.value })
                               }
-                              className="border-none p-0 h-6 font-medium"
+                              className="border-none p-2 sm:p-4 h-auto sm:h-6 font-medium text-sm sm:text-base"
                             />
                             <Input
                               value={link.url}
                               onChange={(e) =>
                                 updateLink(link.id, { url: e.target.value })
                               }
-                              className="border-none p-0 h-6 text-sm text-gray-500"
+                              className="border-none p-2 sm:p-4 h-auto sm:h-6 text-xs sm:text-sm min-w-0"
                               onBlur={(e) => {
                                 let url = e.target.value.trim();
                                 if (
@@ -324,28 +330,30 @@ export function LinksManager({
                             />
                           </div>
 
-                          {/* Switch activo/desactivo */}
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-gray-500">
-                              Activo
-                            </span>
-                            <Switch
-                              checked={link.isActive}
-                              onCheckedChange={(checked) =>
-                                updateLink(link.id, { isActive: checked })
-                              }
-                            />
-                          </div>
+                          {/* Switch activo/desactivo y botón eliminar */}
+                          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs hidden sm:inline">
+                                Activo
+                              </span>
+                              <Switch
+                                checked={link.isActive}
+                                onCheckedChange={(checked) =>
+                                  updateLink(link.id, { isActive: checked })
+                                }
+                              />
+                            </div>
 
-                          {/* Botón eliminar */}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteLink(link.id)}
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="size-4" />
-                          </Button>
+                            {/* Botón eliminar */}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteLink(link.id)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+                            >
+                              <Trash2 className="size-4 sm:size-5" />
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </Draggable>
@@ -375,37 +383,38 @@ export function LinksManager({
             <Label className="text-sm font-medium mb-2 block">
               Posición de los Iconos
             </Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 items-stretch sm:items-center justify-center">
               <Card
-                className={`cursor-pointer transition-all ${
+                className={`cursor-pointer transition-all w-full sm:min-w-[220px] sm:w-auto ${
                   theme?.layout?.socialIconsPosition === "above-links"
                     ? "border-primary ring-2 ring-primary/20"
                     : "border-muted"
                 }`}
                 onClick={() => updateSocialIconsPosition("above-links")}
               >
-                <CardContent className="p-3 text-center">
-                  <div className="text-xs font-medium">Encima</div>
-                  <div className="text-[10px] text-muted-foreground mt-1">
+                <CardContent className="p-3 sm:p-4 text-center">
+                  <div className="text-base sm:text-lg font-medium">Encima</div>
+                  <div className="text-sm sm:text-md text-muted-foreground mt-1">
                     Arriba de enlaces
                   </div>
                 </CardContent>
               </Card>
               <Card
-                className={`cursor-pointer transition-all ${
+                className={`cursor-pointer transition-all w-full sm:min-w-[220px] sm:w-auto ${
                   theme?.layout?.socialIconsPosition === "below-links"
                     ? "border-primary ring-2 ring-primary/20"
                     : "border-muted"
                 }`}
                 onClick={() => updateSocialIconsPosition("below-links")}
               >
-                <CardContent className="p-3 text-center">
-                  <div className="text-xs font-medium">Debajo</div>
-                  <div className="text-[10px] text-muted-foreground mt-1">
+                <CardContent className="p-3 sm:p-4 text-center">
+                  <div className="text-base sm:text-lg font-medium">Debajo</div>
+                  <div className="text-sm sm:text-md text-muted-foreground mt-1">
                     Abajo de enlaces
                   </div>
                 </CardContent>
               </Card>
+              {/* Ambos 
               <Card
                 className={`cursor-pointer transition-all ${
                   theme?.layout?.socialIconsPosition === "both"
@@ -415,12 +424,13 @@ export function LinksManager({
                 onClick={() => updateSocialIconsPosition("both")}
               >
                 <CardContent className="p-3 text-center">
-                  <div className="text-xs font-medium">Ambos</div>
-                  <div className="text-[10px] text-muted-foreground mt-1">
+                  <div className="text-lg font-medium">Ambos</div>
+                  <div className="text-md text-muted-foreground mt-1">
                     Arriba y abajo
                   </div>
                 </CardContent>
               </Card>
+              */}
             </div>
           </div>
 
@@ -439,9 +449,8 @@ export function LinksManager({
                 ))}
               </select>
             </div>
-            <Button onClick={addSocialIcon} className="sm:w-auto">
+            <Button onClick={addSocialIcon} className="w-full sm:w-auto sm:flex-shrink-0">
               <Plus className="size-4" />
-              Agregar Icono
             </Button>
           </div>
 
@@ -454,16 +463,16 @@ export function LinksManager({
               return (
                 <div
                   key={socialIcon.id}
-                  className="flex items-center gap-3 p-3 border rounded-lg bg-white"
+                  className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 p-3 border rounded-lg bg-white"
                 >
                   {/* Icono de la plataforma */}
-                  <div className="flex items-center justify-center w-10">
-                    <IconComponent className="size-6 text-gray-600" />
+                  <div className="flex items-center justify-center w-10 flex-shrink-0">
+                    <IconComponent className="size-8 sm:size-12 text-gray-600" />
                   </div>
 
                   {/* Información de la plataforma */}
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm text-gray-900">
+                  <div className="flex-1 w-full sm:w-auto min-w-0">
+                    <div className="font-medium text-sm text-gray-900 mb-1 sm:mb-2">
                       {platformConfig.name}
                     </div>
                     <Input
@@ -471,7 +480,7 @@ export function LinksManager({
                       onChange={(e) =>
                         updateSocialIcon(socialIcon.id, { url: e.target.value })
                       }
-                      className="border-none p-0 h-6 text-sm text-gray-500 bg-transparent"
+                      className="border-none p-2 sm:p-4 h-auto sm:h-6 text-xs sm:text-sm min-w-0"
                       placeholder={platformConfig.placeholder}
                       onBlur={(e) => {
                         let url = e.target.value.trim();
@@ -498,28 +507,32 @@ export function LinksManager({
                     />
                   </div>
 
-                  {/* Switch activo/desactivo */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500 hidden sm:inline">
-                      Activo
-                    </span>
-                    <Switch
-                      checked={socialIcon.isActive}
-                      onCheckedChange={(checked) =>
-                        updateSocialIcon(socialIcon.id, { isActive: checked })
-                      }
-                    />
-                  </div>
+                  
 
-                  {/* Botón eliminar */}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => deleteSocialIcon(socialIcon.id)}
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  {/* Switch activo/desactivo y botón eliminar */}
+                  <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-start">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500 hidden sm:inline">
+                        Activo
+                      </span>
+                      <Switch
+                        checked={socialIcon.isActive}
+                        onCheckedChange={(checked) =>
+                          updateSocialIcon(socialIcon.id, { isActive: checked })
+                        }
+                      />
+                    </div>
+
+                    {/* Botón eliminar */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => deleteSocialIcon(socialIcon.id)}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+                    >
+                      <Trash2 className="size-4 sm:size-5" />
+                    </Button>
+                  </div>
                 </div>
               );
             })}

@@ -41,22 +41,35 @@ export function SpacingControls({ spacing, onChange }: SpacingControlsProps) {
         <div className="flex items-center justify-between">
           <Label htmlFor="padding-slider" className="text-sm font-medium">
             <span className="hidden sm:inline">Espaciado interno</span>
-            <span className="sm:hidden">Padding</span>
+            <span className="sm:hidden md">Padding</span>
           </Label>
           <span className="text-sm text-muted-foreground font-mono">
             {spacing.padding}
           </span>
         </div>
-        <Slider
-          id="padding-slider"
-          value={[parseSpacingValue(spacing.padding)]}
-          onValueChange={(value) =>
-            updateSpacing("padding", sliderValueToSpacing(value))
-          }
-          max={40}
-          step={4}
-          className="w-full"
-        />
+        <div className="relative w-full">
+          <Slider
+            id="padding-slider"
+            value={[parseSpacingValue(spacing.padding)]}
+            onValueChange={(value) =>
+              updateSpacing("padding", sliderValueToSpacing(value))
+            }
+            max={40}
+            step={4}
+            className="w-full"
+          />
+
+          {/* Marcas cada 4 unidades */}
+          <div className="flex justify-between mt-2 px-2">
+            {[0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40].map((value) => (
+              <div key={value} className="flex flex-col items-center">
+                <div className="w-px h-2 bg-gray-300" />
+                <span className="text-xs text-gray-500 mt-1">{value}px</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <p className="text-xs text-muted-foreground">
           Controla el espacio interno entre el contenido y los bordes
         </p>
@@ -72,16 +85,28 @@ export function SpacingControls({ spacing, onChange }: SpacingControlsProps) {
             {spacing.margin}
           </span>
         </div>
-        <Slider
-          id="margin-slider"
-          value={[parseSpacingValue(spacing.margin)]}
-          onValueChange={(value) =>
-            updateSpacing("margin", sliderValueToSpacing(value))
-          }
-          max={40}
-          step={4}
-          className="w-full"
-        />
+        <div className="relative w-full">
+          <Slider
+            id="margin-slider"
+            value={[parseSpacingValue(spacing.margin)]}
+            onValueChange={(value) =>
+              updateSpacing("margin", sliderValueToSpacing(value))
+            }
+            max={40}
+            step={4}
+            className="w-full"
+          />
+
+          {/* Marcas cada 4 unidades */}
+          <div className="flex justify-between mt-2 px-2">
+            {[0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40].map((value) => (
+              <div key={value} className="flex flex-col items-center">
+                <div className="w-px h-2 bg-gray-300" />
+                <span className="text-xs text-gray-500 mt-1">{value}px</span>
+              </div>
+            ))}
+          </div>
+        </div>
         <p className="text-xs text-muted-foreground">
           Controla el espacio externo entre elementos
         </p>
@@ -97,16 +122,28 @@ export function SpacingControls({ spacing, onChange }: SpacingControlsProps) {
             {spacing.gap}
           </span>
         </div>
-        <Slider
-          id="gap-slider"
-          value={[parseSpacingValue(spacing.gap)]}
-          onValueChange={(value) =>
-            updateSpacing("gap", sliderValueToSpacing(value))
-          }
-          max={40}
-          step={4}
-          className="w-full"
-        />
+        <div className="relative w-full">
+          <Slider
+            id="gap-slider"
+            value={[parseSpacingValue(spacing.gap)]}
+            onValueChange={(value) =>
+              updateSpacing("gap", sliderValueToSpacing(value))
+            }
+            max={40}
+            step={4}
+            className="w-full"
+          />
+
+          {/* Marcas cada 4 unidades */}
+          <div className="flex justify-between mt-2 px-2">
+            {[0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40].map((value) => (
+              <div key={value} className="flex flex-col items-center">
+                <div className="w-px h-2 bg-gray-300" />
+                <span className="text-xs text-gray-500 mt-1">{value}px</span>
+              </div>
+            ))}
+          </div>
+        </div>
         <p className="text-xs text-muted-foreground">
           Controla el espacio entre elementos dentro de contenedores
         </p>

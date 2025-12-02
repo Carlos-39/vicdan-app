@@ -74,7 +74,7 @@ export function ColorPicker({ colors, onChange }: ColorPickerProps) {
     <div className="space-y-6">
       {/* Presets rápidos */}
       <div>
-        <Label className="text-sm font-medium mb-3 block">
+        <Label className="text-xl font-semibold mb-3 block">
           Plantillas de color
         </Label>
         <div className="flex gap-2 flex-wrap">
@@ -82,7 +82,7 @@ export function ColorPicker({ colors, onChange }: ColorPickerProps) {
             <button
               key={name}
               onClick={() => applyPreset(name as keyof typeof colorPresets)}
-              className="flex flex-col items-center gap-1 group"
+              className="flex flex-col items-center gap-1 group cursor-pointer"
             >
               <div
                 className="size-8 rounded-md border shadow-sm group-hover:scale-110 transition-transform"
@@ -136,111 +136,11 @@ export function ColorPicker({ colors, onChange }: ColorPickerProps) {
           label="Texto de tarjetas"
           value={colors.cardText}
           onChange={(value) => updateColor("cardText", value)}
-          description="Color del texto dentro de las tarjetas"
+          description="Color del texto dentro de las tarjetas y botones de redes sociales"
         />
       </div>
 
-      {/* Preview de colores */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm">Previsualización de colores</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="flex gap-2">
-            <div
-              className="size-8 rounded border"
-              style={{ backgroundColor: colors.primary }}
-              title="Color principal"
-            />
-            <div
-              className="size-8 rounded border flex items-center justify-center text-xs font-bold"
-              style={{
-                backgroundColor: colors.secondary,
-                color: colors.background,
-              }}
-              title="Color de texto"
-            >
-              T
-            </div>
-            <div
-              className="size-8 rounded border"
-              style={{ backgroundColor: colors.background }}
-              title="Color de fondo"
-            />
-            <div
-              className="size-8 rounded border flex items-center justify-center text-xs"
-              style={{
-                backgroundColor: colors.text,
-                color: colors.background,
-              }}
-              title="Color de descripción"
-            >
-              D
-            </div>
-            {/* Preview de colores de tarjetas */}
-            <div
-              className="size-8 rounded border"
-              style={{ backgroundColor: colors.card }}
-              title="Fondo de tarjetas"
-            />
-            <div
-              className="size-8 rounded border flex items-center justify-center text-xs font-bold"
-              style={{
-                backgroundColor: colors.cardText,
-                color: colors.card,
-              }}
-              title="Texto de tarjetas"
-            >
-              Aa
-            </div>
-          </div>
-          <div className="text-xs text-muted-foreground">
-            Principal • Texto • Fondo • Descripción • Tarjeta • Texto Tarjeta
-          </div>
-
-          {/* Preview específico de tarjeta */}
-          <div className="pt-3 border-t">
-            <Label className="text-sm font-medium mb-2 block">
-              Vista previa de tarjeta
-            </Label>
-            <div
-              className="p-4 rounded-lg text-center transition-all"
-              style={{
-                backgroundColor: colors.card,
-                color: colors.cardText,
-              }}
-            >
-              <span className="font-medium">Instagram</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Así se verán tus enlaces de redes sociales
-            </p>
-          </div>
-
-          {/* Preview de texto y descripción */}
-          <div className="pt-3 border-t">
-            <Label className="text-sm font-medium mb-2 block">
-              Vista previa de texto
-            </Label>
-            <div
-              className="p-4 rounded-lg border"
-              style={{
-                backgroundColor: colors.background,
-                color: colors.secondary,
-              }}
-            >
-              <h3 className="font-bold text-lg mb-2">Título Principal</h3>
-              <p style={{ color: colors.text }}>
-                Esta es una descripción de ejemplo que muestra cómo se verá el
-                texto secundario.
-              </p>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Título (color de texto) • Descripción (color de descripción)
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+     
     </div>
   );
 }

@@ -27,11 +27,10 @@ export async function GET(
     let query = supabaseAdmin
       .from('perfiles')
       .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, diseno, slug, fecha_publicacion, qr_url, fechas')
+      .eq('eliminado', false)
       .eq('id', perfilId);
     
-    if (!ADMIN_WHITELIST.includes(adminEmail)) {
-      query = query.eq('administrador_id', adminId);
-    }
+    // Todos los administradores pueden ver todos los perfiles
     
     const { data, error } = await query.maybeSingle();
 
@@ -66,16 +65,24 @@ export async function PUT(
 
     const { id: perfilId } = await ctx.params;
     const adminId = claims.id;
+    const adminEmail = claims.email;
 
-    // Verificar ownership
-    const { data: currentProfile, error: fetchError } = await supabaseAdmin
+    // Verificar que el perfil existe
+    let perfilQuery = supabaseAdmin
       .from('perfiles')
       .select('administrador_id, logo_url')
-      .eq('id', perfilId)
-      .eq('administrador_id', adminId)
-      .maybeSingle();
+      .eq('eliminado', false)
+      .eq('id', perfilId);
 
-    if (fetchError || !currentProfile) {
+    // Todos los administradores pueden editar todos los perfiles
+
+    const { data: currentProfile, error: fetchError } = await perfilQuery.maybeSingle();
+
+    if (fetchError) {
+      return NextResponse.json({ error: 'Error al verificar el perfil' }, { status: 500 });
+    }
+
+    if (!currentProfile) {
       return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 404 });
     }
 
@@ -163,13 +170,19 @@ export async function PUT(
 
     // Actualizar fechas
     updates.fechas = new Date().toISOString();
-
     // Actualizar en la base de datos
-    const { data: updatedProfile, error: updateError } = await supabaseAdmin
+    let updateQuery = supabaseAdmin
       .from('perfiles')
       .update(updates)
-      .eq('id', perfilId)
-      .eq('administrador_id', adminId)
+      .eq('eliminado', false)
+      .eq('id', perfilId);
+
+    // Verificar propiedad solo si no son los Super Administradores 
+    if (!ADMIN_WHITELIST.includes(adminEmail)) {
+      updateQuery = updateQuery.eq('administrador_id', adminId);
+    }
+
+    const { data: updatedProfile, error: updateError } = await updateQuery
       .select()
       .single();
 
@@ -215,11 +228,11 @@ export async function DELETE(
     
     // Log para depuración (ahora perfilId tendrá el valor correcto)
     console.log(`Intentando eliminar perfil ID: ${perfilId} por Admin ID: ${claims.id}`);
-
     // 2. Eliminación
     const { error: deleteError } = await supabaseAdmin
       .from('perfiles') 
       .delete()
+      .eq('eliminado', false)
       .eq('id', perfilId);
 
     if (deleteError) {

@@ -3,6 +3,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { DeleteProfileDialog } from "./delete-profile-dialog";
 
@@ -13,11 +14,12 @@ interface ProfileDeleteActionProps {
   children?: React.ReactNode;
 }
 
-async function deleteProfile(profileId: string): Promise<void> {
+async function deleteProfile(profileId: string, accessToken: string): Promise<void> {
   const response = await fetch(`/api/perfiles/${profileId}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${accessToken}`,
     },
   });
 
@@ -44,6 +46,7 @@ export function ProfileDeleteAction({
 }: ProfileDeleteActionProps) {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const router = useRouter();
+  const { data: session } = useSession();
 
   if (!profileId || !profileName) {
     return null;
@@ -52,14 +55,22 @@ export function ProfileDeleteAction({
   const profileData = { id: profileId, nombre: profileName, logo_url: logoUrl };
 
   const handleConfirmDeletion = async (id: string) => {
-    try {
-      await deleteProfile(id);
+    if (!session?.accessToken) {
+      toast.error("❌ No se pudo verificar tu sesión. Por favor, inicia sesión nuevamente.", {
+        duration: 5000,
+      });
+      return;
+    }
 
-      toast.success(`✅ El perfil "${profileName}" ha sido eliminado.`, {
+    try {
+      await deleteProfile(id, session.accessToken);
+
+      toast.success(`✅ El perfil "${profileName}" ha sido eliminado exitosamente.`, {
         duration: 3000,
       });
 
       router.push("/dashboard/perfiles");
+      router.refresh();
     } catch (e) {
       const errorMessage =
         e instanceof Error ? e.message : "Ocurrió un error inesperado.";

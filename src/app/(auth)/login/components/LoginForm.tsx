@@ -1,5 +1,5 @@
 "use client";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -59,76 +59,71 @@ export default function LoginForm() {
   };
 
   return (
-    <form className={styles.form} onSubmit={onSubmit}>
-      {/* Logo decorativo */}
-      <div className="bg-primary" style={{ 
-        width: '56px', 
-        height: '56px', 
-        margin: '0 auto 1rem',
-        borderRadius: '1rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxShadow: '0 8px 16px color-mix(in srgb, var(--primary) 25%, transparent)',
-        animation: 'bounce 2s ease-in-out infinite'
-      }}>
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-          <path d="M2 17l10 5 10-5"/>
-          <path d="M2 12l10 5 10-5"/>
-        </svg>
-      </div>
-      <h2 className={styles.title}>Inicio de Sesión</h2>
-      <p style={{ 
-        textAlign: 'center', 
-        color: '#6b7280', 
-        fontSize: '0.9375rem', 
-        marginTop: '-0.5rem',
-        marginBottom: '0.5rem'
-      }}>
-        Ingresa tus credenciales para continuar
-      </p>
+    <>
+      <form className={styles.form} onSubmit={onSubmit}>
+        {/* Tab buttons */}
+        <div className={styles.tabButtons}>
+          <button type="button" className={`${styles.tabButton} ${styles.tabActive}`}>
+            Iniciar sesión
+          </button>
+          <Link href="/register-admin" className={`${styles.tabButton} ${styles.tabInactive}`}>
+            Registrarse
+          </Link>
+        </div>
 
-      <div className={styles.field}>
-        <label className={styles.label}>Correo electrónico</label>
-        <input
-          type="email"
-          className={styles.input}
-          placeholder="ejemplo@correo.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-      </div>
+        <div className={styles.field}>
+          <label className={styles.label}>Correo electrónico</label>
+          <div className={styles.inputWrapper}>
+            <Mail className={styles.inputIcon} size={20} />
+            <input
+              type="email"
+              className={styles.input}
+              placeholder="tu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+        </div>
 
-      <div className={styles.field}>
-        <label className={styles.label}>Contraseña</label>
-        <div className={styles.passwordWrapper}>
-          <input
-            type={showPassword ? "text" : "password"}
-            className={styles.input}
-            placeholder="********"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+        <div className={styles.field}>
+          <label className={styles.label}>Contraseña</label>
+          <div className={styles.inputWrapper}>
+            <Lock className={styles.inputIcon} size={20} />
+            <input
+              type={showPassword ? "text" : "password"}
+              className={styles.input}
+              placeholder="........"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className={styles.eyeButton}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+        </div>
+
+        <div className={styles.forgotPassword}>
           <button
             type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 text-gray-500 hover:text-purple-600"
+            className={styles.forgot}
+            onClick={() => alert("Funcionalidad no implementada aún.")}
           >
-            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            ¿Olvidaste tu contraseña?
           </button>
         </div>
-      </div>
 
-      {error && <p className={styles.error}>{error}</p>}
+        {error && <p className={styles.error}>{error}</p>}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center', width: '100%' }}>
         <button
           type="submit"
           disabled={!isFormValid || loading}
-          className={`${styles.button} ${
+          className={`${styles.submitButton} ${
             !isFormValid || loading ? styles.disabled : ""
           }`}
         >
@@ -141,19 +136,15 @@ export default function LoginForm() {
             "Iniciar sesión"
           )}
         </button>
+      </form>
 
-        <Link href="/register-admin" className={`${styles.button} ${styles.registerAdmin}`}>
-          Registrar Administrador
+      {/* Footer */}
+      <p className={styles.footer}>
+        ¿No tienes una cuenta?{' '}
+        <Link href="/register-admin" className={styles.footerLink}>
+          Regístrate gratis
         </Link>
-
-        <button
-          type="button"
-          className={styles.forgot}
-          onClick={() => alert("Funcionalidad no implementada aún.")}
-        >
-          ¿Olvidaste tu contraseña?
-        </button>
-      </div>
-    </form>
+      </p>
+    </>
   );
 }

@@ -29,12 +29,10 @@ export async function GET(req: Request) {
 
     let query = supabaseAdmin
       .from('perfiles')
-      .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, fechas');
+      .select('id, administrador_id, nombre, logo_url, correo, descripcion, estado, fechas')
+      .eq('eliminado', false);
     
-    // Permitir a los administradores ver todos los perfiles
-    if (!ADMIN_WHITELIST.includes(adminEmail)) {
-      query = query.eq('administrador_id', adminId);
-    }
+    // Todos los administradores pueden ver todos los perfiles
 
     if (estado && estado.trim()) {
       query = query.eq('estado', estado.trim());
@@ -137,6 +135,28 @@ export async function POST(req: Request) {
 
       if (insertRes.error) {
         console.error("[api/perfiles] insert error:", insertRes.error);
+        
+        // Detectar error de correo duplicado
+        const errorMessage = String(insertRes.error.message ?? insertRes.error).toLowerCase();
+        const errorCode = insertRes.error.code;
+        
+        if (
+          errorCode === "23505" || 
+          errorMessage.includes("duplicate") || 
+          errorMessage.includes("unique") ||
+          errorMessage.includes("correo") ||
+          errorMessage.includes("email")
+        ) {
+          return NextResponse.json(
+            {
+              error: "Este correo electrónico ya está registrado",
+              details: "Por favor, utiliza un correo electrónico diferente.",
+              code: "DUPLICATE_EMAIL",
+            },
+            { status: 409 }
+          );
+        }
+        
         return NextResponse.json(
           {
             error: "No se pudo crear el perfil",

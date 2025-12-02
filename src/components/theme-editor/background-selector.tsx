@@ -29,18 +29,18 @@ const gradientDirections = [
 ];
 
 export function BackgroundSelector({ background, onChange }: BackgroundSelectorProps) {
-  const [activeTab, setActiveTab] = useState(background.type || 'color');
+  const [activeTab, setActiveTab] = useState(background?.type || 'color');
 
   const updateBackground = (updates: any) => {
     onChange({
-      ...background,
+      ...(background || {}),
       ...updates
     });
   };
 
   const handleTypeChange = (type: 'color' | 'gradient' | 'pattern' | 'image') => {
     setActiveTab(type);
-    
+
     // Inicializar valores por defecto según el tipo
     const defaultValues = {
       type,
@@ -48,32 +48,31 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
         colors: ['#877af7', '#3b82f6'],
         direction: 'to right',
         type: 'linear'
-      } : background.gradient,
+      } : background?.gradient,
       pattern: type === 'pattern' ? {
         type: 'dots',
         color: '#877af7',
         size: 50,
         opacity: 0.1
-      } : background.pattern,
+      } : background?.pattern,
       image: type === 'image' ? {
         url: '',
         size: 'cover',
         position: 'center',
         repeat: 'no-repeat',
         opacity: 1
-      } : background.image
+      } : background?.image
     };
 
     onChange(defaultValues);
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <Tabs value={activeTab} onValueChange={(value) => handleTypeChange(value as any)}>
-        <TabsList className="grid grid-cols-4 mb-4">
+        <TabsList className="grid grid-cols-3 mb-3">
           <TabsTrigger value="color">Color</TabsTrigger>
           <TabsTrigger value="gradient">Degradado</TabsTrigger>
-          <TabsTrigger value="pattern">Patrón</TabsTrigger>
           <TabsTrigger value="image">Imagen</TabsTrigger>
         </TabsList>
 
@@ -94,8 +93,8 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
                 value={background.gradient?.colors?.[0] || '#877af7'}
                 onChange={(e) => updateBackground({
                   gradient: {
-                    ...background.gradient,
-                    colors: [e.target.value, background.gradient?.colors?.[1] || '#3b82f6']
+                    ...(background?.gradient || {}),
+                    colors: [e.target.value, background?.gradient?.colors?.[1] || '#3b82f6']
                   }
                 })}
                 className="w-full h-10 rounded border cursor-pointer"
@@ -108,8 +107,8 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
                 value={background.gradient?.colors?.[1] || '#3b82f6'}
                 onChange={(e) => updateBackground({
                   gradient: {
-                    ...background.gradient,
-                    colors: [background.gradient?.colors?.[0] || '#877af7', e.target.value]
+                    ...(background?.gradient || {}),
+                    colors: [background?.gradient?.colors?.[0] || '#877af7', e.target.value]
                   }
                 })}
                 className="w-full h-10 rounded border cursor-pointer"
@@ -123,7 +122,7 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
               value={background.gradient?.direction || 'to right'}
               onChange={(e) => updateBackground({
                 gradient: {
-                  ...background.gradient,
+                  ...(background?.gradient || {}),
                   direction: e.target.value
                 }
               })}
@@ -138,96 +137,13 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
           {/* Vista previa del degradado */}
           <div className="p-4 border rounded-lg">
             <Label className="text-sm font-medium mb-2 block">Vista previa</Label>
-            <div 
+            <div
               className="h-20 rounded border"
               style={{
-                background: background.gradient?.direction === 'circle' 
+                background: background.gradient?.direction === 'circle'
                   ? `radial-gradient(circle, ${background.gradient?.colors?.[0] || '#877af7'}, ${background.gradient?.colors?.[1] || '#3b82f6'})`
                   : `linear-gradient(${background.gradient?.direction || 'to right'}, ${background.gradient?.colors?.[0] || '#877af7'}, ${background.gradient?.colors?.[1] || '#3b82f6'})`
               }}
-            />
-          </div>
-        </TabsContent>
-
-        {/* Pestaña de Patrones */}
-        <TabsContent value="pattern" className="space-y-4">
-          <div className="space-y-2">
-            <Label>Selecciona un patrón</Label>
-            <div className="grid grid-cols-3 gap-2">
-              {patternOptions.map(pattern => (
-                <button
-                  key={pattern.id}
-                  onClick={() => updateBackground({
-                    pattern: {
-                      ...background.pattern,
-                      type: pattern.id
-                    }
-                  })}
-                  className={`aspect-square rounded border-2 p-1 transition-all ${
-                    background.pattern?.type === pattern.id 
-                      ? 'border-primary ring-2 ring-primary/20' 
-                      : 'border-muted'
-                  }`}
-                >
-                  <div
-                    className="w-full h-full rounded"
-                    style={{
-                      background: pattern.css.replace(/currentColor/g, background.pattern?.color || '#877af7'),
-                      backgroundSize: '20px 20px',
-                      backgroundColor: 'transparent'
-                    }}
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>Color del patrón</Label>
-            <input
-              type="color"
-              value={background.pattern?.color || '#877af7'}
-              onChange={(e) => updateBackground({
-                pattern: {
-                  ...background.pattern,
-                  color: e.target.value
-                }
-              })}
-              className="w-full h-10 rounded border cursor-pointer"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Tamaño del patrón: {background.pattern?.size || 50}%</Label>
-            <input
-              type="range"
-              min="10"
-              max="100"
-              value={background.pattern?.size || 50}
-              onChange={(e) => updateBackground({
-                pattern: {
-                  ...background.pattern,
-                  size: parseInt(e.target.value)
-                }
-              })}
-              className="w-full"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Opacidad: {((background.pattern?.opacity || 0.1) * 100).toFixed(0)}%</Label>
-            <input
-              type="range"
-              min="1"
-              max="100"
-              value={(background.pattern?.opacity || 0.1) * 100}
-              onChange={(e) => updateBackground({
-                pattern: {
-                  ...background.pattern,
-                  opacity: parseInt(e.target.value) / 100
-                }
-              })}
-              className="w-full"
             />
           </div>
         </TabsContent>
@@ -247,7 +163,7 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
                     reader.onload = (event) => {
                       updateBackground({
                         image: {
-                          ...background.image,
+                          ...(background?.image || {}),
                           url: event.target?.result as string
                         }
                       });
@@ -325,24 +241,32 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Repetición</Label>
-            <select
-              value={background.image?.repeat || 'no-repeat'}
-              onChange={(e) => updateBackground({
-                image: {
-                  ...background.image,
-                  repeat: e.target.value
-                }
-              })}
-              className="w-full p-2 border rounded"
-            >
-              <option value="no-repeat">No repetir</option>
-              <option value="repeat">Repetir</option>
-              <option value="repeat-x">Repetir horizontal</option>
-              <option value="repeat-y">Repetir vertical</option>
-            </select>
+          <div
+            className={`  
+              transition-all duration-300 overflow-hidden
+              ${background.image?.size === 'contain' ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}
+            `}
+          >
+            <div className="space-y-2 pt-2">
+              <Label>Repetición</Label>
+              <select
+                value={background.image?.repeat || 'no-repeat'}
+                onChange={(e) => updateBackground({
+                  image: {
+                    ...background.image,
+                    repeat: e.target.value
+                  }
+                })}
+                className="w-full p-2 border rounded"
+              >
+                <option value="no-repeat">No repetir</option>
+                <option value="repeat">Repetir</option>
+                <option value="repeat-x">Repetir horizontal</option>
+                <option value="repeat-y">Repetir vertical</option>
+              </select>
+            </div>
           </div>
+
 
           <div className="space-y-2">
             <Label>Opacidad: {((background.image?.opacity || 1) * 100).toFixed(0)}%</Label>
@@ -360,6 +284,25 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
               className="w-full"
             />
           </div>
+
+          <div className="space-y-2">
+            <Label>Blur: {((background.image?.blur || 0) * 100).toFixed(0)}%</Label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={(background.image?.blur || 0) * 100}
+              onChange={(e) => updateBackground({
+                image: {
+                  ...background.image,
+                  blur: parseFloat(e.target.value) / 100
+                }
+              })}
+              className="w-full"
+            />
+          </div>
+
         </TabsContent>
       </Tabs>
     </div>

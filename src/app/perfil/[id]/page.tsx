@@ -34,6 +34,9 @@ const defaultTheme: ThemeConfig = {
     card: "#877af7",
     cardText: "#ffffff",
   },
+  background: {
+    type: "color",
+  },
   typography: {
     fontFamily: "Inter, sans-serif",
     fontSize: {
@@ -60,6 +63,7 @@ async function getProfileData(profileId: string) {
     const { data: profile, error: profileError } = await supabaseAdmin
       .from("perfiles")
       .select("*")
+      .eq("eliminado", false)
       .eq("id", profileId)
       .single();
 
@@ -111,24 +115,27 @@ export default async function PublicProfilePage({ params }: PageProps) {
     correo: profile.correo,
     logo_url: profile.logo_url,
     descripcion: profile.descripcion,
-    links: links.map((link) => ({
+    socialIcons: (theme as any).socialIcons || [], // ← Agregar socialIcons del tema
+    links: links.map(link => ({
       id: link.id,
       name: link.nombre_tarjeta,
       url: link.link,
-      isActive: true,
-    })),
+      isActive: true
+    }))
   };
 
   return (
-    <div
+    <div 
       className="min-h-screen w-full flex items-center justify-center p-4"
       style={{
         backgroundColor: theme.colors.background,
         fontFamily: theme.typography.fontFamily,
       }}
     >
-      <ThemePreview theme={theme} profileData={profileData} />
-      
+      <ThemePreview 
+        theme={theme} 
+        profileData={profileData}
+      />
     </div>
   );
 }

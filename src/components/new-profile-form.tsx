@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
@@ -14,6 +14,9 @@ export function NewProfileForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const router = useRouter();
+  const successMessageRef = useRef<HTMLDivElement>(null);
+  const errorMessageRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const {
     register,
@@ -28,6 +31,32 @@ export function NewProfileForm() {
   });
 
   const fotoPerfilFile = watch("fotoPerfil");
+
+  // Scroll automático al mensaje de éxito cuando se crea el perfil
+  useEffect(() => {
+    if (submitSuccess && successMessageRef.current) {
+      // Hacer scroll suave al inicio del formulario donde está el mensaje
+      setTimeout(() => {
+        successMessageRef.current?.scrollIntoView({ 
+          behavior: "smooth", 
+          block: "start" 
+        });
+      }, 100);
+    }
+  }, [submitSuccess]);
+
+  // Scroll automático al mensaje de error cuando hay un error
+  useEffect(() => {
+    if (submitError && errorMessageRef.current) {
+      // Hacer scroll suave al inicio del formulario donde está el mensaje
+      setTimeout(() => {
+        errorMessageRef.current?.scrollIntoView({ 
+          behavior: "smooth", 
+          block: "start" 
+        });
+      }, 100);
+    }
+  }, [submitError]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -52,7 +81,7 @@ export function NewProfileForm() {
     setSubmitError(null);
     try {
       const formData = new FormData();
-      formData.append("nombre", `${data.nombre} ${data.apellido}`.trim());
+      formData.append("nombre", data.nombre.trim());
       formData.append("correo", data.email);
       formData.append("descripcion", data.descripcion || "");
       if (data.fotoPerfil instanceof File) {
@@ -67,8 +96,16 @@ export function NewProfileForm() {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error("Error al crear el perfil");
+        const errorData = await response.json().catch(() => ({
+          error: "Error al crear el perfil",
+        }));
+        
+        // Mensaje de error más específico
+        if (errorData.code === "DUPLICATE_EMAIL" || errorData.error?.includes("correo") || errorData.error?.includes("email")) {
+          throw new Error(errorData.error || "Este correo electrónico ya está registrado. Por favor, utiliza un correo diferente.");
+        }
+        
+        throw new Error(errorData.error || errorData.details || "Error al crear el perfil. Por favor, intenta nuevamente.");
       }
 
       setSubmitSuccess(true);
@@ -81,98 +118,133 @@ export function NewProfileForm() {
       }, 3000);
     } catch (error) {
       console.error("Error al crear perfil:", error);
-      setSubmitError("Error al crear el perfil");
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Error al crear el perfil. Por favor, intenta nuevamente.";
+      setSubmitError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
+    <div className="w-full">
       <form
+        ref={formRef}
         onSubmit={handleSubmit(onSubmit)}
-        className="bg-white shadow-lg rounded-2xl p-8 space-y-6"
+        className="bg-white shadow-lg rounded-2xl p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6 border border-[var(--primary)]/20"
       >
         {/* Título */}
-        <div className="mb-8 text-center">
-          <h1
-            className="text-2xl md:text-3xl font-bold"
-            style={{ color: "#877af7" }}
-          >
+        <div className="mb-6 sm:mb-8 text-center">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[var(--primary)]">
             Crear Nuevo Perfil
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-sm sm:text-base text-muted-foreground mt-2">
             Ingresa los datos básicos para crear tu perfil
           </p>
         </div>
 
         {/* Mensajes de validación global */}
         {submitError && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-            {submitError}
+          <div 
+            ref={errorMessageRef}
+            className="p-5 bg-gradient-to-r from-amber-100 to-yellow-100 border-2 border-amber-500 rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2 duration-300"
+          >
+            <div className="flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <svg 
+                  className="w-6 h-6 text-amber-700" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2.5} 
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-base font-semibold text-amber-900">
+                  {submitError}
+                </p>
+                {submitError.includes("correo") || submitError.includes("email") ? (
+                  <p className="text-sm text-amber-800 mt-2">
+                    Verifica que el correo no esté registrado o intenta con otro correo electrónico.
+                  </p>
+                ) : null}
+              </div>
+            </div>
           </div>
         )}
 
         {submitSuccess && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
-            Perfil creado exitosamente
+          <div 
+            ref={successMessageRef}
+            className="p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-400 rounded-xl shadow-lg animate-in fade-in slide-in-from-top-2 duration-300"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0">
+                <svg 
+                  className="w-6 h-6 text-green-600" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" 
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-base font-semibold text-green-800">
+                  ¡Perfil creado exitosamente!
+                </p>
+                <p className="text-sm text-green-700 mt-1">
+                  El perfil ha sido guardado correctamente en el sistema.
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
         {/* Sección: Información Básica */}
-        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <span className="text-red-500">*</span> Información Básica
+        <div className="bg-muted/30 p-4 sm:p-6 rounded-lg border border-[var(--primary)]/15">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
+            <span className="text-destructive">*</span> Información Básica
           </h2>
 
           <div className="space-y-4">
-            {/* Nombre */}
+            {/* Nombre del Emprendimiento */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Nombre del Emprendimiento
               </label>
               <input
                 {...register("nombre")}
                 type="text"
-                placeholder="Juan"
+                placeholder="Mi Emprendimiento"
                 className={`w-full px-4 py-2 rounded-lg border transition-colors ${
                   errors.nombre
-                    ? "border-red-500 bg-red-50"
-                    : "border-gray-300 bg-white"
-                } focus:outline-none focus:border-[#877af7] focus:ring-1 focus:ring-[#877af7]`}
+                    ? "border-destructive bg-destructive/10"
+                    : "border-input bg-background"
+                } focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]`}
               />
               {errors.nombre && (
-                <p className="text-red-600 text-sm mt-1">
+                <p className="text-destructive text-sm mt-1">
                   {errors.nombre.message}
-                </p>
-              )}
-            </div>
-
-            {/* Apellido */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Apellido
-              </label>
-              <input
-                {...register("apellido")}
-                type="text"
-                placeholder="Pérez"
-                className={`w-full px-4 py-2 rounded-lg border transition-colors ${
-                  errors.apellido
-                    ? "border-red-500 bg-red-50"
-                    : "border-gray-300 bg-white"
-                } focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
-              />
-              {errors.apellido && (
-                <p className="text-red-600 text-sm mt-1">
-                  {errors.apellido.message}
                 </p>
               )}
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Correo Electrónico
               </label>
               <input
@@ -181,12 +253,12 @@ export function NewProfileForm() {
                 placeholder="juan@ejemplo.com"
                 className={`w-full px-4 py-2 rounded-lg border transition-colors ${
                   errors.email
-                    ? "border-red-500 bg-red-50"
-                    : "border-gray-300 bg-white"
-                } focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500`}
+                    ? "border-destructive bg-destructive/10"
+                    : "border-input bg-background"
+                } focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]`}
               />
               {errors.email && (
-                <p className="text-red-600 text-sm mt-1">
+                <p className="text-destructive text-sm mt-1">
                   {errors.email.message}
                 </p>
               )}
@@ -195,18 +267,15 @@ export function NewProfileForm() {
         </div>
 
         {/* Sección: Foto de Perfil */}
-        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-muted/30 p-4 sm:p-6 rounded-lg border border-[var(--primary)]/15">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">
             Foto de Perfil
           </h2>
 
           <div className="space-y-4">
             {/* Preview de imagen */}
             {imagePreview && (
-              <div
-                className="relative w-32 h-32 rounded-full overflow-hidden mx-auto"
-                style={{ border: "4px solid #877af7" }}
-              >
+              <div className="relative w-32 h-32 rounded-full overflow-hidden mx-auto border-4 border-[var(--primary)]">
                 <Image
                   src={imagePreview || "/placeholder.svg"}
                   alt="Preview perfil"
@@ -218,10 +287,10 @@ export function NewProfileForm() {
 
             {/* Upload de imagen */}
             <div className="flex items-center justify-center">
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[var(--primary)]/40 rounded-lg cursor-pointer hover:bg-[var(--primary)]/5 transition-colors">
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                   <svg
-                    className="w-8 h-8 text-gray-500 mb-2"
+                    className="w-8 h-8 text-[var(--primary)] mb-2"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -233,7 +302,7 @@ export function NewProfileForm() {
                       d="M12 4v16m8-8H4"
                     />
                   </svg>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     JPG, PNG o WebP (Máx 5MB)
                   </p>
                 </div>
@@ -249,7 +318,7 @@ export function NewProfileForm() {
 
             {/* Mensajes de error para imagen */}
             {errors.fotoPerfil && (
-              <p className="text-red-600 text-sm text-center">
+              <p className="text-destructive text-sm text-center">
                 {"Por favor selecciona una imagen válida"}
               </p>
             )}
@@ -257,13 +326,13 @@ export function NewProfileForm() {
         </div>
 
         {/* Sección: Descripción (Opcional) */}
-        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+        <div className="bg-muted/30 p-4 sm:p-6 rounded-lg border border-[var(--primary)]/15">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground mb-3 sm:mb-4">
             Información Adicional
           </h2>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Descripción (Opcional)
             </label>
             <textarea
@@ -272,16 +341,16 @@ export function NewProfileForm() {
               rows={4}
               className={`w-full px-4 py-2 rounded-lg border transition-colors ${
                 errors.descripcion
-                  ? "border-red-500 bg-red-50"
-                  : "border-gray-300 bg-white"
-              } focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none`}
+                  ? "border-destructive bg-destructive/10"
+                  : "border-input bg-background"
+              } focus:outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)] resize-none`}
             />
             {errors.descripcion && (
-              <p className="text-red-600 text-sm mt-1">
+              <p className="text-destructive text-sm mt-1">
                 {errors.descripcion.message}
               </p>
             )}
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Máximo 500 caracteres
             </p>
           </div>
@@ -292,15 +361,14 @@ export function NewProfileForm() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="w-full md:flex-1 px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            className="w-full md:flex-1 px-6 py-3 border border-input rounded-lg font-medium text-foreground hover:bg-muted transition-colors"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full md:flex-1 px-6 py-3 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90"
-            style={{ backgroundColor: "#877af7" }}
+            className="w-full md:flex-1 px-6 py-3 bg-gradient-to-r from-[var(--primary)] to-indigo-600 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md hover:shadow-purple-500/20"
           >
             {isSubmitting ? "Guardando..." : "Guardar Perfil"}
           </button>

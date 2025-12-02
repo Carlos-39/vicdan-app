@@ -86,32 +86,33 @@ export function ShareProfileModal({ open, onOpenChange, profileData }: ShareProf
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Share2 className="size-5" />
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Share2 className="size-4 sm:size-5" />
             Compartir perfil
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-xs sm:text-sm">
             Tu perfil ha sido publicado. Comparte el enlace o código QR.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Enlace público */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Enlace público</label>
-            <div className="flex gap-2">
+            <label className="text-xs sm:text-sm font-medium">Enlace público</label>
+            <div className="flex flex-col sm:flex-row gap-2">
               <Input
                 value={profileData.publicUrl}
                 readOnly
-                className="flex-1 text-sm"
+                className="flex-1 text-xs sm:text-sm"
                 onClick={(e) => (e.target as HTMLInputElement).select()}
               />
               <Button
                 variant="outline"
                 size="icon"
                 onClick={handleCopyLink}
+                className="w-full sm:w-auto flex-shrink-0"
               >
                 {copied ? (
                   <Check className="size-4 text-success" />
@@ -127,9 +128,9 @@ export function ShareProfileModal({ open, onOpenChange, profileData }: ShareProf
 
           {/* Código QR */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Código QR</label>
-            <div className="flex flex-col items-center gap-4 p-4 border rounded-lg bg-muted/50">
-              <div className="relative w-48 h-48 bg-white p-2 rounded-lg">
+            <label className="text-xs sm:text-sm font-medium">Código QR</label>
+            <div className="flex flex-col items-center gap-3 sm:gap-4 p-3 sm:p-4 border rounded-lg bg-muted/50">
+              <div className="relative w-40 h-40 sm:w-48 sm:h-48 bg-white p-2 rounded-lg">
                 <Image
                   src={profileData.qrUrl}
                   alt="QR Code"
@@ -137,12 +138,12 @@ export function ShareProfileModal({ open, onOpenChange, profileData }: ShareProf
                   className="object-contain"
                 />
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleCopyQR}
-                  className="gap-2"
+                  className="gap-2 w-full sm:w-auto"
                 >
                   {qrCopied ? (
                     <>
@@ -160,7 +161,7 @@ export function ShareProfileModal({ open, onOpenChange, profileData }: ShareProf
                   variant="outline"
                   size="sm"
                   onClick={handleDownloadQR}
-                  className="gap-2"
+                  className="gap-2 w-full sm:w-auto"
                 >
                   <Download className="size-4" />
                   Descargar
@@ -171,8 +172,8 @@ export function ShareProfileModal({ open, onOpenChange, profileData }: ShareProf
 
           {/* Compartir en redes sociales */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">Compartir en redes</label>
-            <div className="grid grid-cols-4 gap-2">
+            <label className="text-xs sm:text-sm font-medium">Compartir en redes</label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <Button
                 variant="outline"
                 size="icon"

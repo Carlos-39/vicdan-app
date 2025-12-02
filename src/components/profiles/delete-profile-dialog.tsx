@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Profile {
   id: string;
@@ -23,9 +23,12 @@ interface Profile {
 
 interface DeleteProfileDialogProps {
   profile: Profile | null;
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen?: boolean;
+  open?: boolean;
+  onClose?: () => void;
+  onOpenChange?: (open: boolean) => void;
   onConfirm: (profileId: string) => Promise<void>;
+  isDeleting?: boolean;
 }
 
 const getInitials = (name: string) => {
@@ -41,19 +44,41 @@ const getInitials = (name: string) => {
 export function DeleteProfileDialog({
   profile,
   isOpen,
+  open,
   onClose,
+  onOpenChange,
   onConfirm,
+  isDeleting,
 }: DeleteProfileDialogProps) {
+  // Compatibilidad con ambas formas de uso
+  const dialogOpen = open !== undefined ? open : isOpen ?? false;
+  const handleClose = (open: boolean) => {
+    // No permitir cerrar mientras se está eliminando
+    if (loading && !open) {
+      return;
+    }
+    
+    if (onOpenChange) {
+      onOpenChange(open);
+    } else if (onClose && !open) {
+      onClose();
+    }
+  };
+
   // 1. TODOS LOS HOOKS DEBEN IR AQUÍ ARRIBA
   const [isLoading, setIsLoading] = React.useState(false);
   const [imageLoaded, setImageLoaded] = React.useState(false);
 
   // CORRECCIÓN DE HOOKS: Aseguramos que el estado se resetee al abrir.
   React.useEffect(() => {
-    if (isOpen) {
+    if (dialogOpen) {
       setImageLoaded(false);
+      setIsLoading(false);
     }
-  }, [isOpen]);
+  }, [dialogOpen]);
+
+  // Usar isDeleting del prop si está disponible, sino usar el estado local
+  const loading = isDeleting !== undefined ? isDeleting : isLoading;
 
   // 2. LA LÓGICA DE RETORNO CONDICIONAL VA DESPUÉS DE LOS HOOKS
   if (!profile) {
@@ -61,88 +86,136 @@ export function DeleteProfileDialog({
   }
 
   const handleConfirm = async () => {
-    setIsLoading(true);
-    if (profile.id) {
-      await onConfirm(profile.id);
+    if (loading) return; // Prevenir múltiples clics
+    
+    if (isDeleting === undefined) {
+      setIsLoading(true);
     }
-    setIsLoading(false);
+    
+    try {
+      if (profile.id) {
+        await onConfirm(profile.id);
+      }
+    } catch (error) {
+      console.error("Error en handleConfirm:", error);
+      // El error ya se maneja en onConfirm
+    } finally {
+      if (isDeleting === undefined) {
+        setIsLoading(false);
+      }
+    }
   };
 
   const profileName = profile.nombre || "Perfil Desconocido";
   const showImage = profile.logo_url && imageLoaded;
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent>
+    <AlertDialog open={dialogOpen} onOpenChange={handleClose} modal={true}>
+      <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
-          <AlertDialogTitle className="flex items-center text-red-600">
-            <AlertTriangle className="mr-2 h-6 w-6" />
-            Confirmación de Eliminación
+          <AlertDialogTitle className="flex items-center gap-2 text-lg">
+            <div className="flex items-center justify-center size-10 rounded-full bg-primary/10">
+              <Trash2 className="size-5 text-primary" />
+            </div>
+            <span className="text-foreground">Eliminar Perfil</span>
           </AlertDialogTitle>
-          <AlertDialogDescription>
-            Estás a punto de eliminar permanentemente el siguiente perfil:
+          <AlertDialogDescription className="text-muted-foreground pt-2">
+            Esta acción eliminará permanentemente el perfil y todos sus datos asociados.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        <div className="flex items-center space-x-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
-          {/* Logo/Avatar */}
+        {/* Información del perfil */}
+        <div className="flex items-center gap-4 p-4 rounded-lg border bg-card">
           <Avatar
-            // SOLUCIÓN DE RENDER: Usamos 'isOpen' como key para forzar la recarga del componente al abrir.
             key={isOpen ? "avatar-open" : "avatar-closed"}
-            className="size-12 shrink-0 rounded-full overflow-hidden items-center justify-center bg-primary/10"
+            className="size-14 shrink-0 border-2"
+            style={{
+              borderColor: "#877af7",
+            }}
           >
-            {/* GESTIÓN MANUAL CON <img>: Usamos img en lugar de AvatarImage para mayor robustez en modales */}
             {profile.logo_url && (
-              <img
+              <AvatarImage
                 src={profile.logo_url}
                 alt={profileName}
                 onLoad={() => setImageLoaded(true)}
                 onError={() => setImageLoaded(false)}
-                // Ocultamos hasta que cargue
-                style={{ display: imageLoaded ? "block" : "none" }}
-                className="h-full w-full object-cover"
+                className="object-cover"
               />
             )}
-
-            {/* Fallback (Iniciales) */}
-            {!showImage && (
-              <AvatarFallback className="bg-primary/10 text-primary text-lg font-bold">
-                {getInitials(profileName)}
-              </AvatarFallback>
-            )}
+            <AvatarFallback 
+              className="bg-primary/10 text-primary text-lg font-semibold"
+              style={{
+                backgroundColor: "#877af720",
+                color: "#877af7",
+              }}
+            >
+              {getInitials(profileName)}
+            </AvatarFallback>
           </Avatar>
 
-          {/* Detalles */}
-          <div className="min-w-0">
-            <p className="font-bold text-base truncate">{profileName}</p>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-base text-foreground truncate">
+              {profileName}
+            </p>
             {profile.correo && (
-              <p className="text-sm text-gray-600 truncate">{profile.correo}</p>
+              <p className="text-sm text-muted-foreground truncate mt-1">
+                {profile.correo}
+              </p>
             )}
           </div>
         </div>
-        {/* FIN PANEL DE INFORMACIÓN */}
 
-        <div className="rounded-lg bg-red-50 p-4 border border-red-200">
-          <div className="flex items-start">
-            <AlertTriangle className="h-5 w-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" />
-            <p className="text-sm font-medium text-red-800">
-              **ADVERTENCIA:** Esta acción es **irreversible**. Se eliminarán
-              todos los datos, enlaces y configuraciones asociadas al perfil.
-            </p>
+        {/* Advertencia */}
+        <div className="rounded-lg p-4 border bg-amber-50/50 dark:bg-amber-950/20" style={{
+          borderColor: "#877af730",
+        }}>
+          <div className="flex items-start gap-3">
+            <AlertTriangle 
+              className="size-5 shrink-0 mt-0.5" 
+              style={{ color: "#877af7" }}
+            />
+            <div className="space-y-1">
+              <p className="text-sm font-medium text-foreground">
+                Acción irreversible
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Se eliminarán todos los datos, enlaces, configuraciones y contenido asociado a este perfil. Esta acción no se puede deshacer.
+              </p>
+            </div>
           </div>
         </div>
 
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>Cancelar</AlertDialogCancel>
-          <Button
-            variant="destructive"
-            onClick={handleConfirm}
-            disabled={isLoading}
+        <AlertDialogFooter className="gap-2 sm:gap-0">
+          <AlertDialogCancel 
+            disabled={loading}
+            className="mt-2 sm:mt-0"
+            onClick={(e) => {
+              if (loading) {
+                e.preventDefault();
+              }
+            }}
           >
-            {isLoading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : null}
-            Confirmar Eliminación
+            Cancelar
+          </AlertDialogCancel>
+          <Button
+            onClick={handleConfirm}
+            disabled={loading}
+            className="bg-primary hover:bg-primary/90 text-white"
+            style={{
+              backgroundColor: "#877af7",
+            }}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Eliminando...
+              </>
+            ) : (
+              <>
+                <Trash2 className="mr-2 h-4 w-4" />
+                Confirmar Eliminación
+              </>
+            )}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>

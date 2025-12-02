@@ -54,6 +54,7 @@ export interface ThemeConfig {
       size: "cover" | "contain" | "auto";
       repeat: "no-repeat" | "repeat" | "repeat-x" | "repeat-y";
       opacity: number;
+      blur: number;
     };
   };
   typography: {
@@ -82,6 +83,7 @@ export interface ThemeConfig {
     textAlignment?: "left" | "center" | "right" | "justify";
     socialIconsPosition: "above-links" | "below-links" | "both";
   };
+  socialIcons?: SocialIcon[];
 }
 
 const defaultTheme: ThemeConfig = {
@@ -162,10 +164,14 @@ export function ThemeEditor({
     ...defaultTheme,
     ...initialTheme,
   });
+  const [socialIcons, setSocialIcons] = useState<SocialIcon[]>([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [activeTab, setActiveTab] = useState("colors");
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [toast, setToast] = useState<{
     isVisible: boolean;
@@ -233,6 +239,15 @@ export function ThemeEditor({
             layout: { ...defaultTheme.layout, ...existingTheme.layout },
           };
 
+          // Cargar socialIcons si existen
+          if (existingTheme.socialIcons) {
+            setSocialIcons(existingTheme.socialIcons);
+            setLocalProfileData((prev) => ({
+              ...prev,
+              socialIcons: existingTheme.socialIcons,
+            }));
+          }
+
           return mergedTheme;
         }
       }
@@ -241,6 +256,16 @@ export function ThemeEditor({
       return null;
     }
   };
+
+  useEffect(() => {
+    if (initialTheme) {
+      setTheme(initialTheme as ThemeConfig);
+      // Cargar socialIcons si existen en el diseño guardado
+      if ((initialTheme as any).socialIcons) {
+        setSocialIcons((initialTheme as any).socialIcons);
+      }
+    }
+  }, [initialTheme]);
 
   useEffect(() => {
     const loadInitialData = async () => {
@@ -393,6 +418,7 @@ export function ThemeEditor({
     themeData: ThemeConfig
   ): Promise<boolean> => {
     try {
+      console.log("Guardando tema...", themeData);
       if (status === "loading") {
         throw new Error("Sesión aún cargando...");
       }
@@ -481,17 +507,27 @@ export function ThemeEditor({
           existingLinks.some((existingLink) => existingLink.id === link.id)
       );
 
-      const deletePromises = linksToDelete.map((linkToDelete) =>
-        fetch(`/api/perfiles/${profileId}/tarjetas/${linkToDelete.id}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-        })
-      );
+      const deletePromises = linksToDelete.map(async (linkToDelete) => {
+        const response = await fetch(
+          `/api/perfiles/${profileId}/tarjetas/${linkToDelete.id}`,
+          {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          }
+        );
 
-      const createPromises = linksToCreate.map((link) =>
-        fetch(`/api/perfiles/${profileId}/tarjetas`, {
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: "Error desconocido" }));
+          throw new Error(`Error eliminando tarjeta: ${errorData.error || response.statusText}`);
+        }
+
+        return response;
+      });
+
+      const createPromises = linksToCreate.map(async (link) => {
+        const response = await fetch(`/api/perfiles/${profileId}/tarjetas`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -501,8 +537,15 @@ export function ThemeEditor({
             nombre_tarjeta: link.name,
             link: link.url,
           }),
-        })
-      );
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({ error: "Error desconocido" }));
+          throw new Error(`Error creando tarjeta: ${errorData.error || response.statusText}`);
+        }
+
+        return response;
+      });
 
       const updatePromises = linksToUpdate.map(async (link) => {
         const response = await fetch(
@@ -521,8 +564,8 @@ export function ThemeEditor({
         );
 
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`Error actualizando tarjeta: ${errorData.error}`);
+          const errorData = await response.json().catch(() => ({ error: "Error desconocido" }));
+          throw new Error(`Error actualizando tarjeta: ${errorData.error || response.statusText}`);
         }
 
         return response;
@@ -536,7 +579,9 @@ export function ThemeEditor({
 
       return true;
     } catch (error) {
-      throw new Error("Error al guardar los enlaces");
+      console.error("Error detallado al guardar enlaces:", error);
+      const errorMessage = error instanceof Error ? error.message : "Error al guardar los enlaces";
+      throw new Error(errorMessage);
     }
   };
 
@@ -658,8 +703,9 @@ export function ThemeEditor({
     router.back();
   };
 
-  const handleSocialIconsChange = (socialIcons: SocialIcon[]) => {
-    const updatedData = { ...localProfileData, socialIcons };
+  const handleSocialIconsChange = (updatedSocialIcons: SocialIcon[]) => {
+    setSocialIcons(updatedSocialIcons);
+    const updatedData = { ...localProfileData, socialIcons: updatedSocialIcons };
     setLocalProfileData(updatedData);
     setHasUnsavedChanges(true);
     onProfileUpdate?.(updatedData);
@@ -687,61 +733,58 @@ export function ThemeEditor({
 
   // FUNCIÓN handleSave FALTANTE - LA AGREGAMOS
   const handleSave = async () => {
-    if (status === "unauthenticated" || !session?.accessToken) {
-      Swal.fire({
-        title: "Error de autenticación",
-        text: "No se pudo verificar tu sesión. Por favor, recarga la página e inicia sesión nuevamente.",
-        icon: "error",
-        confirmButtonText: "Entendido",
-      });
-      return;
-    }
+    if (isSaving) return;
 
     setIsSaving(true);
+    setSaving(true);
+    setError(null);
 
     try {
-      Swal.fire({
-        title: "Guardando cambios...",
-        text: "Por favor espera mientras guardamos tu configuración",
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        },
-      });
-
-      const saveOperations = [];
-
-      saveOperations.push(saveThemeToBackend(theme));
-      saveOperations.push(saveProfileToBackend(localProfileData));
-
-      if (localProfileData.links && localProfileData.links.length > 0) {
-        saveOperations.push(saveLinksToBackend(localProfileData.links));
+      if (status === "unauthenticated" || !session?.accessToken) {
+        throw new Error("No hay sesión activa - Por favor inicia sesión");
       }
 
-      await Promise.all(saveOperations);
+      // 1. Guardar el tema con socialIcons incluidos
+      const themeToSave = {
+        ...theme,
+        socialIcons: socialIcons, 
+      };
 
-      setHasUnsavedChanges(false);
+      const themeSuccess = await saveThemeToBackend(themeToSave as ThemeConfig);
+      if (!themeSuccess) {
+        throw new Error("Error al guardar el tema");
+      }
+
+      // 2. Guardar los enlaces
+      const linksSuccess = await saveLinksToBackend(localProfileData.links || []);
+      if (!linksSuccess) {
+        throw new Error("Error al guardar los enlaces");
+      }
+
+      // 3. Guardar datos del perfil
+      const profileSuccess = await saveProfileToBackend(localProfileData);
+      if (!profileSuccess) {
+        throw new Error("Error al guardar el perfil");
+      }
+
+      // Éxito total
       clearTempStorage();
+      setHasUnsavedChanges(false);
+      showToast("✅ Todos los cambios guardados correctamente", "success");
 
-      Swal.close();
-      showToast("Cambios guardados exitosamente", "success");
+      if (onSave) {
+        onSave(themeToSave as ThemeConfig);
+      }
 
-      onSave?.(theme);
-      onProfileUpdate?.(localProfileData);
-    } catch (error) {
-      Swal.close();
-
-      await Swal.fire({
-        title: "Error al guardar",
-        text: "Ha ocurrido un error al intentar guardar los cambios en el servidor. Por favor, intenta nuevamente.",
-        icon: "error",
-        confirmButtonText: "Entendido",
-        confirmButtonColor: "#877af7",
-      });
-
-      showToast("Error al guardar los cambios", "error");
+      setSuccessMessage("Diseño guardado correctamente");
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (error: any) {
+      console.error("Error completo al guardar:", error);
+      setError(error.message || "Error al guardar los cambios");
+      showToast(`❌ ${error.message || "Error al guardar"}`, "error");
     } finally {
       setIsSaving(false);
+      setSaving(false);
     }
   };
 
@@ -759,7 +802,7 @@ export function ThemeEditor({
   }
 
   return (
-    <div className="container mx-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
+    <div className="container max-w-12xl mx-auto p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
       <Toast
         message={toast.message}
         type={toast.type}
@@ -770,15 +813,7 @@ export function ThemeEditor({
 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleBack}
-            className="hidden sm:flex"
-          >
-            <ArrowLeft className="size-4" />
-            Volver
-          </Button>
+          
           <div className="text-center sm:text-left">
             <h1 className="text-2xl sm:text-3xl font-bold">
               Personalizar Diseño
@@ -815,22 +850,23 @@ export function ThemeEditor({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
-        <div className="xl:col-span-2 space-y-4 sm:space-y-6">
-          <Card className="overflow-hidden">
-            <CardHeader className="pb-2 sm:pb-3">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+        <div className="xl:col-span-1 space-y-4 sm:space-y-6">
+          <Card className="overflow-hidden gap-1">
+            <CardHeader className="">
               <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                 <Palette className="size-4 sm:size-5" />
                 Editor de Tema
               </CardTitle>
             </CardHeader>
+
             <CardContent className="p-3 sm:p-4">
               <Tabs
                 value={activeTab}
                 onValueChange={setActiveTab}
                 className="space-y-3"
               >
-                <TabsList className="flex flex-nowrap gap-1 w-full overflow-hidden py-4 min-h-[60px] items-center border-b">
+                <TabsList className=" mb-4 flex flex-nowrap gap-1 w-full overflow-hidden py-4 min-h-[60px] items-center border-b">
                   <TabsTrigger
                     value="colors"
                     className="flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm py-3 px-3 min-w-0 flex-1 whitespace-nowrap h-auto"
@@ -877,7 +913,7 @@ export function ThemeEditor({
                   />
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-sm">Fondo Avanzado</CardTitle>
+                      <CardTitle className="text-xl font-semibold">Fondo Avanzado</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <BackgroundSelector
@@ -932,8 +968,9 @@ export function ThemeEditor({
                 Vista Previa
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
-              <div className="max-w-full overflow-auto">
+
+            <CardContent className="">
+              <div className="max-w-full overflow-hidden rounded-lg">
                 <div className="min-h-[400px] sm:min-h-[500px] flex items-center justify-center p-3 sm:p-4">
                   <ThemePreview
                     theme={theme}
@@ -946,6 +983,7 @@ export function ThemeEditor({
               </div>
             </CardContent>
           </Card>
+
         </div>
       </div>
 

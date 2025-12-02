@@ -8,8 +8,11 @@ import {
   ThemeEditor,
   type ThemeConfig,
 } from "@/components/theme-editor/theme-editor";
+import { type SocialIcon } from "@/components/theme-editor/links-manager";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DashboardHeader } from "@/app/(dashboard)/dashboard/components/dashboard-header";
+import { BottomNavigation } from "@/app/(dashboard)/dashboard/components/bottom-navigation";
 
 export default function PersonalizarPage() {
   const router = useRouter();
@@ -29,11 +32,11 @@ export default function PersonalizarPage() {
     correo?: string;
     logo_url?: string;
     descripcion?: string;
+    socialIcons?: SocialIcon[];
   } | null>(null);
 
   // ✅ CORREGIDO: Fetch profile theme by ID - solo una vez
   const fetchProfileTheme = useCallback(async () => {
-    // Evitar múltiples llamadas
     if (hasLoaded) return;
 
     try {
@@ -59,14 +62,8 @@ export default function PersonalizarPage() {
 
       const data = await response.json();
 
-      setProfileData({
-        nombre: data.perfil.nombre,
-        correo: data.perfil.correo,
-        logo_url: data.perfil.logo_url,
-        descripcion: data.perfil.descripcion,
-      });
-
-      // ✅ CORREGIDO: Buscar en el campo correcto 'diseno'
+      let socialIcons = [];
+      // Cargar diseño y socialIcons
       if (data.perfil.diseno) {
         try {
           const theme =
@@ -75,12 +72,23 @@ export default function PersonalizarPage() {
               : data.perfil.diseno;
 
           setCurrentTheme(theme);
+          if (theme.socialIcons) {
+            socialIcons = theme.socialIcons;
+          }
         } catch (parseError) {
           setCurrentTheme(undefined);
         }
       } else {
         setCurrentTheme(undefined);
       }
+
+      setProfileData({
+        nombre: data.perfil.nombre,
+        correo: data.perfil.correo,
+        logo_url: data.perfil.logo_url,
+        descripcion: data.perfil.descripcion,
+        socialIcons: socialIcons,
+      });
 
       setHasLoaded(true);
     } catch (err) {
@@ -165,13 +173,17 @@ export default function PersonalizarPage() {
   // Success state
   return (
     <div className="min-h-screen bg-background">
-      <ThemeEditor
-        profileId={profileId}
-        initialTheme={currentTheme}
-        onSave={handleSaveTheme}
-        profileData={profileData}
-        onProfileUpdate={handleProfileUpdate}
-      />
+      <DashboardHeader />
+      <div className="pb-24">
+        <ThemeEditor
+          profileId={profileId}
+          initialTheme={currentTheme}
+          onSave={handleSaveTheme}
+          profileData={profileData}
+          onProfileUpdate={handleProfileUpdate}
+        />
+      </div>
+      <BottomNavigation activeTab="profiles" />
     </div>
   );
 }

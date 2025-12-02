@@ -5,6 +5,7 @@ export default async function DebugPage() {
   const { data: perfiles, error } = await supabaseAdmin
     .from('perfiles')
     .select('id, nombre, estado, slug, fechas') // Usamos fechas en lugar de created_at
+    .eq('eliminado', false)
     .order('fechas', { ascending: false }) // Ordenamos por fechas
     .limit(10);
 
