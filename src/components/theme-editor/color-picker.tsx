@@ -71,27 +71,27 @@ export function ColorPicker({ colors, onChange }: ColorPickerProps) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Presets rápidos */}
       <div>
-        <Label className="text-xl font-semibold mb-3 block">
+        <Label className="text-base sm:text-lg md:text-xl font-semibold mb-3 block">
           Plantillas de color
         </Label>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-3 sm:gap-4 flex-wrap justify-center sm:justify-start">
           {Object.entries(colorPresets).map(([name, presetColors]) => (
             <button
               key={name}
               onClick={() => applyPreset(name as keyof typeof colorPresets)}
-              className="flex flex-col items-center gap-1 group cursor-pointer"
+              className="flex flex-col items-center gap-1.5 sm:gap-2 group cursor-pointer transition-transform hover:scale-105 active:scale-95"
             >
               <div
-                className="size-8 rounded-md border shadow-sm group-hover:scale-110 transition-transform"
+                className="size-10 sm:size-12 md:size-14 rounded-lg sm:rounded-xl border-2 border-gray-200 dark:border-gray-700 shadow-sm group-hover:shadow-md transition-all"
                 style={{
                   background: `linear-gradient(135deg, ${presetColors.primary} 50%, ${presetColors.background} 50%)`,
                 }}
               />
-              <span className="text-xs capitalize text-muted-foreground">
-                {name}
+              <span className="text-[10px] xs:text-xs sm:text-sm capitalize text-muted-foreground font-medium">
+                {name === "violet" ? "Violet" : name === "blue" ? "Blue" : name === "emerald" ? "Emerald" : name === "red" ? "Red" : "Slate"}
               </span>
             </button>
           ))}
@@ -99,13 +99,21 @@ export function ColorPicker({ colors, onChange }: ColorPickerProps) {
       </div>
 
       {/* Selectores individuales */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
-        <ColorField
-          label="Color principal"
-          value={colors.primary}
-          onChange={(value) => updateColor("primary", value)}
-          description="Botones, elementos destacados y fondo de tarjetas"
-        />
+      <div>
+        <Label className="text-base sm:text-lg md:text-xl font-semibold mb-3 block">
+          Color principal
+        </Label>
+        <div className="mb-4 sm:mb-6">
+          <ColorField
+            label=""
+            value={colors.primary}
+            onChange={(value) => updateColor("primary", value)}
+            description="Botones, elementos destacados y fondo de tarjetas"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 lg:gap-6">
         <ColorField
           label="Color de texto"
           value={colors.secondary}
@@ -159,26 +167,28 @@ function ColorField({
 }) {
   return (
     <div className="space-y-2">
-      <Label className="text-sm font-medium">{label}</Label>
-      <div className="flex gap-2">
-        <div className="relative">
+      {label && <Label className="text-sm sm:text-base font-medium">{label}</Label>}
+      <div className="flex gap-2 sm:gap-3 items-start">
+        <div className="relative shrink-0">
           <input
             type="color"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="size-10 rounded border cursor-pointer"
+            className="size-10 sm:size-12 rounded-md sm:rounded-lg border-2 border-gray-200 dark:border-gray-700 cursor-pointer hover:border-primary transition-colors"
           />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <input
             type="text"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="w-full px-2 lg:px-3 py-1 lg:py-2 text-xs lg:text-sm border rounded-md focus:outline-none focus:ring-1 focus:ring-primary/20"
+            className="w-full px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
             placeholder="#000000"
           />
           {description && (
-            <p className="text-xs text-muted-foreground mt-1">{description}</p>
+            <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2 leading-relaxed">
+              {description}
+            </p>
           )}
         </div>
       </div>

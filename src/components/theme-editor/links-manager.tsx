@@ -220,7 +220,7 @@ export function LinksManager({
           onClick={() => setActiveSection("links")}
         >
           <Link2 className="size-4 inline mr-2" />
-          <span className="text-lg font-semibold cursor-pointer">Enlaces Principales</span>
+          <span className="text-sm font-semibold cursor-pointer">Enlaces Principales</span>
         </button>
         <button
           className={`flex-1 py-2 px-4 text-sm font-medium ${
@@ -231,7 +231,7 @@ export function LinksManager({
           onClick={() => setActiveSection("social")}
         >
           <Share2 className="size-4 inline mr-2" />
-          <span className="text-lg font-semibold cursor-pointer">Iconos Sociales</span>
+          <span className="text-sm font-semibold cursor-pointer">Iconos Sociales</span>
         </button>
       </div>
 

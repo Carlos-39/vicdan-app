@@ -87,7 +87,7 @@ export function LayoutSelector({ layout, onChange }: LayoutSelectorProps) {
     <div className="space-y-6">
       {/* Tipo de layout principal */}
       <div>
-        <Label className="text-xl font-semibold mb-3 block">
+        <Label className="text-base font-semibold mb-3 block">
           Diseño Principal
         </Label>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
