@@ -129,13 +129,36 @@ export default async function PublicProfilePageBySlug({ params }: PageProps) {
     switch (background?.type) {
       case "gradient":
         // Si tiene gradiente, usarlo
+        // Para hacerlo más oscuro, se pueden ajustar los colores o añadir una superposición
+        const darkenColor = (hex: string, percent: number) => {
+          if (!hex || hex.length !== 7 || hex[0] !== '#') return hex; // Basic validation
+          let r = parseInt(hex.substring(1, 3), 16);
+          let g = parseInt(hex.substring(3, 5), 16);
+          let b = parseInt(hex.substring(5, 7), 16);
+
+          r = Math.max(0, r - Math.round(255 * (percent / 100)));
+          g = Math.max(0, g - Math.round(255 * (percent / 100)));
+          b = Math.max(0, b - Math.round(255 * (percent / 100)));
+
+          const toHex = (c: number) => ("0" + c.toString(16)).slice(-2);
+          return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+        };
+
+        const gradientColor1 = darkenColor(background.gradient?.colors?.[0] || theme.colors.primary, 10); // Darken by 10%
+        const gradientColor2 = darkenColor(background.gradient?.colors?.[1] || theme.colors.card, 10); // Darken by 10%
+
+        // Añadir una capa más oscura a los colores del gradiente.
+        // Esto se logra mezclando el color original con un color oscuro (como el texto o un gris oscuro)
+        // o usando una versión más oscura del color primario/secundario con transparencia.
+        // Aquí, optamos por usar `theme.colors.text` (que se asume es oscuro) como un componente adicional
+        // o simplemente asegurar que los colores de fallback sean más intensos.
         if (background.gradient?.direction === "circle") {
           return {
-            background: `radial-gradient(circle, ${background.gradient.colors?.[0] || theme.colors.primary}, ${background.gradient.colors?.[1] || theme.colors.card})`,
+            background: `radial-gradient(circle, ${gradientColor1} 10%, ${gradientColor2} 90%)`, // Ajustar la distribución para un efecto más oscuro si es necesario
           };
         }
         return {
-          background: `linear-gradient(${background.gradient?.direction || "to right"}, ${background.gradient?.colors?.[0] || theme.colors.primary}, ${background.gradient?.colors?.[1] || theme.colors.card})`,
+          background: `linear-gradient(${background.gradient?.direction || "to bottom"}, ${gradientColor1}, ${gradientColor2})`, // Usar "to bottom" como default si no hay dirección, a menudo se ve más oscuro
         };
 
       case "color":

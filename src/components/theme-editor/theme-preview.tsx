@@ -86,28 +86,28 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
   };
 
   const pathname = usePathname();
-    
-    // Determine if we should show the back button
-    const isPersonalizar = 
-      pathname?.includes("/personalizar")
-  
-    console.log(pathname, isPersonalizar);
+
+  // Determine if we should show the back button
+  const isPersonalizar =
+    pathname?.includes("/personalizar")
+
+  console.log(pathname, isPersonalizar);
 
   // Función para convertir color hex a RGB
   function hexToRgb(hex: string) {
     // Eliminar el # si está presente
     hex = hex.replace(/^#/, '');
-    
+
     // Parsear los componentes
     if (hex.length === 3) {
       hex = hex.split('').map(char => char + char).join('');
     }
-    
+
     const num = parseInt(hex, 16);
     const r = (num >> 16) & 255;
     const g = (num >> 8) & 255;
     const b = num & 255;
-    
+
     return { r, g, b };
   }
 
@@ -123,11 +123,9 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
           };
         }
         return {
-          background: `linear-gradient(${
-            background.gradient?.direction || "to right"
-          }, ${background.gradient?.colors?.[0] || "#877af7"}, ${
-            background.gradient?.colors?.[1] || "#3b82f6"
-          })`,
+          background: `linear-gradient(${background.gradient?.direction || "to right"
+            }, ${background.gradient?.colors?.[0] || "#877af7"}, ${background.gradient?.colors?.[1] || "#3b82f6"
+            })`,
         };
 
       case "pattern":
@@ -145,33 +143,33 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
         };
 
       case "image":
-      const opacity = background.image?.opacity || 1;
-      const bgColor = theme.colors.background || "#ffffff";
-      
-      // Si la opacidad es menor a 1, crear un gradiente superpuesto
-      if (opacity < 1 && background.image?.url) {
-        return {
-          backgroundImage: `
+        const opacity = background.image?.opacity || 1;
+        const bgColor = theme.colors.background || "#ffffff";
+
+        // Si la opacidad es menor a 1, crear un gradiente superpuesto
+        if (opacity < 1 && background.image?.url) {
+          return {
+            backgroundImage: `
             linear-gradient(
               rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity}),
               rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity})
             ),
             url('${background.image.url}')
           `,
+            backgroundSize: background.image?.size || "cover",
+            backgroundPosition: background.image?.position || "center",
+            backgroundRepeat: background.image?.repeat || "no-repeat",
+            backgroundColor: bgColor,
+          };
+        }
+
+        return {
+          backgroundImage: background.image?.url ? `url('${background.image.url}')` : 'none',
           backgroundSize: background.image?.size || "cover",
           backgroundPosition: background.image?.position || "center",
           backgroundRepeat: background.image?.repeat || "no-repeat",
           backgroundColor: bgColor,
         };
-      }
-      
-      return {
-        backgroundImage: background.image?.url ? `url('${background.image.url}')` : 'none',
-        backgroundSize: background.image?.size || "cover",
-        backgroundPosition: background.image?.position || "center",
-        backgroundRepeat: background.image?.repeat || "no-repeat",
-        backgroundColor: bgColor,
-      };
 
       case "color":
       default:
@@ -218,19 +216,19 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
     return alignment === "center"
       ? "center"
       : alignment === "right"
-      ? "flex-end"
-      : "flex-start";
+        ? "flex-end"
+        : "flex-start";
   };
 
   // Función para obtener iconos sociales activos con URL válida
   const getActiveSocialIcons = () => {
     return displayData.socialIcons?.filter((icon) => {
-      const hasValidUrl = icon.url && 
-                          icon.url.trim() !== '' && 
-                          icon.url !== 'https://' &&
-                          icon.url !== 'mailto:' &&
-                          icon.url !== 'tel:';
-      
+      const hasValidUrl = icon.url &&
+        icon.url.trim() !== '' &&
+        icon.url !== 'https://' &&
+        icon.url !== 'mailto:' &&
+        icon.url !== 'tel:';
+
       return icon.isActive && hasValidUrl;
     }) || [];
   };
@@ -264,10 +262,10 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
               }}
               title={`Visitar ${platformName}`}
               onClick={(e) => {
-                if (!socialIcon.url || socialIcon.url.trim() === '' || 
-                    socialIcon.url === 'https://' || 
-                    socialIcon.url === 'mailto:' || 
-                    socialIcon.url === 'tel:') {
+                if (!socialIcon.url || socialIcon.url.trim() === '' ||
+                  socialIcon.url === 'https://' ||
+                  socialIcon.url === 'mailto:' ||
+                  socialIcon.url === 'tel:') {
                   e.preventDefault();
                 }
               }}
@@ -282,7 +280,7 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
 
   return (
     <div className={isPersonalizar ? "w-full h-auto rounded-lg" 
-                                   : "w-full xl:w-1/3 xl:rounded-lg max-w-full h-screen xl:h-auto"}
+                                   : "w-full xl:w-1/3 xl:rounded-lg max-w-full sm:min-h-screen xl:min-h-0    xl:h-auto "}
     style={{
       ...getBackgroundStyle(),
     }}>
