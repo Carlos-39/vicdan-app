@@ -117,17 +117,23 @@ export async function POST(req: Request, ctx: ParamsCtx) {
       .getPublicUrl(filePath);
     const qrPublicUrl = publicData?.publicUrl ?? null;
 
-    const { data: updated, error: updateErr } = await supabaseAdmin
-      .from('perfiles')
-      .update({
-        estado: 'activo',
-        slug,
-        fecha_publicacion: new Date().toISOString(),
-        qr_url: qrPublicUrl,
-      })
-      .eq('eliminado', false)
-      .eq('id', perfilId)
-      .eq('administrador_id', adminId)
+    let query = supabaseAdmin
+    .from('perfiles')
+    .update({
+      estado: 'activo',
+      slug,
+      fecha_publicacion: new Date().toISOString(),
+      qr_url: qrPublicUrl,
+    })
+    .eq('eliminado', false)
+    .eq('id', perfilId);
+
+    // Solo aplicar filtro por administrador si NO es superadmin
+    if (!ADMIN_WHITELIST.includes(adminEmail)) {
+      query = query.eq('administrador_id', adminId);
+    }
+
+    const { data: updated, error: updateErr } = await query
       .select('id, slug, estado, fecha_publicacion, qr_url')
       .single();
 
