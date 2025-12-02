@@ -54,6 +54,7 @@ export interface ThemeConfig {
       size: "cover" | "contain" | "auto";
       repeat: "no-repeat" | "repeat" | "repeat-x" | "repeat-y";
       opacity: number;
+      blur: number;
     };
   };
   typography: {

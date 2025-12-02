@@ -144,6 +144,7 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
 
       case "image":
         const opacity = background.image?.opacity || 1;
+        const blur = background.image?.blur || 0;
         const bgColor = theme.colors.background || "#ffffff";
 
         // Si la opacidad es menor a 1, crear un gradiente superpuesto
@@ -154,11 +155,38 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
               rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity}),
               rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity})
             ),
-            url('${background.image.url}')
+            url('${background?.image?.url}')
           `,
+            backgroundSize: background?.image?.size || "cover",
+            backgroundPosition: background?.image?.position || "center",
+            backgroundRepeat: background?.image?.repeat || "no-repeat",
+            backgroundColor: bgColor,
+          };
+        }
+
+        if (blur > 0 && background.image?.url) {
+          return {
+            backgroundImage: `url('${background.image.url}')`,
             backgroundSize: background.image?.size || "cover",
             backgroundPosition: background.image?.position || "center",
             backgroundRepeat: background.image?.repeat || "no-repeat",
+            backgroundColor: bgColor,
+            filter: `blur(${blur}px)`
+          };
+        }
+
+        if (opacity < 1 && blur > 0 && background.image?.url) {
+          return {
+            backgroundImage: `
+            linear-gradient(
+              rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity}),
+              rgba(${hexToRgb(bgColor).r}, ${hexToRgb(bgColor).g}, ${hexToRgb(bgColor).b}, ${1 - opacity})
+            ),
+            url('${background?.image?.url}')
+          `,
+            backgroundSize: background?.image?.size || "cover",
+            backgroundPosition: background?.image?.position || "center",
+            backgroundRepeat: background?.image?.repeat || "no-repeat",
             backgroundColor: bgColor,
           };
         }

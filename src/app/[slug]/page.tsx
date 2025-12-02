@@ -165,7 +165,7 @@ export default async function PublicProfilePageBySlug({ params }: PageProps) {
         // Si es color sólido, generar gradiente basado en ese color
         const baseColor = theme.colors.background;
         return {
-          background: `linear-gradient(135deg, ${baseColor}, ${theme.colors.primary}20)`,
+          background: `linear-gradient(135deg, ${baseColor}, ${theme.colors.primary}70)`,
         };
 
       case "image":

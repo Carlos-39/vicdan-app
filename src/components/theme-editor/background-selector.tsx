@@ -40,7 +40,7 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
 
   const handleTypeChange = (type: 'color' | 'gradient' | 'pattern' | 'image') => {
     setActiveTab(type);
-    
+
     // Inicializar valores por defecto según el tipo
     const defaultValues = {
       type,
@@ -137,18 +137,16 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
           {/* Vista previa del degradado */}
           <div className="p-4 border rounded-lg">
             <Label className="text-sm font-medium mb-2 block">Vista previa</Label>
-            <div 
+            <div
               className="h-20 rounded border"
               style={{
-                background: background.gradient?.direction === 'circle' 
+                background: background.gradient?.direction === 'circle'
                   ? `radial-gradient(circle, ${background.gradient?.colors?.[0] || '#877af7'}, ${background.gradient?.colors?.[1] || '#3b82f6'})`
                   : `linear-gradient(${background.gradient?.direction || 'to right'}, ${background.gradient?.colors?.[0] || '#877af7'}, ${background.gradient?.colors?.[1] || '#3b82f6'})`
               }}
             />
           </div>
         </TabsContent>
-
-     
 
         {/* Pestaña de Imágenes */}
         <TabsContent value="image" className="space-y-4">
@@ -243,24 +241,32 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Repetición</Label>
-            <select
-              value={background.image?.repeat || 'no-repeat'}
-              onChange={(e) => updateBackground({
-                image: {
-                  ...background.image,
-                  repeat: e.target.value
-                }
-              })}
-              className="w-full p-2 border rounded"
-            >
-              <option value="no-repeat">No repetir</option>
-              <option value="repeat">Repetir</option>
-              <option value="repeat-x">Repetir horizontal</option>
-              <option value="repeat-y">Repetir vertical</option>
-            </select>
+          <div
+            className={`  
+              transition-all duration-300 overflow-hidden
+              ${background.image?.size === 'contain' ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0'}
+            `}
+          >
+            <div className="space-y-2 pt-2">
+              <Label>Repetición</Label>
+              <select
+                value={background.image?.repeat || 'no-repeat'}
+                onChange={(e) => updateBackground({
+                  image: {
+                    ...background.image,
+                    repeat: e.target.value
+                  }
+                })}
+                className="w-full p-2 border rounded"
+              >
+                <option value="no-repeat">No repetir</option>
+                <option value="repeat">Repetir</option>
+                <option value="repeat-x">Repetir horizontal</option>
+                <option value="repeat-y">Repetir vertical</option>
+              </select>
+            </div>
           </div>
+
 
           <div className="space-y-2">
             <Label>Opacidad: {((background.image?.opacity || 1) * 100).toFixed(0)}%</Label>
@@ -278,6 +284,25 @@ export function BackgroundSelector({ background, onChange }: BackgroundSelectorP
               className="w-full"
             />
           </div>
+
+          <div className="space-y-2">
+            <Label>Blur: {((background.image?.blur || 0) * 100).toFixed(0)}%</Label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              step="1"
+              value={(background.image?.blur || 0) * 100}
+              onChange={(e) => updateBackground({
+                image: {
+                  ...background.image,
+                  blur: parseFloat(e.target.value) / 100
+                }
+              })}
+              className="w-full"
+            />
+          </div>
+
         </TabsContent>
       </Tabs>
     </div>
