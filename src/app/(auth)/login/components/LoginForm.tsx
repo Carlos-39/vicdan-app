@@ -73,7 +73,7 @@ export default function LoginForm() {
         router.push("/dashboard");
         setTimeout(() => {
           window.location.reload();
-        }, 100);
+        }, 500);
       } catch (error) {
         console.error('Error en login:', error);
         setError('Error de conexión. Por favor, intenta nuevamente.');
