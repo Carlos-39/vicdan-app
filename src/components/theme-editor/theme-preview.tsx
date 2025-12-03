@@ -77,6 +77,61 @@ const patternOptions = [
   { id: 'checker', name: 'Tablero', css: 'conic-gradient(currentColor 0% 25%, transparent 0% 50%, currentColor 0% 75%, transparent 0%)' }
 ];
 
+// Componente para renderizar iconos sociales (declarado a nivel superior para evitar creación durante render)
+export const SocialIconsSection = ({
+  position,
+  activeIcons,
+  theme,
+}: {
+  position?: "above" | "below";
+  activeIcons: SocialIcon[];
+  theme: ThemeConfig;
+}) => {
+  if (!activeIcons || activeIcons.length === 0) return null;
+
+  return (
+    <div
+      className="flex justify-center gap-4 flex-wrap"
+      style={{
+        gap: theme.spacing.gap,
+      }}
+    >
+      {activeIcons.map((socialIcon) => {
+        const IconComponent = SOCIAL_ICONS[socialIcon.platform] || ExternalLink;
+        const platformName =
+          socialIcon.platform.charAt(0).toUpperCase() + socialIcon.platform.slice(1);
+
+        return (
+          <a
+            key={socialIcon.id}
+            href={socialIcon.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-all duration-200 hover:scale-110 active:scale-95"
+            style={{
+              color: theme.colors.cardText,
+            }}
+            title={`Visitar ${platformName}`}
+            onClick={(e) => {
+              if (
+                !socialIcon.url ||
+                socialIcon.url.trim() === "" ||
+                socialIcon.url === "https://" ||
+                socialIcon.url === "mailto:" ||
+                socialIcon.url === "tel:"
+              ) {
+                e.preventDefault();
+              }
+            }}
+          >
+            <IconComponent className="size-8 xl:size-8" />
+          </a>
+        );
+      })}
+    </div>
+  );
+};
+
 export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
   const displayData = {
     ...defaultProfileData,
@@ -299,50 +354,6 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
     }) || [];
   };
 
-  // Componente para renderizar iconos sociales
-  const SocialIconsSection = ({ position }: { position: "above" | "below" }) => {
-    const activeIcons = getActiveSocialIcons();
-
-    if (activeIcons.length === 0) return null;
-
-    return (
-      <div
-        className="flex justify-center gap-4 flex-wrap"
-        style={{
-          gap: theme.spacing.gap,
-        }}
-      >
-        {activeIcons.map((socialIcon) => {
-          const IconComponent = SOCIAL_ICONS[socialIcon.platform] || ExternalLink;
-          const platformName = socialIcon.platform.charAt(0).toUpperCase() + socialIcon.platform.slice(1);
-
-          return (
-            <a
-              key={socialIcon.id}
-              href={socialIcon.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-all duration-200 hover:scale-110 active:scale-95"
-              style={{
-                color: theme.colors.cardText, // Mismo color del texto de las tarjetas
-              }}
-              title={`Visitar ${platformName}`}
-              onClick={(e) => {
-                if (!socialIcon.url || socialIcon.url.trim() === '' ||
-                  socialIcon.url === 'https://' ||
-                  socialIcon.url === 'mailto:' ||
-                  socialIcon.url === 'tel:') {
-                  e.preventDefault();
-                }
-              }}
-            >
-              <IconComponent className="size-8 xl:size-8" />
-            </a>
-          );
-        })}
-      </div>
-    );
-  };
 
   function darkenColor(hex: string, amount: number): string {
     let color = hex.replace("#", "");
@@ -363,7 +374,10 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
         .padStart(6, "0")
     );
   }
+  
 
+  // Calcular iconos activos una vez por render y pasarlos al componente externo
+  const activeIcons = getActiveSocialIcons();
 
   return (
     <div className={isPersonalizar ?
@@ -507,7 +521,7 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
 
         {/* Iconos sociales - ARRIBA de los enlaces */}
         {(theme.layout.socialIconsPosition === "above-links" || theme.layout.socialIconsPosition === "both") && (
-          <SocialIconsSection position="above" />
+          <SocialIconsSection position="above" activeIcons={activeIcons} theme={theme} />
         )}
 
         {/* Enlaces principales */}
@@ -564,7 +578,7 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
 
         {/* Iconos sociales - DEBAJO de los enlaces */}
         {(theme.layout.socialIconsPosition === "below-links" || theme.layout.socialIconsPosition === "both") && (
-          <SocialIconsSection position="below" />
+          <SocialIconsSection position="below" activeIcons={activeIcons} theme={theme} />
         )}
 
         {/* Marca de agua "Powered by VicDan" - Solo en vista pública */}
