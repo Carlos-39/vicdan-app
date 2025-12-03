@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { ProfileWithAdmin } from "@/types/profile"
 import { EditProfileForm } from "@/components/profiles/edit-profile-form"
+import { EditProfileSkeleton } from "@/components/profiles/edit-profile-skeleton"
 import { Loader2, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DashboardHeader } from "@/app/(dashboard)/dashboard/components/dashboard-header"
@@ -79,11 +80,13 @@ export default function EditProfilePage({ params }: EditProfilePageProps) {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="size-8 animate-spin text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">Cargando perfil...</p>
+      <div className="min-h-screen bg-background pb-24">
+        <DashboardHeader />
+        <div className="container max-w-4xl mx-auto px-4 py-8">
+          <EditProfileSkeleton />
+          as
         </div>
+        <BottomNavigation activeTab="profiles" />
       </div>
     )
   }

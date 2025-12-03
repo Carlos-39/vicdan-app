@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ThemeEditorSkeleton } from "./theme-editor-skeleton";
 import {
   Save,
   Eye,
@@ -25,6 +26,8 @@ import { Toast, ToastType } from "@/components/ui/toast";
 import Swal from "sweetalert2";
 import { useSession } from "next-auth/react";
 import { BackgroundSelector } from "./background-selector";
+import { DashboardHeader } from "@/app/(dashboard)/dashboard/components/dashboard-header";
+import { BottomNavigation } from "@/app/(dashboard)/dashboard/components/bottom-navigation";
 
 export interface ThemeConfig {
   colors: {
@@ -72,12 +75,12 @@ export interface ThemeConfig {
   };
   layout: {
     type:
-      | "centered"
-      | "left-aligned"
-      | "right-aligned"
-      | "justified"
-      | "card"
-      | "minimal";
+    | "centered"
+    | "left-aligned"
+    | "right-aligned"
+    | "justified"
+    | "card"
+    | "minimal";
     showAvatar: boolean;
     showSocialLinks: boolean;
     textAlignment?: "left" | "center" | "right" | "justify";
@@ -747,7 +750,7 @@ export function ThemeEditor({
       // 1. Guardar el tema con socialIcons incluidos
       const themeToSave = {
         ...theme,
-        socialIcons: socialIcons, 
+        socialIcons: socialIcons,
       };
 
       const themeSuccess = await saveThemeToBackend(themeToSave as ThemeConfig);
@@ -777,7 +780,7 @@ export function ThemeEditor({
       }
 
       setSuccessMessage("Diseño guardado correctamente");
-      
+
       // Redirigir a la página anterior después de un breve delay
       setTimeout(() => {
         router.back();
@@ -793,16 +796,7 @@ export function ThemeEditor({
   };
 
   if (isLoading) {
-    return (
-      <div className="container mx-auto p-6 flex items-center justify-center min-h-[400px]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          <p className="text-muted-foreground">
-            Cargando configuración existente...
-          </p>
-        </div>
-      </div>
-    );
+    return <ThemeEditorSkeleton />;
   }
 
   return (

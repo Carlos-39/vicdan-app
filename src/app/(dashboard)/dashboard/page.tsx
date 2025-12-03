@@ -17,6 +17,7 @@ import {
 import { DashboardHeader } from "./components/dashboard-header";
 import { ProcessCard } from "./components/process-card";
 import { ActivityItem } from "./components/activity-item";
+import { ActivityItemSkeleton } from "./components/activity-item-skeleton";
 import { BottomNavigation } from "./components/bottom-navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -293,13 +294,10 @@ export default function DashboardPage() {
           </div>
           <Card className="p-4 space-y-3 border shadow-sm bg-white">
             {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div 
-                  className="animate-spin rounded-full h-6 w-6 border-b-2"
-                  style={{
-                    borderColor: "#877af7",
-                  }}
-                />
+              <div className="space-y-11">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <ActivityItemSkeleton key={i} />
+                ))}
               </div>
             ) : recentProfiles.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground text-sm">
