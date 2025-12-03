@@ -35,9 +35,10 @@ interface ProfileDetailProps {
   profile: ProfileWithAdmin
   onEdit?: () => void
   showBackButton?: boolean
+  onProfileUpdate?: (updatedProfile: Partial<ProfileWithAdmin>) => void
 }
 
-export function ProfileDetail({ profile, onEdit, showBackButton = true }: ProfileDetailProps) {
+export function ProfileDetail({ profile, onEdit, showBackButton = true, onProfileUpdate }: ProfileDetailProps) {
   const router = useRouter()
   const { data: session } = useSession()
   const [isPublishing, setIsPublishing] = useState(false)
@@ -92,6 +93,16 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
 
       const data = await response.json()
       
+      // Actualizar el estado del perfil localmente
+      if (onProfileUpdate && data.perfil) {
+        onProfileUpdate({
+          ...profile, // Mantener todos los datos existentes
+          ...data.perfil, // Sobrescribir con los datos actualizados
+          slug: data.slug,
+          qr_url: data.qrPublicUrl
+        })
+      }
+      
       // Guardar datos para compartir
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin
       setShareData({
@@ -103,11 +114,6 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
 
       // Abrir modal de compartir
       setShareModalOpen(true)
-
-      // Recargar la página para actualizar el estado
-      setTimeout(() => {
-        window.location.reload()
-      }, 1000)
     } catch (error) {
       console.error('Error publicando perfil:', error)
       setPublishError('Error al publicar el perfil')

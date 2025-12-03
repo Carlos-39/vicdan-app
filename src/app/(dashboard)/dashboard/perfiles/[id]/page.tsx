@@ -76,6 +76,13 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
     router.push(`/dashboard/perfiles/${profileId}/editar`)
   }
 
+  const handleProfileUpdate = (updatedProfile: Partial<ProfileWithAdmin>) => {
+    setProfile(current => {
+      if (!current) return current
+      return { ...current, ...updatedProfile }
+    })
+  }
+
   // Loading state
   if (loading) {
     return (
@@ -124,6 +131,7 @@ export default function ProfileDetailPage({ params }: ProfileDetailPageProps) {
           profile={profile} 
           onEdit={handleEdit}
           showBackButton={true}
+          onProfileUpdate={handleProfileUpdate}
         />
       </div>
       <BottomNavigation activeTab="profiles" />
