@@ -4,9 +4,6 @@ import { auth } from "@/auth";
 import { uploadLogo } from "@/lib/storage";
 import { perfilSchema } from "./perfil.schema";
 import { verifyAuthToken } from '@/lib/jwt';
-import { z } from 'zod';
-import { logger } from '@/lib/logger';
-import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export const runtime = 'nodejs';
 
