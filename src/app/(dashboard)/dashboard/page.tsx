@@ -108,21 +108,13 @@ export default function DashboardPage() {
     }
   }, [getAuthToken]);
 
-   // Efecto para recargar la página una vez al cargar el dashboard
   useEffect(() => {
-    // Verificar si ya se recargó en esta sesión
-    const hasReloaded = sessionStorage.getItem('dashboardReloaded');
-    
-    if (session && !hasReloaded) {
-      // Marcar que ya se recargó para evitar loops infinitos
-      sessionStorage.setItem('dashboardReloaded', 'true');
-      
-      // Recargar después de un breve delay para asegurar que la sesión esté lista
-      setTimeout(() => {
-        window.location.reload();
-      }, 300);
+    const hasReloaded = sessionStorage.getItem("dashboardReloaded");
+    if (!hasReloaded) {
+      sessionStorage.setItem("dashboardReloaded", "true");
+      router.refresh();
     }
-  }, [session]); // Depender de toda la sesión, no solo del email
+  }, []);
 
   useEffect(() => {
     if (session) {
