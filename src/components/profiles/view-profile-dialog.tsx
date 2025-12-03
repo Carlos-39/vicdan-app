@@ -37,8 +37,6 @@ export function ViewProfileDialog({ profile, open, onOpenChange }: ViewProfileDi
         return 'success'
       case 'inactivo':
         return 'secondary'
-      case 'borrador':
-        return 'draft'
       default:
         return 'secondary'
     }

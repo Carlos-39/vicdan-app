@@ -144,8 +144,6 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
         return 'success'
       case 'inactivo':
         return 'secondary'
-      case 'borrador':
-        return 'draft'
       default:
         return 'secondary'
     }
@@ -157,8 +155,6 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
         return <CheckCircle2 className="size-4" />
       case 'inactivo':
         return <XCircle className="size-4" />
-      case 'borrador':
-        return <FileEdit className="size-4" />
       default:
         return null
     }
@@ -170,8 +166,6 @@ export function ProfileDetail({ profile, onEdit, showBackButton = true }: Profil
         return 'Activo'
       case 'inactivo':
         return 'Inactivo'
-      case 'borrador':
-        return 'Borrador'
       default:
         return estado
     }

@@ -54,7 +54,7 @@ async function getProfileBySlug(slug: string) {
       return null;
     }
 
-    // Verificar que el perfil esté activo (no inactivo ni borrador)
+    // Verificar que el perfil esté activo
     if (profile.estado !== 'activo') {
       return null;
     }
