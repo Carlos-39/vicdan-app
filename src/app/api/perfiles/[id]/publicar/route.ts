@@ -29,7 +29,6 @@ export async function POST(req: Request, ctx: ParamsCtx) {
     if (!claims)
       return NextResponse.json({ error: 'Token inválido o expirado' }, { status: 401 });
     const adminId = claims.id;
-    const adminEmail = claims.email;
 
     const { id: perfilId } = await ctx.params;
 
@@ -119,7 +118,7 @@ export async function POST(req: Request, ctx: ParamsCtx) {
     .eq('id', perfilId);
 
     const { data: updated, error: updateErr } = await query
-      .select('id, slug, estado, fecha_publicacion, qr_url')
+      .select('*')
       .single();
 
     if (updateErr) {
