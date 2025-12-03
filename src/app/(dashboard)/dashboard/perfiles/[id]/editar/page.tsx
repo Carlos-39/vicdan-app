@@ -84,7 +84,6 @@ export default function EditProfilePage({ params }: EditProfilePageProps) {
         <DashboardHeader />
         <div className="container max-w-4xl mx-auto px-4 py-8">
           <EditProfileSkeleton />
-          as
         </div>
         <BottomNavigation activeTab="profiles" />
       </div>

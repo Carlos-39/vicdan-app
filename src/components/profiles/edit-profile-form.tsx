@@ -92,8 +92,6 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
     },
   });
 
-  const fotoPerfilFile = watch("fotoPerfil");
-
   // Efecto para resetear el formulario si cambia el perfil
   useEffect(() => {
     reset({

@@ -1,0 +1,48 @@
+.btn {
+  position: relative;
+  padding: 20px 40px;
+  color: #fdf5e0;
+  overflow: hidden;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: transform 0.4s, background 0.4s;
+  touch-action: manipulation;
+}
+
+ 
+
+.btn:active {
+  transform: translateY(2px);
+  transition: transform 0.6s;
+}
+
+.btn:focus-visible {
+  outline: 3px solid #ae7e00;
+  outline-offset: 4px;
+}
+
+.txt {
+  margin: 0;
+  pointer-events: none;
+  font-size: 40px;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 0, 0, 0.3);
+  pointer-events: none;
+  transform: scale(0);
+  opacity: 1;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ripple.expand {
+  transform: scale(3);
+}
+
+.ripple.fade {
+  opacity: 0;
+  transform: scale(4);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
