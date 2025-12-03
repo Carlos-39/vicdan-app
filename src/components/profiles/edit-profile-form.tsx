@@ -173,11 +173,7 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
       // Mostrar mensaje de éxito y redirigir
       setTimeout(() => {
         setSubmitSuccess(false);
-        if (onSuccess) {
-          onSuccess();
-        } else {
-          router.push(`/dashboard/perfiles/${profile.id}`);
-        }
+        router.push(`/dashboard/perfiles/${profile.id}`);
       }, 2000);
     } catch (error) {
       console.error("Error al actualizar perfil:", error);

@@ -108,13 +108,19 @@ export function NewProfileForm() {
         throw new Error(errorData.error || errorData.details || "Error al crear el perfil. Por favor, intenta nuevamente.");
       }
 
+      const result = await response.json();
+      const profileId = result.perfil?.id || result.id;
+
       setSubmitSuccess(true);
       setImagePreview(null);
       reset();
 
-      // Mostrar mensaje de éxito temporalmente
+      // Mostrar mensaje de éxito y redirigir al perfil creado
       setTimeout(() => {
         setSubmitSuccess(false);
+        if (profileId) {
+          router.push(`/dashboard/perfiles/${profileId}`);
+        }
       }, 3000);
     } catch (error) {
       console.error("Error al crear perfil:", error);
@@ -206,7 +212,7 @@ export function NewProfileForm() {
                   ¡Perfil creado exitosamente!
                 </p>
                 <p className="text-sm text-green-700 mt-1">
-                  El perfil ha sido guardado correctamente en el sistema.
+                  Redirigiendo al perfil creado...
                 </p>
               </div>
             </div>
