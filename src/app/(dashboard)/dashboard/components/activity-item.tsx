@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Mail } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 interface ActivityItemProps {
   icon: LucideIcon
@@ -9,7 +10,7 @@ interface ActivityItemProps {
   title: string
   subtitle: string
   timestamp: string
-  status: "completed" | "pending" | "draft"
+  status: "completed" | "pending"
   email?: string | null
   logoUrl?: string | null
   onClick?: () => void
@@ -30,26 +31,18 @@ const statusConfig = {
       backgroundColor: "#9ca3af",
     },
   },
-  draft: {
-    label: "BORRADOR",
-    className: "text-white font-bold",
-    style: {
-      backgroundColor: "#877af7",
-      opacity: 0.7,
-    },
-  },
 }
 
-export function ActivityItem({ 
-  icon: Icon, 
-  iconBgColor, 
-  title, 
-  subtitle, 
-  timestamp, 
-  status, 
+export function ActivityItem({
+  icon: Icon,
+  iconBgColor,
+  title,
+  subtitle,
+  timestamp,
+  status,
   email,
   logoUrl,
-  onClick 
+  onClick
 }: ActivityItemProps) {
   const statusInfo = statusConfig[status]
   const initials = subtitle
@@ -59,8 +52,20 @@ export function ActivityItem({
     .toUpperCase()
     .slice(0, 2)
 
+
+  const getStatusVariant = (estado: string) => {
+    switch (estado) {
+      case "ACTIVO":
+        return "success";
+      case "INACTIVO":
+        return "secondary";
+      default:
+        return "secondary";
+    }
+  };
+
   return (
-    <div 
+    <div
       className={cn(
         "flex items-start gap-3 p-4 rounded-lg transition-all duration-200 border bg-white",
         onClick ? "cursor-pointer hover:bg-gray-50 hover:shadow-sm hover:border-gray-300" : ""
@@ -72,14 +77,14 @@ export function ActivityItem({
     >
       {/* Avatar o Icono */}
       {logoUrl ? (
-        <Avatar 
+        <Avatar
           className="h-12 w-12 flex-shrink-0 border-2"
           style={{
             borderColor: "#877af7",
           }}
         >
           <AvatarImage src={logoUrl} alt={subtitle} />
-          <AvatarFallback 
+          <AvatarFallback
             className="font-semibold"
             style={{
               backgroundColor: "#877af7",
@@ -90,13 +95,13 @@ export function ActivityItem({
           </AvatarFallback>
         </Avatar>
       ) : (
-        <div 
+        <div
           className="h-12 w-12 rounded-lg flex items-center justify-center flex-shrink-0"
           style={{
             backgroundColor: "#877af720",
           }}
         >
-          <Icon 
+          <Icon
             className="h-6 w-6"
             style={{
               color: "#877af7",
@@ -104,7 +109,7 @@ export function ActivityItem({
           />
         </div>
       )}
-      
+
       {/* Información del perfil */}
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2 mb-1">
@@ -114,7 +119,7 @@ export function ActivityItem({
             </p>
             {email && (
               <div className="flex items-center gap-1.5 mt-1">
-                <Mail 
+                <Mail
                   className="h-3 w-3"
                   style={{
                     color: "#877af7",
@@ -127,14 +132,22 @@ export function ActivityItem({
         </div>
         <p className="text-xs text-muted-foreground font-medium mt-1">{timestamp}</p>
       </div>
-      
-      {/* Badge de estado */}
-      <span 
-        className={cn("text-xs px-3 py-1.5 rounded-full whitespace-nowrap flex-shrink-0", statusInfo.className)}
+
+      {/* Badge de estado 
+      <span
+        className={cn("text-xs px-3 py-1.5 rounded-full whitespace-nowrap flex-shrink-0 items-center flex", statusInfo.className)}
         style={statusInfo.style}
       >
-        {statusInfo.label}
+        <Icon className="h-4 w-4 mr-1" /> {statusInfo.label}
       </span>
+      */}
+
+      <Badge
+        variant={getStatusVariant(statusInfo.label)}
+        className="text-sm"
+      >
+        {statusInfo.label.toLowerCase()}
+      </Badge>
     </div>
   )
 }

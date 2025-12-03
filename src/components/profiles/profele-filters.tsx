@@ -64,7 +64,6 @@ export function ProfileFiltersComponent({ filters, onFiltersChange }: ProfileFil
         <option value="todos">Todos los estados</option>
         <option value="activo">Activo</option>
         <option value="inactivo">Inactivo</option>
-        <option value="borrador">Borrador</option>
       </select>
     </div>
   )

@@ -39,7 +39,7 @@ const editProfileSchema = z.object({
     .optional()
     .or(z.literal("")),
 
-  estado: z.enum(["activo", "inactivo", "borrador"], {
+  estado: z.enum(["activo", "inactivo"], {
     required_error: "Debes seleccionar un estado",
   }),
 
@@ -350,7 +350,6 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
                 )}
                 aria-invalid={!!errors.estado}
               >
-                <option value="borrador">Borrador</option>
                 <option value="activo">Activo</option>
                 <option value="inactivo">Inactivo</option>
               </select>

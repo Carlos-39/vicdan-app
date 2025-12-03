@@ -41,8 +41,6 @@ export function ProfileCard({ profile, onView, onEdit }: ProfileCardProps) {
         return "success";
       case "inactivo":
         return "secondary";
-      case "borrador":
-        return "draft";
       default:
         return "secondary";
     }
@@ -130,7 +128,7 @@ export function ProfileCard({ profile, onView, onEdit }: ProfileCardProps) {
           </div>
 
           {/* Quick Preview Button - Visible al hacer hover */}
-          <div className="mt-2 sm:group-hover:opacity-100 opacity-100 sm:opacity-0 transition-opacity">
+          <div className="mt-2">
             <Button
               variant="outline"
               size="sm"

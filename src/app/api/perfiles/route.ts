@@ -116,7 +116,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const estado = "borrador";
+    const estado = "inactivo";
 
     let perfil: any = null;
     try {
