@@ -110,7 +110,7 @@ export function DeleteProfileDialog({
   const showImage = profile.logo_url && imageLoaded;
 
   return (
-    <AlertDialog open={dialogOpen} onOpenChange={handleClose} modal={true}>
+    <AlertDialog open={dialogOpen} onOpenChange={handleClose}>
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-lg">
