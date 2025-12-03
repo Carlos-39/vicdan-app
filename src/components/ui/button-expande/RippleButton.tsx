@@ -68,9 +68,6 @@ export default function RippleButton({ children, onClick, className = '' }: Ripp
       style={{
         color: 'white',
         fontSize: '16px',
-        hover: {
-          color: 'black',
-        }
       }}
     >
       <span className={styles.txt}>{children}</span>
