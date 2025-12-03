@@ -69,11 +69,8 @@ export default function LoginForm() {
           body: JSON.stringify({ email, password }),
         }).catch((e) => console.warn('Reporte de intento de login (background) falló:', e));
 
-        // Redirigir al dashboard y recargar para que los elementos carguen más rápido
+        // Redirigir al dashboard
         router.push("/dashboard");
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
       } catch (error) {
         console.error('Error en login:', error);
         setError('Error de conexión. Por favor, intenta nuevamente.');
