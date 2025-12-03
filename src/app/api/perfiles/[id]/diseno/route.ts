@@ -3,7 +3,6 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { verifyAuthToken } from "@/lib/jwt";
 import { logger } from "@/lib/logger";
 import { disenoSchema } from "./diseno.schema";
-import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export const runtime = "nodejs";
 
@@ -62,16 +61,6 @@ export async function GET(
         { error: "No se pudo obtener el diseño" },
         { status: 500 }
       );
-    }
-
-    // Verificar propiedad solo si no son los Super Administradores 
-    if (!ADMIN_WHITELIST.includes(adminEmail)) {
-      if (perfil.administrador_id !== claims.id) {
-        return NextResponse.json(
-          { error: "No autorizado para acceder a este diseño" },
-          { status: 403 }
-        );
-      }
     }
 
     // ✅ CORRECCIÓN: Asegurar que diseno es un objeto con socialIcons

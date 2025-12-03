@@ -4,7 +4,6 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuthToken } from '@/lib/jwt';
 import { generatePublicProfileLink } from '@/lib/publicUrl';
 import QRCode from 'qrcode';
-import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export const runtime = 'nodejs';
 const QR_BUCKET = 'perfiles-qrs';
@@ -47,15 +46,6 @@ export async function POST(req: Request, ctx: ParamsCtx) {
     }
     if (!existing) {
       return NextResponse.json({ error: 'Perfil no encontrado' }, { status: 404 });
-    }
-    // Verificar propiedad solo si no son los Super Administradores 
-    if (!ADMIN_WHITELIST.includes(adminEmail)) {
-      if (existing.administrador_id !== adminId) {
-        return NextResponse.json(
-          { error: 'No autorizado para publicar este perfil' },
-          { status: 403 }
-        );
-      }
     }
     
     // Si ya tiene slug, solo retornar la información existente
@@ -127,11 +117,6 @@ export async function POST(req: Request, ctx: ParamsCtx) {
     })
     .eq('eliminado', false)
     .eq('id', perfilId);
-
-    // Solo aplicar filtro por administrador si NO es superadmin
-    if (!ADMIN_WHITELIST.includes(adminEmail)) {
-      query = query.eq('administrador_id', adminId);
-    }
 
     const { data: updated, error: updateErr } = await query
       .select('id, slug, estado, fecha_publicacion, qr_url')

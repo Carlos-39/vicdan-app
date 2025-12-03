@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { verifyAuthToken } from '@/lib/jwt';
 import { logger } from "@/lib/logger";
-import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export const runtime = 'nodejs';
 
@@ -176,11 +175,6 @@ export async function PUT(
       .update(updates)
       .eq('eliminado', false)
       .eq('id', perfilId);
-
-    // Verificar propiedad solo si no son los Super Administradores 
-    if (!ADMIN_WHITELIST.includes(adminEmail)) {
-      updateQuery = updateQuery.eq('administrador_id', adminId);
-    }
 
     const { data: updatedProfile, error: updateError } = await updateQuery
       .select()
