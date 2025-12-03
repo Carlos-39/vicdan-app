@@ -367,14 +367,14 @@ export function NewProfileForm() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="w-full md:flex-1 px-6 py-3 border border-input rounded-lg font-medium text-foreground hover:bg-muted transition-colors"
+            className="w-full md:flex-1 px-6 py-3 border border-input rounded-lg font-medium text-foreground hover:bg-muted transition-colors duration-300"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full md:flex-1 px-6 py-3 bg-gradient-to-r from-[var(--primary)] to-indigo-600 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md hover:shadow-purple-500/20"
+            className="w-full md:flex-1 px-6 py-3 bg-[var(--primary)] text-white rounded-lg font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-400 hover:shadow-md hover:shadow-purple-500/20 hover:translate-y-[-4px] active:translate-y-[0]"
           >
             {isSubmitting ? "Guardando..." : "Guardar Perfil"}
           </button>

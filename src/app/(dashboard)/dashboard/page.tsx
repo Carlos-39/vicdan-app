@@ -7,16 +7,23 @@ import {
   UserPlus,
   ClipboardList,
   CheckCircle,
-  FileEdit,
   Clock,
   Users,
   Key,
   Copy,
   Check,
+  UserCheck,
+  UserX,
+  CalendarDays,
+  CheckCircle2,
+  Globe,
+  Link2,
+  TrendingUp,
 } from "lucide-react";
 import { DashboardHeader } from "./components/dashboard-header";
 import { ProcessCard } from "./components/process-card";
 import { ActivityItem } from "./components/activity-item";
+import { ActivityItemSkeleton } from "./components/activity-item-skeleton";
 import { BottomNavigation } from "./components/bottom-navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,6 +39,14 @@ interface RecentProfile {
 
 interface DashboardMetrics {
   totalProfiles: number;
+  activeProfiles: number;
+  inactiveProfiles: number;
+  createdThisWeek: number;
+  completeProfiles: number;
+  averageLinksPerProfile: number;
+  publishedProfiles: number;
+  totalLinks: number;
+  updatedToday: number;
 }
 
 export default function DashboardPage() {
@@ -41,6 +56,14 @@ export default function DashboardPage() {
   const [recentProfiles, setRecentProfiles] = useState<RecentProfile[]>([]);
   const [metrics, setMetrics] = useState<DashboardMetrics>({
     totalProfiles: 0,
+    activeProfiles: 0,
+    inactiveProfiles: 0,
+    createdThisWeek: 0,
+    completeProfiles: 0,
+    averageLinksPerProfile: 0,
+    publishedProfiles: 0,
+    totalLinks: 0,
+    updatedToday: 0,
   });
   const [loading, setLoading] = useState(true);
   const [metricsLoading, setMetricsLoading] = useState(true);
@@ -59,7 +82,7 @@ export default function DashboardPage() {
       const token = await getAuthToken();
       if (!token) return;
 
-      // Obtener todos los perfiles para contar
+      // Obtener todos los perfiles
       const profilesResponse = await fetch(`/api/perfiles`, {
         method: "GET",
         headers: {
@@ -71,8 +94,68 @@ export default function DashboardPage() {
         const profilesData = await profilesResponse.json();
         const perfiles = profilesData.perfiles || [];
 
+        const now = new Date();
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - 7);
+        const startOfToday = new Date(now);
+        startOfToday.setHours(0, 0, 0, 0);
+
+        // Calcular métricas
+        const totalProfiles = perfiles.length;
+        const activeProfiles = perfiles.filter((p: any) => p.estado === "activo").length;
+        const inactiveProfiles = perfiles.filter((p: any) => p.estado === "inactivo").length;
+        const createdThisWeek = perfiles.filter((p: any) => {
+          const created = new Date(p.fechas);
+          return created >= startOfWeek;
+        }).length;
+        const publishedProfiles = perfiles.filter((p: any) => p.slug).length;
+        const completeProfiles = perfiles.filter((p: any) => {
+          return p.nombre && p.logo_url && p.correo && p.descripcion && p.diseno;
+        }).length;
+        const updatedToday = perfiles.filter((p: any) => {
+          const updated = new Date(p.fechas);
+          return updated >= startOfToday;
+        }).length;
+
+        // Obtener total de enlaces
+        let totalLinks = 0;
+        try {
+          const linksPromises = perfiles.map(async (profile: any) => {
+            try {
+              const linksResponse = await fetch(`/api/perfiles/${profile.id}/tarjetas`, {
+                method: "GET",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              });
+              if (linksResponse.ok) {
+                const links = await linksResponse.json();
+                return links.length;
+              }
+              return 0;
+            } catch {
+              return 0;
+            }
+          });
+
+          const linksPerProfile = await Promise.all(linksPromises);
+          totalLinks = linksPerProfile.reduce((sum, count) => sum + count, 0);
+        } catch (error) {
+          console.error("Error fetching links:", error);
+        }
+
+        const averageLinksPerProfile = totalProfiles > 0 ? Math.round((totalLinks / totalProfiles) * 10) / 10 : 0;
+
         setMetrics({
-          totalProfiles: perfiles.length,
+          totalProfiles,
+          activeProfiles,
+          inactiveProfiles,
+          createdThisWeek,
+          completeProfiles,
+          averageLinksPerProfile,
+          publishedProfiles,
+          totalLinks,
+          updatedToday,
         });
       }
     } catch (error) {
@@ -99,7 +182,6 @@ export default function DashboardPage() {
 
       const data = await response.json();
       const perfiles = data.perfiles || [];
-      // Tomar solo los 4 más recientes
       setRecentProfiles(perfiles.slice(0, 4));
     } catch (error) {
       console.error("Error fetching recent profiles:", error);
@@ -159,10 +241,8 @@ export default function DashboardPage() {
         return "pending";
     }
   };
-  
 
   const getIconBgColor = (estado: string) => {
-    // Usar el color morado de la aplicación para todos los estados
     switch (estado) {
       case "activo":
         return "bg-gradient-to-br from-[var(--primary)] to-indigo-600 text-white shadow-lg shadow-purple-500/30";
@@ -221,44 +301,98 @@ export default function DashboardPage() {
     }
   }, [generatedCode]);
 
+  const metricsConfig = [
+    {
+      label: "Total Perfiles",
+      value: metrics.totalProfiles,
+      icon: Users,
+      color: "#877af7",
+    },
+    {
+      label: "Perfiles Activos",
+      value: metrics.activeProfiles,
+      icon: UserCheck,
+      color: "#10b981",
+    },
+    {
+      label: "Perfiles Inactivos",
+      value: metrics.inactiveProfiles,
+      icon: UserX,
+      color: "#6b7280",
+    },
+    {
+      label: "Creados Esta Semana",
+      value: metrics.createdThisWeek,
+      icon: CalendarDays,
+      color: "#3b82f6",
+    },
+
+    {
+      label: "Promedio Enlaces",
+      value: metrics.averageLinksPerProfile,
+      icon: TrendingUp,
+      color: "#f59e0b",
+    },
+    {
+      label: "Actualizados Hoy",
+      value: metrics.updatedToday,
+      icon: Clock,
+      color: "#f97316",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background pb-24">
       <DashboardHeader />
 
-      <main className="px-3 sm:px-4 py-4 sm:py-6 max-w-4xl mx-auto space-y-4 sm:space-y-6">
-        {/* Métricas */}
-        <section className="grid grid-cols-1 gap-4">
-          <Card 
-            className="p-5 border-0 shadow-md"
-            style={{
-              backgroundColor: "#877af7",
-              color: "#ffffff",
-            }}
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white/80 text-sm font-medium mb-1">Perfiles</p>
-                <p className="text-3xl font-bold">
-                  {metricsLoading ? (
-                    <span className="inline-block h-8 w-12 bg-white/20 rounded animate-pulse" />
-                  ) : (
-                    metrics.totalProfiles
-                  )}
-                </p>
-              </div>
-              <div 
-                className="p-3 rounded-lg"
-                style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.2)",
-                }}
-              >
-                <Users className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </Card>
+      <main className="px-3 sm:px-4 py-4 sm:py-6 max-w-6xl mx-auto space-y-4 sm:space-y-6">
+        {/* Métricas - Grid 3x3 */}
+
+        <section className="">
+          <h2 className="text-foreground font-semibold text-base sm:text-lg mb-3 sm:mb-4">
+            Métricas
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {metricsConfig.map((metric, index) => {
+              const Icon = metric.icon;
+              return (
+                <Card
+                  key={index}
+                  className="p-5 border-0 shadow-md"
+                  style={{
+                    backgroundColor: metric.color,
+                    color: "#ffffff",
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-white/80 text-xs sm:text-sm font-medium mb-1">
+                        {metric.label}
+                      </p>
+                      <p className="text-2xl sm:text-3xl font-bold">
+                        {metricsLoading ? (
+                          <span className="inline-block h-8 w-12 bg-white/20 rounded animate-pulse" />
+                        ) : (
+                          metric.value
+                        )}
+                      </p>
+                    </div>
+                    <div
+                      className="p-3 rounded-lg"
+                      style={{
+                        backgroundColor: "rgba(255, 255, 255, 0.2)",
+                      }}
+                    >
+                      <Icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
         </section>
 
-       
+
 
         {/* Procesos Principales */}
         <section>
@@ -301,13 +435,10 @@ export default function DashboardPage() {
           </div>
           <Card className="p-4 space-y-3 border shadow-sm bg-white">
             {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div 
-                  className="animate-spin rounded-full h-6 w-6 border-b-2"
-                  style={{
-                    borderColor: "#877af7",
-                  }}
-                />
+              <div className="space-y-11">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <ActivityItemSkeleton key={i} />
+                ))}
               </div>
             ) : recentProfiles.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground text-sm">
@@ -335,15 +466,15 @@ export default function DashboardPage() {
           </Card>
         </section>
 
-         {/* Generar Código de Registro */}
-         <section>
+        {/* Generar Código de Registro */}
+        <section>
           <h2 className="text-foreground font-semibold text-base sm:text-lg mb-4">
             Códigos de Registro
           </h2>
           <Card className="p-4 sm:p-5 border shadow-sm bg-white">
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-2">
-                <div 
+                <div
                   className="p-2 rounded-lg flex-shrink-0"
                   style={{
                     backgroundColor: "rgba(135, 122, 247, 0.1)",
@@ -352,7 +483,9 @@ export default function DashboardPage() {
                   <Key className="h-5 w-5" style={{ color: "#877af7" }} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-foreground font-medium text-sm sm:text-base">Generar código de registro</h3>
+                  <h3 className="text-foreground font-medium text-sm sm:text-base">
+                    Generar código de registro
+                  </h3>
                   <p className="text-muted-foreground text-xs sm:text-sm">
                     Crea un código para permitir el registro de nuevos usuarios
                   </p>
@@ -411,9 +544,7 @@ export default function DashboardPage() {
               >
                 {isGenerating ? (
                   <>
-                    <div 
-                      className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2 inline-block"
-                    />
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2 inline-block" />
                     <span className="hidden sm:inline">Generando...</span>
                     <span className="sm:hidden">Generando</span>
                   </>
@@ -428,7 +559,6 @@ export default function DashboardPage() {
             </div>
           </Card>
         </section>
-        
       </main>
 
       <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
