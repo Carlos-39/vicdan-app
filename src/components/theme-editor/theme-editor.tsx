@@ -777,7 +777,11 @@ export function ThemeEditor({
       }
 
       setSuccessMessage("Diseño guardado correctamente");
-      setTimeout(() => setSuccessMessage(null), 3000);
+      
+      // Redirigir a la página anterior después de un breve delay
+      setTimeout(() => {
+        router.back();
+      }, 1500);
     } catch (error: any) {
       console.error("Error completo al guardar:", error);
       setError(error.message || "Error al guardar los cambios");

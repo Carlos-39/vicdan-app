@@ -57,16 +57,6 @@ export async function PUT(
       );
     }
 
-    // Verificar propiedad solo si no son los Super Administradores 
-    if (!ADMIN_WHITELIST.includes(adminEmail)) {
-      if (perfil.administrador_id !== claims.id) {
-        return NextResponse.json(
-          { error: "No autorizado para editar tarjetas de este perfil" },
-          { status: 403 }
-        );
-      }
-    }
-
     // 4. Verificar que la tarjeta existe
     const { data: tarjetaExistente, error: tarjetaError } = await supabaseAdmin
       .from("tarjetas")
@@ -175,13 +165,6 @@ export async function DELETE(
       return NextResponse.json(
         { error: "Perfil no encontrado" },
         { status: 404 }
-      );
-    }
-
-    if (perfil.administrador_id !== claims.id) {
-      return NextResponse.json(
-        { error: "No autorizado para eliminar tarjetas de este perfil" },
-        { status: 403 }
       );
     }
 
