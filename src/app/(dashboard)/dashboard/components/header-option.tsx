@@ -352,7 +352,7 @@ export default function HeaderOption() {
                   <div className="flex-1">
                     <h3 className="font-bold text-xl mb-3">Personalización de Diseño</h3>
                     <p className="text-sm text-gray-700 mb-4">
-                      Accede a la sección "Personalizar Diseño" desde cualquier perfil para personalizar completamente su apariencia:
+                      Accede a la sección &quot;Personalizar Diseño&quot; desde cualquier perfil para personalizar completamente su apariencia:
                     </p>
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
