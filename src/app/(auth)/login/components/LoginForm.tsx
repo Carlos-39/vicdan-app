@@ -30,7 +30,29 @@ export default function LoginForm() {
         });
 
         if (result?.error) {
-          setError(result.error);
+          // Mapear errores técnicos de NextAuth a mensajes amigables
+          let errorMessage = 'Error de autenticación';
+          
+          switch (result.error) {
+            case 'CredentialsSignin':
+              errorMessage = 'Credenciales incorrectas. Verifica tu email y contraseña.';
+              break;
+            case 'Configuration':
+              errorMessage = 'Credenciales incorrectas. Verifica tu email y contraseña.';
+              break;
+            case 'AccessDenied':
+              errorMessage = 'Acceso denegado. Verifica tus credenciales.';
+              break;
+            case 'Verification':
+              errorMessage = 'Error de verificación. Intenta nuevamente.';
+              break;
+            default:
+              errorMessage = result.error.includes('Credenciales') 
+                ? 'Credenciales incorrectas. Verifica tu email y contraseña.'
+                : 'Error de conexión. Por favor, intenta nuevamente.';
+          }
+          
+          setError(errorMessage);
           // Reportar intento fallido al endpoint (no bloqueante)
           void fetch('/api/auth/login', {
             method: 'POST',
@@ -47,7 +69,11 @@ export default function LoginForm() {
           body: JSON.stringify({ email, password }),
         }).catch((e) => console.warn('Reporte de intento de login (background) falló:', e));
 
+        // Redirigir al dashboard y recargar para que los elementos carguen más rápido
         router.push("/dashboard");
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
       } catch (error) {
         console.error('Error en login:', error);
         setError('Error de conexión. Por favor, intenta nuevamente.');
