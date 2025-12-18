@@ -8,6 +8,7 @@ import {
   ThemeEditor,
   type ThemeConfig,
 } from "@/components/theme-editor/theme-editor";
+import { ThemeEditorSkeleton } from "@/components/theme-editor/theme-editor-skeleton";
 import { type SocialIcon } from "@/components/theme-editor/links-manager";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -125,13 +126,12 @@ export default function PersonalizarPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="size-8 animate-spin text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            Cargando configuración...
-          </p>
+      <div className="min-h-screen bg-background">
+        <DashboardHeader />
+        <div className="pb-24">
+          <ThemeEditorSkeleton />
         </div>
+        <BottomNavigation activeTab="profiles" />
       </div>
     );
   }

@@ -4,7 +4,6 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { verifyAuthToken } from "@/lib/jwt";
 import { logger } from "@/lib/logger";
 import { tarjetaSchema } from "../tarjetas.schema";
-import { ADMIN_WHITELIST } from "@/lib/admins";
 
 export const runtime = "nodejs";
 

@@ -108,13 +108,19 @@ export function NewProfileForm() {
         throw new Error(errorData.error || errorData.details || "Error al crear el perfil. Por favor, intenta nuevamente.");
       }
 
+      const result = await response.json();
+      const profileId = result.perfil?.id || result.id;
+
       setSubmitSuccess(true);
       setImagePreview(null);
       reset();
 
-      // Mostrar mensaje de éxito temporalmente
+      // Mostrar mensaje de éxito y redirigir al perfil creado
       setTimeout(() => {
         setSubmitSuccess(false);
+        if (profileId) {
+          router.push(`/dashboard/perfiles/${profileId}`);
+        }
       }, 3000);
     } catch (error) {
       console.error("Error al crear perfil:", error);
@@ -206,7 +212,7 @@ export function NewProfileForm() {
                   ¡Perfil creado exitosamente!
                 </p>
                 <p className="text-sm text-green-700 mt-1">
-                  El perfil ha sido guardado correctamente en el sistema.
+                  Redirigiendo al perfil creado...
                 </p>
               </div>
             </div>
@@ -361,14 +367,14 @@ export function NewProfileForm() {
           <button
             type="button"
             onClick={() => router.back()}
-            className="w-full md:flex-1 px-6 py-3 border border-input rounded-lg font-medium text-foreground hover:bg-muted transition-colors"
+            className="w-full md:flex-1 px-6 py-3 border border-input rounded-lg font-medium text-foreground hover:bg-muted transition-colors duration-300"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full md:flex-1 px-6 py-3 bg-gradient-to-r from-[var(--primary)] to-indigo-600 text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md hover:shadow-purple-500/20"
+            className="w-full md:flex-1 px-6 py-3 bg-[var(--primary)] text-white rounded-lg font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-indigo-400 hover:shadow-md hover:shadow-purple-500/20 hover:translate-y-[-4px] active:translate-y-[0]"
           >
             {isSubmitting ? "Guardando..." : "Guardar Perfil"}
           </button>

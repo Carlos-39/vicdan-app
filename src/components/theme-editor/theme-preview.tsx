@@ -506,7 +506,7 @@ export function ThemePreview({ theme, profileData }: ThemePreviewProps) {
 
           {displayData.descripcion && (
             <p
-              className="opacity-80"
+              className="opacity-80 whitespace-pre-wrap"
               style={{
                 fontSize: theme.typography.fontSize.base,
                 color: theme.colors.text,

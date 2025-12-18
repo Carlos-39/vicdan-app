@@ -92,8 +92,6 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
     },
   });
 
-  const fotoPerfilFile = watch("fotoPerfil");
-
   // Efecto para resetear el formulario si cambia el perfil
   useEffect(() => {
     reset({
@@ -173,11 +171,7 @@ export function EditProfileForm({ profile, onSuccess }: EditProfileFormProps) {
       // Mostrar mensaje de éxito y redirigir
       setTimeout(() => {
         setSubmitSuccess(false);
-        if (onSuccess) {
-          onSuccess();
-        } else {
-          router.push(`/dashboard/perfiles/${profile.id}`);
-        }
+        router.push(`/dashboard/perfiles/${profile.id}`);
       }, 2000);
     } catch (error) {
       console.error("Error al actualizar perfil:", error);

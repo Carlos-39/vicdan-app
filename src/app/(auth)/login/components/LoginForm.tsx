@@ -22,23 +22,7 @@ export default function LoginForm() {
     setError(undefined);
     startTransition(async () => {
       try {
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password }),
-        });
-
-        const data = await response.json();
-        console.log("Resultado login:", data);
-
-        if (!response.ok) {
-          setError(data.error || 'Error al iniciar sesión');
-          return;
-        }
-
-        // Si el login es exitoso, usar NextAuth para crear la sesión
+        // Primero, iniciar sesión con NextAuth (evita otra llamada bloqueante en producción)
         const result = await signIn("credentials", {
           redirect: false,
           email,
@@ -46,11 +30,49 @@ export default function LoginForm() {
         });
 
         if (result?.error) {
-          setError(result.error);
+          // Mapear errores técnicos de NextAuth a mensajes amigables
+          let errorMessage = 'Error de autenticación';
+          
+          switch (result.error) {
+            case 'CredentialsSignin':
+              errorMessage = 'Credenciales incorrectas. Verifica tu email y contraseña.';
+              break;
+            case 'Configuration':
+              errorMessage = 'Credenciales incorrectas. Verifica tu email y contraseña.';
+              break;
+            case 'AccessDenied':
+              errorMessage = 'Acceso denegado. Verifica tus credenciales.';
+              break;
+            case 'Verification':
+              errorMessage = 'Error de verificación. Intenta nuevamente.';
+              break;
+            default:
+              errorMessage = result.error.includes('Credenciales') 
+                ? 'Credenciales incorrectas. Verifica tu email y contraseña.'
+                : 'Error de conexión. Por favor, intenta nuevamente.';
+          }
+          
+          setError(errorMessage);
+          // Reportar intento fallido al endpoint (no bloqueante)
+          void fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password }),
+          }).catch((e) => console.warn('Reporte de intento de login fallido:', e));
           return;
         }
-        
+
+        // Reportar intento exitoso en background (no bloqueante)
+        void fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        }).catch((e) => console.warn('Reporte de intento de login (background) falló:', e));
+
         router.push("/dashboard");
+        setTimeout(() => {
+          window.location.reload();
+        }, 500);
       } catch (error) {
         console.error('Error en login:', error);
         setError('Error de conexión. Por favor, intenta nuevamente.');

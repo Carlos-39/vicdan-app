@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Proyecto VicDan — aplicación web basada en Next.js
 
-## Getting Started
+Descripción
+- Este repositorio contiene una aplicación web construida con Next.js (App Router) que incluye autenticación, gestión de perfiles y una colección de componentes reutilizables.
+- El código está organizado en `src/` y contiene una carpeta `app/` con las páginas/plantillas de la aplicación.
 
-First, run the development server:
+Estructura principal
+- `src/app/` : rutas y páginas de la aplicación (App Router).
+- `src/components/` : componentes UI reutilizables y específicos (perfiles, theme editor, UI primitives).
+- `src/lib/` : utilidades y helpers (jwt, supabase, storage, utils, etc.).
+- `src/types/` : tipos TypeScript del proyecto.
+- `public/` : archivos estáticos accesibles públicamente.
+- `e2e/` : pruebas end-to-end con Playwright (carpetas por flujo: `auth`, `DashBoard`, etc.).
+- `test/` : pruebas unitarias e integración (incluye `msw/` para mocks y `unit/` y `integration/`).
+- Configuración y scripts importantes en la raíz: `package.json`, `next.config.ts`, `jest.config.js`, `playwright.config.ts`, `tsconfig.json`, `eslint.config.mjs`.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Comandos básicos
+- Instalar dependencias:
+
+```
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Ejecutar en modo desarrollo:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Construir para producción:
 
-## Learn More
+```
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+- Ejecutar pruebas unitarias (Jest):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+npm test
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Ejecutar pruebas E2E (Playwright):
 
-## Deploy on Vercel
+```
+npx playwright test
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Puntos a tener en cuenta
+- La aplicación usa autenticación y acceso a datos (se observan utilidades `supabase.ts`, `jwt.ts` y `storage.ts`). Configura tus variables de entorno antes de ejecutar en desarrollo (`.env.local` o similar) si la app requiere claves externas.
+- Hay helpers y utilidades para manejo de fechas, slugs y rate limiting en `src/lib/`.
+- Las pruebas E2E están en la carpeta `e2e/` y se organizan por flujos (auth, dashboard, etc.). También hay pruebas unitarias y mocks de red con MSW en `test/msw/`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Contribuir
+- Lee y sigue las convenciones de código presentes (TypeScript, ESLint, estructura de carpetas).
+- Añade tests para nuevas funcionalidades y mantén actualizados los mocks en `test/msw/`.
+
+Contacto
+- Para dudas o colaboración, crea un issue o un PR en este repositorio.
+
+Licencia
+- Revisa el archivo `LICENSE` en la raíz para detalles de la licencia del proyecto.
+
+---
+
+Este README resume la estructura y los comandos principales del proyecto tal como está en el repositorio.

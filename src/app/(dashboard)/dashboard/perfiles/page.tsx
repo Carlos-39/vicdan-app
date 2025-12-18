@@ -5,11 +5,12 @@ import { useState, useEffect, useCallback, useRef } from "react"
 import { useSession } from "next-auth/react"
 import { ProfileWithAdmin, ProfileFilters } from "@/types/profile"
 import { ProfileCard } from "@/components/profiles/profile-card"
+import { ProfileCardSkeleton } from "@/components/profiles/profile-card-skeleton"
 import { ProfileFiltersComponent } from "@/components/profiles/profele-filters"
 import { DeleteProfileDialog } from "@/components/profiles/delete-profile-dialog"
 import { ViewProfileDialog } from "@/components/profiles/view-profile-dialog"
 import { Button } from "@/components/ui/button"
-import { Plus, Loader2, AlertCircle } from "lucide-react"
+import { Plus, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { DashboardHeader } from "@/app/(dashboard)/dashboard/components/dashboard-header"
 import { BottomNavigation } from "../components/bottom-navigation"
@@ -395,8 +396,10 @@ export default function ProfilesPage() {
 
         {/* Loading State */}
         {loading && page === 1 && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="size-8 animate-spin text-muted-foreground" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <ProfileCardSkeleton key={i} />
+            ))}
           </div>
         )}
 
